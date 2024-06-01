@@ -1,0 +1,53 @@
+[tool.poetry]
+name = "rdgai"
+version = "0.1.0"
+description = "Adding relation elements to classify readings in a TEI XML critical apparatus."
+authors = ["Robert Turnbull <robert.turnbull@unimelb.edu.au>"]
+license = "Apache-2.0"
+readme = "README.rst"
+repository = "https://github.com/rbturnbull/rdgai/"
+documentation = "https://rbturnbull.github.io/rdgai"
+homepage = "https://github.com/rbturnbull/rdgai/"
+keywords = ["command-line interface"]
+# For classifiers see https://pypi.org/classifiers/
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Intended Audience :: Science/Research",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence"
+]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.12"
+typer = "^0.12.3"
+langchain = "^0.2.1"
+langchain-openai = "^0.1.8"
+rich = "^13.7.1"
+
+[tool.poetry.dev-dependencies]
+pytest = ">=6.2.5"
+ipykernel = ">=6.6.1"
+coverage = ">=5.5"
+autopep8 = ">=1.5.7"
+Sphinx = ">=5.0.0"
+nbsphinx = ">=0.8.7"
+sphinx-rtd-theme = ">=1.0.0"
+sphinx-autobuild = ">=2021.3.14"
+myst-parser = ">=0.15.2"
+pre-commit = ">=2.15.0"
+sphinx-copybutton = ">=0.4.0"
+black = ">=21.10b0"
+sphinx-click = {git = "https://github.com/rbturnbull/sphinx-click.git"}
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = [
+    "tests",
+]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+rdgai = "rdgai.main:app"

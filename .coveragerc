@@ -1,0 +1,5 @@
+[run]
+source = rdgai
+
+[report]
+precision = 2
