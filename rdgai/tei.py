@@ -57,6 +57,10 @@ def get_relations(doc:ElementTree|Element, relation_categories:list[RelationCate
             if name:
                 readings_dict[name] = reading
 
+            id = reading.attrib.get("{http://www.w3.org/XML/1998/namespace}id", "")
+            if id:
+                readings_dict[id] = reading
+
 
         for list_relation in find_elements(apparatus, ".//listRelation[@type='transcriptional']"):
             for relation_element in find_elements(list_relation, ".//relation"):
@@ -71,32 +75,38 @@ def get_relations(doc:ElementTree|Element, relation_categories:list[RelationCate
                     category = relation_category_dict[analytic]
 
                     # Get active reading
-                    active_reading_name = relation_element.attrib.get("active", "")
-                    if active_reading_name not in readings_dict:
-                        error_console.print(f"Active reading '{active_reading_name}' not found in readings. Skipping relation.")
-                        continue
-                    active_element = readings_dict[active_reading_name]
-                    active_text = extract_text(active_element).strip()
+                    for active_reading_name in relation_element.attrib.get("active", "").split():
+                        if active_reading_name not in readings_dict and active_reading_name.startswith("#"):
+                            active_reading_name = active_reading_name[1:]
 
-                    # Get passive reading
-                    passive_reading_name = relation_element.attrib.get("passive", "")
-                    if passive_reading_name not in readings_dict:
-                        error_console.print(f"Passive reading '{passive_reading_name}' not found in readings. Skipping relation.")
-                        continue
-                    passive_element = readings_dict[passive_reading_name]
-                    passive_text = extract_text(passive_element).strip()
+                        if active_reading_name not in readings_dict:
+                            error_console.print(f"Active reading '{active_reading_name}' not found in readings. Skipping relation.")
+                            continue
+                        active_element = readings_dict[active_reading_name]
+                        active_text = extract_text(active_element).strip()
 
-                    
-                    relation = Relation(
-                        active=active_text, 
-                        passive=passive_text, 
-                        category=category, 
-                        location=location, 
-                        apparatus=apparatus, 
-                        active_element=active_element, 
-                        passive_element=passive_element,
-                    )
-                    relations.append(relation)
-                    category.instances.append(relation)
+                        # Get passive reading
+                        for passive_reading_name in relation_element.attrib.get("passive", "").split():
+                            if passive_reading_name not in readings_dict and passive_reading_name.startswith("#"):
+                                passive_reading_name = passive_reading_name[1:]
+
+                            if passive_reading_name not in readings_dict:
+                                error_console.print(f"Passive reading '{passive_reading_name}' not found in readings. Skipping relation.")
+                                continue
+                            passive_element = readings_dict[passive_reading_name]
+                            passive_text = extract_text(passive_element).strip()
+
+                            
+                            relation = Relation(
+                                active=active_text, 
+                                passive=passive_text, 
+                                category=category, 
+                                location=location, 
+                                apparatus=apparatus, 
+                                active_element=active_element, 
+                                passive_element=passive_element,
+                            )
+                            relations.append(relation)
+                            category.instances.append(relation)
 
     return relations
