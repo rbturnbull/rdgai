@@ -16,6 +16,9 @@ class RelationCategory():
     description:str=""
     instances:list['Relation']=field(default_factory=lambda: [])
     
+    def __str__(self) -> str:
+        return self.name
+
 
 @dataclass
 class Relation():
@@ -28,8 +31,9 @@ class Relation():
     passive_element:Element
     
 
-def get_relation_categories(doc:ElementTree|Element) -> list[RelationCategory]:
+def get_relation_categories(doc:ElementTree|Element, categories_to_ignore:list[str]|None=None) -> list[RelationCategory]:
     interp_group = find_element(doc, ".//interpGrp[@type='transcriptional']")
+    categories_to_ignore = categories_to_ignore or []
     
     relation_categories = []
     if interp_group is None:
@@ -38,6 +42,8 @@ def get_relation_categories(doc:ElementTree|Element) -> list[RelationCategory]:
     
     for interp in find_elements(interp_group, "./interp"):
         name = interp.attrib.get("{http://www.w3.org/XML/1998/namespace}id", "")
+        if name in categories_to_ignore:
+            continue
         description = extract_text(interp).strip()
         relation_categories.append(RelationCategory(name=name, element=interp, description=description))
 

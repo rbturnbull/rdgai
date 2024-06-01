@@ -37,3 +37,18 @@ def add(
 
     llm = ChatOpenAI()
     
+
+@app.command()
+def show(
+    doc:Path,
+    ignore:list[str]=typer.Option([], help="Categories to ignore"),
+):
+    doc_path = doc
+    doc = read_tei(doc_path)
+    relation_categories = get_relation_categories(doc, ignore)
+    relations = get_relations(doc, relation_categories)
+    for relation in relations:
+        active = relation.active or "OMITTED"
+        passive = relation.passive or "OMITTED"
+        # console.print(f"[purple]{relation.location}\t[bold red]{relation.category}[/bold red]: [green]{active}[bold red] -> [/bold red][green]{passive}")
+        console.print(f"[bold red]{relation.category}[/bold red]: [green]{active}[bold red] -> [/bold red][green]{passive}")        
