@@ -32,7 +32,7 @@ def add(
     doc_path = doc
     doc = read_tei(doc_path)
     relation_categories = get_relation_categories(doc)
-    relations = get_relations(doc)
+    relations = get_relations(doc, relation_categories)
     breakpoint()
 
     llm = ChatOpenAI()
