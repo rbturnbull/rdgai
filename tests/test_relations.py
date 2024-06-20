@@ -1,6 +1,6 @@
 import lxml.etree as ET
-from rdgai.relations import RelationCategory, Relation, make_readings_dict, get_relation_categories
-from rdgai.tei import read_tei
+from rdgai.relations import RelationCategory, Relation, make_readings_dict, get_relation_categories, get_categories, get_relation_categories_dict
+from rdgai.tei import read_tei, find_element
 
 from .util import TEST_DATA_DIR
 
@@ -148,6 +148,18 @@ def test_relation_create_relation_element():
 def test_get_relation_categories():
     doc = read_tei(TEST_DATA_DIR/"ubs_ephesians.xml")
     result = get_relation_categories(doc)
-    assert result[0].name == "Clar"
+    assert str(result[0])  == "Clar"
     assert result[0].description.startswith("Clarification of the text")
-    assert result[1].name == "AurConf"
+    assert str(result[1]) == "AurConf"
+    assert result[0] != result[1]
+
+
+def test_get_categories():
+    doc = read_tei(TEST_DATA_DIR/"ubs_ephesians.xml")
+    relation_category_dict = get_relation_categories_dict(doc)
+
+    list_relation = find_element(doc, ".//listRelation[@type='transcriptional']")
+    relation = find_element(list_relation, ".//relation")
+    categories = get_categories(relation, relation_category_dict)
+    assert len(categories) == 1
+    assert categories == {relation_category_dict['Clar']}

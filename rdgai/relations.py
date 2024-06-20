@@ -137,6 +137,11 @@ def get_relation_categories(doc:ElementTree|Element, categories_to_ignore:list[s
     return relation_categories
 
 
+def get_relation_categories_dict(doc:ElementTree|Element, categories_to_ignore:list[str]|None=None) -> dict[str,RelationCategory]:
+    relation_categories = get_relation_categories(doc, categories_to_ignore)
+    return {c.name: c for c in relation_categories}
+
+
 def get_categories(relation_element:Element, relation_category_dict:dict[str,RelationCategory]) -> set[RelationCategory]:
     categories = set()
     for analytic in relation_element.attrib.get("ana", "").split():
