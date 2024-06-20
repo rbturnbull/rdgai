@@ -1,5 +1,27 @@
 import lxml.etree as ET
-from rdgai.relations import RelationCategory, Relation
+from rdgai.relations import RelationCategory, Relation, make_readings_dict
+
+
+def test_make_readings_dict_empty_apparatus():
+    apparatus = ET.Element('apparatus')
+    result = make_readings_dict(apparatus)
+    assert result == {}
+
+
+def test_make_readings_dict_apparatus_with_readings():
+    apparatus = ET.Element('apparatus')
+    ET.SubElement(apparatus, 'rdg', attrib={'n': '1'})
+    ET.SubElement(apparatus, 'rdg', attrib={'n': '2'})
+
+    result = make_readings_dict(apparatus)
+    expected = {
+        '1': ET.Element('rdg', attrib={'n': '1'}),
+        '2': ET.Element('rdg', attrib={'n': '2'})
+    }
+    assert result.keys() == expected.keys()
+    for key in expected:
+        assert result[key].attrib == expected[key].attrib
+
 
 def test_relation_category():
     element = ET.Element("element")
