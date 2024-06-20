@@ -41,6 +41,9 @@ class RelationCategory():
     
     def __str__(self) -> str:
         return self.name
+    
+    def __repr__(self) -> str:
+        return str(self)
 
     def __eq__(self, other):
         if isinstance(other, RelationCategory):
@@ -61,6 +64,12 @@ class Relation():
     passive_element:Element
     relation_element:Element|None=None
     categories:set[RelationCategory]=field(default_factory=lambda: set())
+
+    def __str__(self) -> str:
+        return f"{self.location}: {self.active or 'OMISSION'} -> {self.passive or 'OMISSION'} [{', '.join(str(c) for c in self.categories)}]"
+    
+    def __repr__(self) -> str:
+        return str(self)
 
     def add_category(self, category) -> None:
         self.categories.add(category)
@@ -155,8 +164,10 @@ def get_categories(relation_element:Element, relation_category_dict:dict[str,Rel
     return categories
 
 
-def get_classified_relations(doc:ElementTree|Element, relation_categories:list[RelationCategory]) -> list[Relation]:
+def get_classified_relations(doc:ElementTree|Element, relation_categories:list[RelationCategory]|None=None) -> list[Relation]:
     relations = []
+    if not relation_categories:
+        relation_categories = get_relation_categories(doc)
     relation_category_dict = {c.name: c for c in relation_categories}
     for apparatus in find_elements(doc, ".//app"):
         location = apparatus.attrib.get("{http://www.w3.org/XML/1998/namespace}id", "")
@@ -230,7 +241,8 @@ def get_unclassified_relations(doc:ElementTree|Element) -> list[Relation]:
                     continue
 
                 # Check if relation already exists for this pair
-                if find_element(list_relation, f".//relation[@active='{active_id}' and @passive='{passive_id}']"):
+                xpath = f".//relation[@active='{active_id}'][@passive='{passive_id}']"
+                if find_element(list_relation, xpath):
                     continue
 
                 active_element = readings_dict[active_id]

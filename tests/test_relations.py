@@ -1,5 +1,14 @@
 import lxml.etree as ET
-from rdgai.relations import RelationCategory, Relation, make_readings_dict, get_relation_categories, get_categories, get_relation_categories_dict
+from rdgai.relations import (
+    RelationCategory, 
+    Relation, 
+    make_readings_dict, 
+    get_relation_categories, 
+    get_categories, 
+    get_relation_categories_dict,
+    get_classified_relations,
+    get_unclassified_relations,
+)
 from rdgai.tei import read_tei, find_element
 
 from .util import TEST_DATA_DIR
@@ -163,3 +172,20 @@ def test_get_categories():
     categories = get_categories(relation, relation_category_dict)
     assert len(categories) == 1
     assert categories == {relation_category_dict['Clar']}
+
+
+def test_get_classified_relations():
+    doc = read_tei(TEST_DATA_DIR/"ubs_ephesians.xml")
+
+    relations = get_classified_relations(doc)
+    assert len(relations) == 166
+    assert str(relations[0]) == 'B10K1V1U24-26: OMISSION -> εν εφεσω [Clar]'
+
+
+def test_get_unclassified_relations():
+    doc = read_tei(TEST_DATA_DIR/"ubs_ephesians.xml")
+
+    relations = get_unclassified_relations(doc)
+    assert len(relations) == 646
+
+    assert str(relations[0]) == "B10K1V1U24-26: εν εφεσω -> εν εφεω []"
