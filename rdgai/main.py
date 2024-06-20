@@ -7,7 +7,8 @@ from lxml.etree import _ElementTree as ElementTree
 from lxml.etree import _Element as Element
 
 from rich.console import Console
-from vorlagellm.tei import read_tei
+from .tei import read_tei
+
 
 from .relations import get_relation_categories, get_classified_relations
 

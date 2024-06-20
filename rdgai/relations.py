@@ -2,10 +2,11 @@ import re
 from lxml.etree import _ElementTree as ElementTree
 from lxml.etree import _Element as Element
 import lxml.etree as ET
-from vorlagellm.tei import find_element, find_elements, extract_text
 from rich.console import Console
-
 from dataclasses import dataclass, field
+
+from .tei import find_element, find_elements, extract_text
+
 
 error_console = Console(stderr=True, style="bold red")
 

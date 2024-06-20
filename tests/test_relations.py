@@ -1,5 +1,8 @@
 import lxml.etree as ET
-from rdgai.relations import RelationCategory, Relation, make_readings_dict
+from rdgai.relations import RelationCategory, Relation, make_readings_dict, get_relation_categories
+from rdgai.tei import read_tei
+
+from .util import TEST_DATA_DIR
 
 
 def test_make_readings_dict_empty_apparatus():
@@ -140,3 +143,11 @@ def test_relation_create_relation_element():
     assert relation.relation_element.tag == "relation"
     assert relation.relation_element.attrib["active"] == "A"
     assert relation.relation_element.attrib["passive"] == "P"
+
+
+def test_get_relation_categories():
+    doc = read_tei(TEST_DATA_DIR/"ubs_ephesians.xml")
+    result = get_relation_categories(doc)
+    assert result[0].name == "Clar"
+    assert result[0].description.startswith("Clarification of the text")
+    assert result[1].name == "AurConf"
