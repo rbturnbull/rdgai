@@ -1,6 +1,11 @@
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langchain.prompts import ChatPromptTemplate
+from dataclasses import dataclass
 
+@dataclass
+class Reading:
+    id: str
+    text: str
 
 
 def build_template(relation_categories, readings, language) -> ChatPromptTemplate:
