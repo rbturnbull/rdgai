@@ -1,50 +1,59 @@
-# from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
-# from langchain.prompts import ChatPromptTemplate
-
-# from .instances import IndexInstance, sort_index_instances_entries
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+from langchain.prompts import ChatPromptTemplate
 
 
 
-# def build_template(index_name:str="", index_instances:list[IndexInstance]|None=None, description:str="") -> ChatPromptTemplate:
-#     messages = [
-#         SystemMessage("You are an editor for an academic publisher that seeks to support work of rigorous research outputs that are easy for the academic community to use."),
-#         HumanMessage(f"I am creating an index for an academic work that is formatted in LaTeX. "),
-#     ]
-#     if index_name:
-#         messages.append(HumanMessage(f"The index is for the '{index_name}' index."))
+def build_template(relation_categories, readings, language) -> ChatPromptTemplate:
+    system_message = f"You are an academic who is an expert in textual criticism in {language}."
 
-#     if description:
-#         messages.append(HumanMessage(f"The index is described as follows: '{description}'"))
+    human_message = (
+        f"I am analyzing textual variants in a {language} document.\n"
+        "I want to classify the types of changes made to readings as the text was copied.\n"
+        "If reading 1 were to change to reading 2, what type of change would that be?\n"
+        "I also need to classify the change from reading 2 to reading 1.\n"
+    )
+    
+    # Add the categories to the message
+    human_message += f"\nHere are the types of {len(relation_categories)} categories for the types of changes in the text:\n"     
+    for category in relation_categories:
+        human_message += f"{category.str_with_description()}\n"
 
-#     if index_instances:
+    # Add the readings to the message        
+    human_message += f"\nHere are the {len(readings)} readings at the variation unit that I am analyzing. Remember them so you can analyze them later:\n"
+    for reading in readings:
+        human_message += f"{reading.id}: {reading.text}\n"
 
-#         messages.append(HumanMessage(
-#             f"The index thus far contains the following {len(index_instances)} entries. "
-#             "The text of the entry is given first, followed by the context and the entry is placed at the [^] symbol.\n")
-#         )
-#         index_instances = sort_index_instances_entries(index_instances)
-#         current_entry = ""
-#         for instance in index_instances:
-#             current_entry = instance.entry
-#             messages.append(HumanMessage(f"{instance.entry}: {instance.context}\n"))
-            
-#     messages += [
-#         HumanMessage(
-#             f"Now I will give you a text section of the work. Please provide a list of places to add to the index. "
-#             "Ignore any text that is already properly indexed unless you think there needs to be an additional entry.\n"
-#             f"Each entry should be formatted on a new line like this\n:"
-#             "entry::text_before[^]text_after\n"
-#             "Here 'entry' is the text of the index entry, 'text_before' is about 30 characters immediately before the place to put the index, "
-#             "and 'text_after' is about 20 characters immediately after. The string '[^]' should be in the location where to place the index.\n"
-#             "For example a response could look like this:\n"
-#             "Text-Types!Caesarean::manuscripts of the varied manuscripts described as `Caesarean'.[^]\\footcite\n"
-#             "This would add an index entry for 'Text-Types!Caesarean' with the text before the index being \"manuscripts of the varied manuscripts described as `Caesarean.'[^]\\footcite'.\n"
-#             "Once you have finished responses for all entries, print 10 hyphens like this: '----------'.\n"
-#             "Here is the text section:\n"
-#         ),
-#         ("human","{text}"),
-#         AIMessage("Certainly, here are the responses for the index entries in the required format:\n----------\n"),
-#     ]
+    # Describe output format
+    human_message += (
+        f"\nYou need to output the classifications of the readings in the following format.\n"
+        # "If going reading 1 to reading 2 was the same category of change, you would output the following:\n"
+        # "reading_2_id <-> reading_1_id = category : justification\n"
 
-#     template = ChatPromptTemplate.from_messages(messages=messages)
-#     return template
+        "If reading 1 were to change to reading 2, you would output the following:\n"
+        "reading_1_id → reading_2_id = category : justification\n"
+        "You also should output classificaitons from reading 2 to reading 1. It could be the same category or a different one:\n"
+        "reading_2_id → reading_1_id = category : justification\n"
+        
+        "For the justification, give a one sentence explanation of why the change is classified as that category.\n"
+        "Separate the result for each pair of readings with a newline and do not add extra new line characters.\n"
+    )
+
+    # Add the classified relation examples to the message
+    human_message += f"\nGiven the readings above, you can output the following pairs of relations:\n"
+    for reading1 in readings:
+        for reading2 in readings:
+            if reading1 == reading2:
+                continue
+            human_message += f"{reading1.id} → {reading2.id}\n"
+
+    human_message += "\nIf the change between one of those pairs of readings does not fit one of the categories, then do not output anything for that pair.\n"
+    human_message += f"\nWhen you are finished, output 5 hyphens: '-----'.\n"
+
+    ai_message = "Certainly, classifications for combinations of the readings are:\n"
+
+    template = ChatPromptTemplate.from_messages(messages=[
+        SystemMessage(system_message),
+        HumanMessage(human_message),
+        AIMessage(ai_message),        
+    ])
+    return template

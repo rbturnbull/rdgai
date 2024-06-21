@@ -4,6 +4,22 @@ from lxml import etree as ET
 from lxml.etree import _ElementTree as ElementTree
 from lxml.etree import _Element as Element
 
+from .languages import convert_language_code
+
+
+def get_language_code(doc:ElementTree|Element) -> str:
+    """ Reads the element <text> and returns the value of the xml:lang attribute."""
+    text = find_element(doc, ".//text")
+    if text is None:
+        return ""
+    
+    return text.attrib.get("{http://www.w3.org/XML/1998/namespace}lang", "")
+
+
+def get_language(doc:ElementTree|Element) -> str:
+    code = get_language_code(doc)
+    return convert_language_code(code)
+    
 
 def extract_text(node:Element, include_tail:bool=True) -> str:
     text = node.text or ""

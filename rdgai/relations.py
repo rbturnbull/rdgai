@@ -44,6 +44,12 @@ class RelationCategory():
     
     def __repr__(self) -> str:
         return str(self)
+    
+    def str_with_description(self) -> str:
+        result = self.name
+        if self.description:
+            result += f": {self.description}"
+        return result
 
     def __eq__(self, other):
         if isinstance(other, RelationCategory):
@@ -219,45 +225,52 @@ def get_classified_relations(doc:ElementTree|Element, relation_categories:list[R
     return relations
 
 
+def get_apparatus_unclassified_relations(apparatus:Element) -> list[Relation]:
+    relations = []
+    location = apparatus.attrib.get("{http://www.w3.org/XML/1998/namespace}id", "")
+
+    list_relation = find_element(apparatus, ".//listRelation[@type='transcriptional']")
+
+    # Get readings for apparatus
+    readings_dict = {}
+    for reading in find_elements(apparatus, ".//rdg"):
+        identifier = get_reading_identifier(reading)
+        if not identifier:
+            continue
+
+        readings_dict[identifier] = reading
+
+    for active_id in readings_dict:
+        for passive_id in readings_dict:
+            if active_id == passive_id:
+                continue
+
+            # Check if relation already exists for this pair
+            xpath = f".//relation[@active='{active_id}'][@passive='{passive_id}']"
+            if find_element(list_relation, xpath):
+                continue
+
+            active_element = readings_dict[active_id]
+            active_text = extract_text(active_element).strip()
+            passive_element = readings_dict[passive_id]
+            passive_text = extract_text(passive_element).strip()
+
+            relation = Relation(
+                active=active_text, 
+                passive=passive_text, 
+                location=location, 
+                apparatus=apparatus, 
+                active_element=active_element, 
+                passive_element=passive_element,
+            )
+            relations.append(relation)
+
+    return relations
+
+
 def get_unclassified_relations(doc:ElementTree|Element) -> list[Relation]:
     relations = []
     for apparatus in find_elements(doc, ".//app"):
-        location = apparatus.attrib.get("{http://www.w3.org/XML/1998/namespace}id", "")
-
-        list_relation = find_element(apparatus, ".//listRelation[@type='transcriptional']")
-
-        # Get readings for apparatus
-        readings_dict = {}
-        for reading in find_elements(apparatus, ".//rdg"):
-            identifier = get_reading_identifier(reading)
-            if not identifier:
-                continue
-
-            readings_dict[identifier] = reading
-
-        for active_id in readings_dict:
-            for passive_id in readings_dict:
-                if active_id == passive_id:
-                    continue
-
-                # Check if relation already exists for this pair
-                xpath = f".//relation[@active='{active_id}'][@passive='{passive_id}']"
-                if find_element(list_relation, xpath):
-                    continue
-
-                active_element = readings_dict[active_id]
-                active_text = extract_text(active_element).strip()
-                passive_element = readings_dict[passive_id]
-                passive_text = extract_text(passive_element).strip()
-
-                relation = Relation(
-                    active=active_text, 
-                    passive=passive_text, 
-                    location=location, 
-                    apparatus=apparatus, 
-                    active_element=active_element, 
-                    passive_element=passive_element,
-                )
-                relations.append(relation)
-
+        relations += get_apparatus_unclassified_relations(apparatus)
+        
     return relations

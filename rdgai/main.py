@@ -1,17 +1,13 @@
 from pathlib import Path
 import typer
-from langchain_text_splitters import LatexTextSplitter
 from langchain_openai import ChatOpenAI
 from langchain.schema.output_parser import StrOutputParser
-from lxml.etree import _ElementTree as ElementTree
-from lxml.etree import _Element as Element
-
 from rich.console import Console
-from .tei import read_tei
 
-
-from .relations import get_relation_categories, get_classified_relations
-
+from .tei import read_tei, find_elements, get_language
+from .relations import get_relation_categories, get_relation_categories_dict, get_classified_relations, get_unclassified_relations, get_apparatus_unclassified_relations
+from .prompts import build_template
+from .parsers import read_output
 
 console = Console()
 error_console = Console(stderr=True, style="bold red")
@@ -33,12 +29,34 @@ def classify(
     """
     doc_path = doc
     doc = read_tei(doc_path)
-    relation_categories = get_relation_categories(doc, ignore)
-    relations = get_classified_relations(doc, relation_categories)
-    breakpoint()
-
+    relation_category_dict = get_relation_categories_dict(doc, categories_to_ignore=ignore)
+    classified_relations = get_classified_relations(doc, relation_category_dict.keys())
+    language = get_language(doc)
     llm = ChatOpenAI()
-    
+
+    for apparatus in find_elements(doc, ".//app"):
+        unclassified_relations = get_apparatus_unclassified_relations(apparatus)
+
+        template = build_template(relation_category_dict.keys(), classified_relations, unclassified_relations, language)
+        chain = template | llm.bind(stop="----") | StrOutputParser() | read_output
+
+        results = chain.invoke({})
+
+        for result in results:
+            for relation in unclassified_relations:
+                category = relation_category_dict.get(relation.category, None)
+                if category is None:
+                    continue
+                if relation.active_name == result.reading_1_id and relation.passive_name == result.reading_2_id:
+                    console.print(f"[bold red]{relation.location}[/bold red]: [green]{relation.active} ➞ {relation.passive}[/green] [bold red]{relation.category}[/bold red]")
+                    relation.add_category(category)
+                    relation.set_responsible("#rdgai")
+                    relation.set_justification(result.justification)
+                    if result.justification:
+                        console.print(f"[green]Justification[/green]: {result.justification}")
+                        relation.set_description(result.justification)
+                    break
+
 
 @app.command()
 def show(
