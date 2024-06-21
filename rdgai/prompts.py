@@ -1,14 +1,10 @@
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langchain.prompts import ChatPromptTemplate
-from dataclasses import dataclass
-
-@dataclass
-class Reading:
-    id: str
-    text: str
+from .relations import RelationCategory, Reading
 
 
-def build_template(relation_categories, readings, language) -> ChatPromptTemplate:
+
+def build_template(relation_categories:list[RelationCategory], readings:list[Reading], language:str) -> ChatPromptTemplate:
     system_message = f"You are an academic who is an expert in textual criticism in {language}."
 
     human_message = (

@@ -33,6 +33,21 @@ def make_readings_dict(apparatus:Element) -> dict[str, Element]:
 
 
 @dataclass
+class Reading:
+    id: str
+    text: str
+
+
+def make_readings_list(apparatus:Element) -> list[Reading]:
+    readings = []
+    for reading in find_elements(apparatus, ".//rdg"):
+        identifier = get_reading_identifier(reading)
+        text = extract_text(reading).strip()
+        readings.append(Reading(id=identifier, text=text))
+    return readings
+
+
+@dataclass
 class RelationCategory():
     name:str
     element:Element

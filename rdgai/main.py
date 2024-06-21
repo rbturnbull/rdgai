@@ -5,7 +5,7 @@ from langchain.schema.output_parser import StrOutputParser
 from rich.console import Console
 
 from .tei import read_tei, find_elements, get_language
-from .relations import get_relation_categories, get_relation_categories_dict, get_classified_relations, get_unclassified_relations, get_apparatus_unclassified_relations
+from .relations import get_relation_categories, get_relation_categories_dict, get_classified_relations, get_apparatus_unclassified_relations, make_readings_list
 from .prompts import build_template
 from .parsers import read_output
 
@@ -21,8 +21,6 @@ app = typer.Typer()
 def classify(
     doc:Path,
     ignore:list[str]=typer.Option(None, help="Categories to ignore"),
-    name:str="",
-    description:str="",
 ):
     """
     Classifies relations in TEI documents.
@@ -36,8 +34,9 @@ def classify(
 
     for apparatus in find_elements(doc, ".//app"):
         unclassified_relations = get_apparatus_unclassified_relations(apparatus)
+        readings = make_readings_list(apparatus)
 
-        template = build_template(relation_category_dict.keys(), classified_relations, unclassified_relations, language)
+        template = build_template(relation_category_dict.keys(), readings, language)
         chain = template | llm.bind(stop="----") | StrOutputParser() | read_output
 
         results = chain.invoke({})

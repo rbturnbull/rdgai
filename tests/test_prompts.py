@@ -1,6 +1,3 @@
-# from langchain.schema.output_parser import StrOutputParser
-# from langchain.prompts import ChatPromptTemplate
-
 from rdgai.relations import RelationCategory
 from rdgai.prompts import build_template, Reading
 
@@ -32,19 +29,3 @@ def test_build_template():
     assert "3 → 2" in response
     assert "When you are finished, output 5 hyphens: '-----'." in response
     assert "AI: Certainly, classifications for combinations of the readings are:" in response
-
-    
-
-#     index_name = "Sample Index"
-#     index_instances = [
-#         IndexInstance(path=None, line_number=0, index_name="", text="Sample Entry 1", context="Context for entry 1"),
-#         IndexInstance(path=None, line_number=0, index_name="", text="Sample Entry 2", context="Context for entry 2"),
-#     ]
-#     description = "This is a sample index description."
-
-#     template = build_template(index_name=index_name, index_instances=index_instances, description=description)
-#     assert template.input_variables == ["text"]
-#     assert len(template.messages) > 5
-
-#     assert "Start and end your responses with 10 hyphens like this: \'----------\'." in response
-
