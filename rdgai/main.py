@@ -8,6 +8,7 @@ from .tei import read_tei, find_elements, get_language
 from .relations import get_relation_categories, get_relation_categories_dict, get_classified_relations, get_apparatus_unclassified_relations, make_readings_list
 from .prompts import build_template
 from .parsers import read_output
+from .apparatus import read_doc
 
 console = Console()
 error_console = Console(stderr=True, style="bold red")
@@ -20,6 +21,7 @@ app = typer.Typer()
 @app.command()
 def classify(
     doc:Path,
+    output:Path,
     ignore:list[str]=typer.Option(None, help="Categories to ignore"),
 ):
     """
@@ -54,7 +56,9 @@ def classify(
                     if result.justification:
                         console.print(f"[green]Justification[/green]: {result.justification}")
                         relation.set_description(result.justification)
+
                     break
+        output
 
 
 @app.command()
@@ -71,3 +75,21 @@ def show(
         passive = relation.passive or "OMITTED"
         # console.print(f"[purple]{relation.location}\t[bold red]{relation.category}[/bold red]: [green]{active}[bold red] -> [/bold red][green]{passive}")
         console.print(f"[bold red]{relation.category}[/bold red]: [green]{active}[bold red] ➞ [/bold red][green]{passive}")
+
+
+@app.command()
+def serve(
+    doc:Path,
+):
+    from flask import Flask
+    from flask import render_template
+
+    doc = read_doc(doc)
+    
+    app = Flask(__name__)
+
+    @app.route("/")
+    def root():
+        return render_template('server.html', doc=doc)
+
+    app.run(debug=True, use_reloader=True)

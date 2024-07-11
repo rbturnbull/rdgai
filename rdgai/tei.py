@@ -67,3 +67,36 @@ def find_elements(doc:ElementTree|Element, xpath:str) -> Element|None:
     return doc.findall(xpath, namespaces=doc.nsmap)
 
 
+
+def find_parent(element:Element, tag:str) -> Element|None:
+    """
+    Finds the nearest ancestor of the given element with the specified tag.
+
+    Args:
+        element (Element): The starting XML element from which to search upward.
+        tag (str): The tag name of the ancestor element to find.
+
+    Returns:
+        Optional[Element]: The nearest ancestor element with the specified tag, or None if no such element is found.
+
+    Example:
+        >>> from xml.etree.ElementTree import Element
+        >>> root = Element('root')
+        >>> ab = Element('ab')
+        >>> section = Element('section')
+        >>> target = Element('target')
+        >>> root.append(ab)
+        >>> ab.append(section)
+        >>> section.append(target)
+        >>> result = find_parent(target, 'ab')
+        >>> assert result == ab
+
+        This will find the <ab> ancestor of the <target> element.
+    """
+    while element is not None:
+        element_tag = re.sub(r"{.*}", "", element.tag)
+        if element_tag == tag:
+            return element
+        element = element.getparent()
+    return None
+
