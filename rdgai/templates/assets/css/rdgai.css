@@ -174,3 +174,9 @@ H2 {
     max-width: 400px;
     max-height: 400px;
 }
+
+.relation {
+    text-align: center;
+    color: #940000;
+    font-size: 3rem; /* Large text */
+}

@@ -50,14 +50,14 @@
       </nav>
 
       <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-        <div class="tab-content" id="myTabContent">
+        <div class="tab-content" id="rdgai-tab-content">
             {% for app in doc.apps %}
                 <div class="tab-pane fade show {% if loop.first %}active{% endif %}" id="{{ app }}" role="tabpanel" aria-labelledby="{{ app }}-tab">
                     <h1>{{ app }}</h1>
                     <div class="row justify-content-center text-center">
                       {% for reading in app.readings %}
                       <div class="col-sm-3">
-                        <div class="card bg-primary text-white">
+                        <div class="card bg-secondary text-white">
                           <div class="card-body">
                             <p class="card-text small">{{ reading.n}}</p>
                             <h5 class="card-title large">{{ reading }}</h5>
@@ -68,11 +68,19 @@
                       {% endfor %}
                     </div>
         
-                    <ul>
                       {% for pair in app.pairs %}
-                      <li>{{ pair }}: {{ pair.types }}</li>
+                      <p class="relation">{{ pair }}</p>
+                      <div class="row justify-content-center text-center">              
+                      {% for relation_type in doc.relation_types %}
+                      <div class="col-2 mb-2">
+                        <button type="button" class="btn {% if relation_type.name in pair.types %}btn-primary{%else%}btn-secondary{% endif %} btn-block" 
+                          {% if relation_type.description %}data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ relation_type.description }}" data-bs-delay="2000" {% endif %}>
+                          {{ relation_type }}
+                        </button>
+                      </div>
                       {% endfor %}
-                    </ul>
+                    </div>
+                      {% endfor %}
                 </div>
             {% endfor %}        
         </div>        
@@ -82,6 +90,13 @@
 
   <script>
     {% include 'assets/js/bootstrap.min.js' %}
+  </script>
+  <script>
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+
   </script>
 
 </body>
