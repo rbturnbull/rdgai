@@ -52,6 +52,7 @@ class App():
     element: Element
     readings: list[Reading] = field(default_factory=list)
     pairs: list[Relation] = field(default_factory=list)
+    relation_types: list[RelationType] = field(default_factory=list)
 
     def __post_init__(self):
         for reading in find_elements(self.element, ".//rdg"):
@@ -77,7 +78,18 @@ class App():
                             ana = ana[1:]
                         if ana:
                             types.append(ana)
-        
+
+
+                for type in types:
+                    in_list = False
+                    for relation_type in self.relation_types:
+                        if relation_type.name == type:
+                            in_list = True
+                            break
+                    if not in_list:
+                        # TODO Add element
+                        self.relation_types.append(RelationType(name=type, element=None, description=""))
+
                 pair = Pair(active=active, passive=passive, types=types)
                 self.pairs.append(pair)
 
@@ -124,7 +136,7 @@ class Doc():
         self.relation_types = get_relation_types(self.tree)
 
         for app_element in find_elements(self.tree, ".//app"):
-            app = App(app_element)
+            app = App(app_element, relation_types=self.relation_types)
             self.apps.append(app)
 
 
