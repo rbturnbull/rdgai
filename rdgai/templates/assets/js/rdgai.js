@@ -16,10 +16,10 @@ function relationBtnClick() {
     })
     .then(response => {
         if (response.ok) {
-            alert("ok");
             this.classList.toggle('btn-primary');
             this.classList.toggle('btn-secondary');
         } else {
+            alert("Failed to update TEI. Check connection to rdgai server.");
             console.error('Failed to post data:', response.statusText);
         }
     })
