@@ -4,11 +4,12 @@ from langchain_openai import ChatOpenAI
 from langchain.schema.output_parser import StrOutputParser
 from rich.console import Console
 
-from .tei import read_tei, find_elements, get_language
+from .tei import read_tei, find_elements, get_language, write_tei
 from .relations import get_relation_categories, get_relation_categories_dict, get_classified_relations, get_apparatus_unclassified_relations, make_readings_list
 from .prompts import build_template
 from .parsers import read_output
-from .apparatus import read_doc
+from .apparatus import read_doc, RelationType, Pair
+from .mapper import Mapper
 
 console = Console()
 error_console = Console(stderr=True, style="bold red")
@@ -80,16 +81,39 @@ def show(
 @app.command()
 def serve(
     doc:Path,
+    output:Path,
 ):
-    from flask import Flask
-    from flask import render_template
+    from flask import Flask, request, render_template
 
     doc = read_doc(doc)
+    doc.write(output)
+    mapper = Mapper()
     
     app = Flask(__name__)
 
     @app.route("/")
     def root():
-        return render_template('server.html', doc=doc)
+        return render_template('server.html', doc=doc, mapper=mapper)
+
+    @app.route("/api/relation-type", methods=['POST'])
+    def api_relation_type():
+        data = request.get_json()
+        relation_type = mapper.obj(data['relation_type'])
+        pair = mapper.obj(data['pair'])
+        assert isinstance(relation_type, RelationType), f"Expected RelationType, got {type(relation_type)}"
+        assert isinstance(pair, Pair)
+
+        try:
+            if data['operation'] == 'remove':
+                pair.remove_type(relation_type)
+            elif data['operation'] == 'add':
+                pair.add_type(relation_type)
+            
+            doc.write(output)
+            return "Success", 200           
+        except Exception as e:  
+            return str(e), 400
+
+        return "Failed", 400
 
     app.run(debug=True, use_reloader=True)

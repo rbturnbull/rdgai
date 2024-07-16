@@ -100,3 +100,9 @@ def find_parent(element:Element, tag:str) -> Element|None:
         element = element.getparent()
     return None
 
+
+def write_tei(doc:ElementTree, path:Path|str) -> None:
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    doc.write(str(path), encoding="utf-8", xml_declaration=True, pretty_print=True)
+
+
