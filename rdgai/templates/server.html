@@ -35,7 +35,7 @@
         </div>
         <h2>{{ doc.path.name }}</h2>
   
-        <div class="position-sticky">
+        <div  style="height: 400px; overflow-y: auto;">
           <ul class="nav flex-column pt-2">
             {% for app in doc.apps %}
               <li class="nav-item">
@@ -45,6 +45,17 @@
                 </a>
               </li>
             {% endfor %}
+          </ul>
+          <hr>
+          <ul class="nav flex-column pt-2">
+            {% for relation_type in doc.relation_types %}
+            <li class="nav-item">
+              <a class="nav-link" aria-current="page" href="#"  id="{{ relation_type }}-tab" data-bs-toggle="tab" data-bs-target="#{{ relation_type }}" type="button" role="tab" aria-controls="{{ relation_type }}" aria-selected="true">
+                {% include 'assets/img/feather-image.svg' %}
+                {{ relation_type }}
+              </a>
+            </li>
+          {% endfor %}
           </ul>
         </div>
       </nav>
@@ -84,8 +95,24 @@
                     </div>
                       {% endfor %}
                 </div>
+            {% endfor %}     
+            {% for relation_type in doc.relation_types %}
+                <div class="tab-pane fade show " id="{{ relation_type }}" role="tabpanel" aria-labelledby="{{ relation_type }}-tab" >
+                    <h1>{{ relation_type }}</h1>
+                    <ul class="nav flex-column pt-2">
+                    {% for pair in relation_type.pairs %}
+                      <li class="nav-item">
+                      <a class="nav-link" aria-current="page" href="#"  id="{{ pair.app }}-tab" data-bs-toggle="tab" data-bs-target="#{{ pair.app }}" type="button" role="tab" aria-controls="{{ pair.app }}" aria-selected="true">
+                        {{ pair.app }}: {{ pair }}
+                      </a>
+                      </li>
+                    {% endfor %}
+                      </ul>
+                </div>
             {% endfor %}        
+
         </div>        
+        
       </main>
     </div>
   </div>

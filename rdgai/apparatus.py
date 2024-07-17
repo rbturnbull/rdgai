@@ -10,10 +10,10 @@ from .tei import read_tei, find_elements, extract_text, find_parent, find_elemen
 @dataclass
 class Reading():
     element: Element
+    app:"App"
     n: str  = field(default=None)
     text: str  = field(default=None)
     witnesses: list[str] = field(default_factory=list)
-
 
     def __post_init__(self):
         self.n = self.element.attrib.get("n", "")
@@ -36,6 +36,7 @@ class RelationType():
     name: str
     description: str
     inverse: 'RelationType' = None
+    pairs: set['Pair'] = field(default_factory=set)
 
     def __str__(self):
         return self.name
@@ -53,14 +54,19 @@ class Pair():
     def __str__(self):
         return f"{self.active} ➞ {self.passive}"
     
+    @property
+    def app(self) -> "App":
+        # assert self.active.app == self.passive.app
+        return self.active.app
+    
     def __hash__(self):
         return hash((self.active, self.passive))
     
-    def app(self) -> Element:
+    def app_element(self) -> Element:
         return find_parent(self.active.element, "app")
     
     def element_for_type(self, type:RelationType) -> Element|None:
-        list_relation = find_element(self.app(), ".//listRelation[@type='transcriptional']")
+        list_relation = find_element(self.app_element(), ".//listRelation[@type='transcriptional']")
         
         if list_relation is None:
             return None
@@ -72,13 +78,14 @@ class Pair():
     
     def add_type(self, type:RelationType) -> Element|None:
         self.types.add(type.name)
+        type.pairs.add(self)
 
         # Check if the relation already exists
         relation = self.element_for_type(type)
         if relation:
             return relation
 
-        list_relation = find_element(self.app(), ".//listRelation[@type='transcriptional']")
+        list_relation = find_element(self.app_element(), ".//listRelation[@type='transcriptional']")
         if list_relation is None:
             list_relation = ET.SubElement("listRelation", attrib={"type":"transcriptional"})
         
@@ -87,6 +94,7 @@ class Pair():
 
     def remove_type(self, type:RelationType):
         self.types.remove(type.name)
+        type.pairs.remove(self)
         relation = self.element_for_type(type)
         if relation is not None:
             relation.getparent().remove(relation)
@@ -101,7 +109,7 @@ class App():
 
     def __post_init__(self):
         for reading in find_elements(self.element, ".//rdg"):
-            self.readings.append(Reading(reading))
+            self.readings.append(Reading(reading, app=self))
 
         # Build list of relation elements
         relation_elements = []
@@ -124,12 +132,13 @@ class App():
                         if ana:
                             types.add(ana)
 
-
+                pair_relation_types = set()
                 for type in types:
                     in_list = False
                     for relation_type in self.relation_types:
                         if relation_type.name == type:
                             in_list = True
+                            pair_relation_types.add(relation_type)
                             break
                     if not in_list:
                         # See if interpGrp exists
@@ -142,10 +151,15 @@ class App():
                         interp = ET.Element("interp", attrib={"{http://www.w3.org/XML/1998/namespace}id":type})
                         interp_group.append(interp)
 
-                        self.relation_types.append(RelationType(name=type, element=interp, description=""))
+                        relation_type = RelationType(name=type, element=interp, description="")
+                        pair_relation_types.add(relation_type)
+                        self.relation_types.append(relation_type)
 
                 pair = Pair(active=active, passive=passive, types=types)
                 self.pairs.append(pair)
+
+                for relation_type in pair_relation_types:
+                    relation_type.pairs.add(pair)
 
     def __hash__(self):
         return hash(self.element)
@@ -160,6 +174,7 @@ class App():
             for index, app in enumerate(find_elements(ab, ".//app")):
                 if app == self.element:
                     name = f"{self.ab_name()}-{index+1}"
+                    self.element.attrib['{http://www.w3.org/XML/1998/namespace}id'] = name
                     break
         return str(name).replace(" ", "_").replace(":", "_")
 

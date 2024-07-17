@@ -109,6 +109,7 @@ def serve(
             elif data['operation'] == 'add':
                 pair.add_type(relation_type)
             
+            print('write', output)
             doc.write(output)
             return "Success", 200           
         except Exception as e:  
