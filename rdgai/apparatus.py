@@ -5,7 +5,8 @@ from lxml.etree import _ElementTree as ElementTree
 from lxml import etree as ET
 
 from .relations import Relation
-from .tei import read_tei, find_elements, extract_text, find_parent, find_element, write_tei
+from .tei import read_tei, find_elements, extract_text, find_parent, find_element, write_tei, make_nc_name
+
 
 @dataclass
 class Reading():
@@ -173,17 +174,55 @@ class App():
             ab = self.ab()
             for index, app in enumerate(find_elements(ab, ".//app")):
                 if app == self.element:
-                    name = f"{self.ab_name()}-{index+1}"
+                    name = make_nc_name(f"{self.ab_name()}-{index+1}")
                     self.element.attrib['{http://www.w3.org/XML/1998/namespace}id'] = name
                     break
         return str(name).replace(" ", "_").replace(":", "_")
 
-    def ab(self) -> Element:
+    def ab(self) -> Element|None:
         return find_parent(self.element, "ab")
 
     def ab_name(self) -> str:
         ab = self.ab()
         return ab.attrib.get("n", "")
+    
+    def text_before(self) -> str:
+        ab = self.ab()
+        if ab is None:
+            return ""
+        
+        text = ""
+        for child in ab:
+            if child == self.element:
+                break
+            text += " " + extract_text(child)
+
+        return text.strip()
+
+    def text(self) -> str:
+        return extract_text(self.element)
+
+    def text_with_signs(self) -> str:
+        text = self.text()
+        if not text:
+            return "⸆"
+        return f"⸂{text}⸃"
+
+    def text_after(self) -> str:
+        ab = self.ab()
+        if ab is None:
+            return ""
+        
+        text = ""
+        reached_element = False
+        for child in ab:
+            if reached_element:
+                text += " " + extract_text(child)
+            if child == self.element:
+                reached_element = True
+
+        return text.strip()
+
 
 
 def get_relation_types(doc:ElementTree|Element, categories_to_ignore:list[str]|None=None) -> list[RelationType]:

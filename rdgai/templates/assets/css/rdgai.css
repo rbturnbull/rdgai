@@ -180,3 +180,12 @@ H2 {
     color: #940000;
     font-size: 3rem; /* Large text */
 }
+
+.highlight {
+    color: red;
+}
+
+.verse {
+    text-align: center;
+    font-size: 3rem; /* Large text */
+}

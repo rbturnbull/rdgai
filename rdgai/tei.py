@@ -45,6 +45,38 @@ def extract_text(node:Element, include_tail:bool=True) -> str:
     return text
 
 
+def make_nc_name(string):
+    invalid_chars = "!\"#$%&'()*+/:;<=>?@[\]^,{|}~` "
+    result = string.translate(str.maketrans(invalid_chars, '_' * len(invalid_chars)))
+    # if result[0].isdigit or result[0] in [".", "-"]:
+    #     result = "id-" + result
+
+    return result
+
+
+def extract_text(node:Element, include_tail:bool=True) -> str:
+    tag = re.sub(r"{.*}", "", node.tag)
+
+    if tag in ["pc", "witDetail", "note"]:
+        return ""
+    if tag == "app":            
+        lemma = find_element(node, ".//lem")
+        if lemma is None:
+            lemma = find_element(node, ".//rdg")
+        return extract_text(lemma) or ""
+
+
+    text = node.text or ""
+    for child in node:
+        text += " " + extract_text(child)
+
+    if include_tail:
+        text += node.tail or ""
+
+    return text.strip()
+
+
+
 
 def read_tei(path:Path) -> ElementTree:
     parser = ET.XMLParser(remove_blank_text=True)
