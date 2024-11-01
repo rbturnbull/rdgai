@@ -30,3 +30,31 @@ function relationBtnClick() {
 document.querySelectorAll('.relation-btn').forEach(function(element) {
   element.addEventListener('click', relationBtnClick);
 });
+
+document.addEventListener('DOMContentLoaded', (event) => {
+    const nextKey = 39; // ArrowRight
+    const prevKey = 37; // ArrowLeft
+  
+    document.addEventListener('keydown', function(e) {
+      if (e.keyCode === nextKey) {
+        navigateTabs('next');
+      } else if (e.keyCode === prevKey) {
+        navigateTabs('prev');
+      }
+    });
+  
+    function navigateTabs(direction) {
+      const activeTab = document.querySelector('.nav-link.active');
+      const allTabs = [...document.querySelectorAll('.nav-link')];
+      let newIndex = allTabs.indexOf(activeTab);
+  
+      if (direction === 'next') {
+        newIndex = (newIndex + 1) % allTabs.length;
+      } else if (direction === 'prev') {
+        newIndex = (newIndex - 1 + allTabs.length) % allTabs.length;
+      }
+  
+      allTabs[newIndex].click();
+    }
+  });
+  

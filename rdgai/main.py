@@ -79,6 +79,22 @@ def show(
 
 
 @app.command()
+def html(
+    doc:Path,
+    output:Path,
+):
+    from flask import Flask, request, render_template
+    
+    doc = read_doc(doc)
+    mapper = Mapper()
+    app = Flask(__name__)
+
+    with app.app_context():
+        text = render_template('server.html', doc=doc, mapper=mapper)
+    output.write_text(text)
+
+
+@app.command()
 def serve(
     doc:Path,
     output:Path,

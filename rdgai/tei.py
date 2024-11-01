@@ -55,6 +55,9 @@ def make_nc_name(string):
 
 
 def extract_text(node:Element, include_tail:bool=True) -> str:
+    if node is None:
+        return ""
+    
     tag = re.sub(r"{.*}", "", node.tag)
 
     if tag in ["pc", "witDetail", "note"]:
