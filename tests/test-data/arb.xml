@@ -174,34 +174,31 @@
             <listRelation type="transcriptional">
               <relation active="3" passive="2" ana="Minor_Gender_Change"/>
               <relation active="2" passive="3" ana="Minor_Gender_Change"/>
+              <relation active="1" passive="2" ana="#Minor_Gender_Change"/>
+              <relation active="1" passive="3" ana="#Orthographic_Change"/>
+              <relation active="2" passive="1" ana="#Minor_Gender_Change"/>
+              <relation active="3" passive="1" ana="#Orthographic_Change"/>
+              <relation active="3" passive="2" ana="#Orthographic_Change"/>
             </listRelation>
           </note>
         </app>
         <span>تلك</span>
         <app xml:id="Jn5_36-4">
-          <rdg n="1" wit="CSA J30 J67 S120 S122 S128 S137 S138 S139 S71+">الاعمال</rdg>
+          <rdg n="1" wit="CSA J30 J67 S120 S122 S128 S137 S138 S139 S71+">الاعمال هي</rdg>
           <rdg n="2" wit="S118"/>
           <note>
             <listRelation type="transcriptional">
               <relation active="1" passive="2" ana="Significant_Word_Omission"/>
               <relation active="2" passive="1" ana="Significant_Word_Addition"/>
-            </listRelation>
-          </note>
-        </app>
-        <app xml:id="Jn5_36-5">
-          <rdg n="1" wit="CSA J30 J67 S120 S122 S128 S137 S138 S139 S71+">هي</rdg>
-          <rdg n="2" wit="S118"/>
-          <note>
-            <listRelation type="transcriptional">
-              <relation active="1" passive="2" ana="Minor_Word_Omission"/>
-              <relation active="2" passive="1" ana="Minor_Word_Addition"/>
+              <relation active="1" passive="2" ana="#Significant_Multiple_Word_Omission"/>
+              <relation active="2" passive="1" ana="#Significant_Multiple_Word_Addition"/>
             </listRelation>
           </note>
         </app>
         <span>تشهد</span>
         <span>لي</span>
         <span>ان</span>
-        <app xml:id="Jn5_36-6">
+        <app xml:id="Jn5_36-5">
           <rdg n="1" wit="CSA S71+">الاب</rdg>
           <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139">الاب الذي</rdg>
         </app>
@@ -230,6 +227,8 @@
               <relation active="2" passive="1" ana="Spelling_Correction"/>
               <relation active="1" passive="3" ana="Spelling_Error"/>
               <relation active="3" passive="1" ana="Spelling_Correction"/>
+              <relation active="3" passive="2" ana="#Orthographic_Change"/>
+              <relation active="2" passive="3" ana="#Orthographic_Change"/>
             </listRelation>
           </note>
         </app>
