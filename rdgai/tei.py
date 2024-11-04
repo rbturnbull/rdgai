@@ -88,6 +88,7 @@ def read_tei(path:Path) -> ElementTree:
 
 
 def find_element(doc:ElementTree|Element, xpath:str) -> Element|None:
+    assert doc is not None, f"Document is None in find_element({doc}, {xpath})"
     if isinstance(doc, ElementTree):
         doc = doc.getroot()
     element = doc.find(xpath, namespaces=doc.nsmap)

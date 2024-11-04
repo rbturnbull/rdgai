@@ -1,10 +1,11 @@
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langchain.prompts import ChatPromptTemplate
+from .apparatus import App
 from .relations import RelationCategory, Reading
 
 
 
-def build_template(relation_categories:list[RelationCategory], readings:list[Reading], language:str) -> ChatPromptTemplate:
+def build_template(relation_categories:list[RelationCategory], app:App, readings:list[Reading], language:str, examples:int=3) -> ChatPromptTemplate:
     system_message = f"You are an academic who is an expert in textual criticism in {language}."
 
     human_message = (
@@ -18,9 +19,15 @@ def build_template(relation_categories:list[RelationCategory], readings:list[Rea
     human_message += f"\nHere are the types of {len(relation_categories)} categories for the types of changes in the text:\n"     
     for category in relation_categories:
         human_message += f"{category.str_with_description()}\n"
+        for example in category.instances[:examples]:
+            human_message += f"\te.g. {example.reading_transition_str()}\n"
+
+    # Add the context to the message
+    human_message += f"\nI am variation unit is marked as {app.text_with_signs()} in this text:\n"
+    human_message += f"{app.text_in_context()}\n"
 
     # Add the readings to the message        
-    human_message += f"\nHere are the {len(readings)} readings at the variation unit that I am analyzing. Remember them so you can analyze them later:\n"
+    human_message += f"\nHere are the {len(readings)} readings at that variation unit. Remember them so you can analyze them later:\n"
     for reading in readings:
         human_message += f"{reading.id}: {reading.text}\n"
 
@@ -41,10 +48,9 @@ def build_template(relation_categories:list[RelationCategory], readings:list[Rea
 
     # Add the classified relation examples to the message
     human_message += f"\nGiven the readings above, you can output the following pairs of relations:\n"
-    for reading1 in readings:
-        for reading2 in readings:
-            if reading1 == reading2:
-                continue
+    for i, reading1 in enumerate(readings):
+        for j in range(i + 1, len(readings)):
+            reading2 = readings[j]
             human_message += f"{reading1.id} → {reading2.id}\n"
 
     human_message += "\nIf the change between one of those pairs of readings does not fit one of the categories, then do not output anything for that pair.\n"

@@ -198,6 +198,9 @@ class App():
             text += " " + extract_text(child)
 
         return text.strip()
+    
+    def text_in_context(self) -> str:
+        return f"{self.text_before()} {self.text_with_signs()} {self.text_after()}"
 
     def text(self) -> str:
         return extract_text(self.element)

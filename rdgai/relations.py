@@ -1,6 +1,7 @@
 import re
 from lxml.etree import _ElementTree as ElementTree
 from lxml.etree import _Element as Element
+from typing import Optional
 import lxml.etree as ET
 from rich.console import Console
 from dataclasses import dataclass, field
@@ -53,6 +54,7 @@ class RelationCategory():
     element:Element
     description:str=""
     instances:list['Relation']=field(default_factory=lambda: [])
+    inverse:Optional['RelationCategory']=None
     
     def __str__(self) -> str:
         return self.name
@@ -73,7 +75,7 @@ class RelationCategory():
 
     def __hash__(self):
         return hash((self.name, self.element, self.description))
-
+    
 
 @dataclass
 class Relation():
@@ -87,14 +89,17 @@ class Relation():
     categories:set[RelationCategory]=field(default_factory=lambda: set())
 
     def __str__(self) -> str:
-        return f"{self.location}: {self.active or 'OMISSION'} -> {self.passive or 'OMISSION'} [{', '.join(str(c) for c in self.categories)}]"
+        return f"{self.location}: {self.reading_transition_str()} [{', '.join(str(c) for c in self.categories)}]"
     
+    def reading_transition_str(self) -> str:
+        return f"{self.active or 'OMISSION'} → {self.passive or 'OMISSION'}"
+
     def __repr__(self) -> str:
         return str(self)
 
     def add_category(self, category) -> None:
         self.categories.add(category)
-        if not self.relation_element:
+        if self.relation_element is None:
             self.create_relation_element()
         
         assert self.relation_element is not None
@@ -102,14 +107,14 @@ class Relation():
         category.instances.append(self)
 
     def set_responsible(self, responsible:str) -> None:
-        if not self.relation_element:
+        if self.relation_element is None:
             self.create_relation_element()
         
         assert self.relation_element is not None
         self.relation_element.set("resp", responsible)
 
     def set_description(self, description:str) -> Element:
-        if not self.relation_element:
+        if self.relation_element is None:
             self.create_relation_element()
         
         description_element = find_element(self.relation_element, ".//desc")
@@ -122,7 +127,7 @@ class Relation():
 
     def get_list_relation(self) -> Element:
         list_relation = find_element(self.apparatus, ".//listRelation[@type='transcriptional']")
-        if not list_relation:
+        if list_relation is None:
             sibling = find_element(self.apparatus, ".//listRelation")
             if sibling:
                 list_relation = ET.Element("listRelation", type="transcriptional")
@@ -162,7 +167,20 @@ def get_relation_categories(doc:ElementTree|Element, categories_to_ignore:list[s
         if name in categories_to_ignore:
             continue
         description = extract_text(interp).strip()
-        relation_categories.append(RelationCategory(name=name, element=interp, description=description))
+        category = RelationCategory(name=name, element=interp, description=description)
+        relation_categories.append(category)
+
+    # get corresponding relations
+    relation_categories_dict = {c.name: c for c in relation_categories}
+    for category in relation_categories:
+        inverse_name = category.element.attrib.get("corresp", "")
+        if inverse_name in relation_categories_dict:
+            inverse = relation_categories_dict[inverse_name]
+            category.inverse = inverse
+            if inverse.inverse is None:
+                inverse.inverse = category
+            else:
+                assert inverse.inverse == category, f"Inverse category {inverse} already has an inverse {inverse.inverse}."
 
     return relation_categories
 
@@ -223,7 +241,6 @@ def get_classified_relations(doc:ElementTree|Element, relation_categories:list[R
                         passive_element = readings_dict[passive_reading_name]
                         passive_text = extract_text(passive_element).strip()
 
-                        
                         relation = Relation(
                             active=active_text, 
                             passive=passive_text, 
@@ -245,6 +262,9 @@ def get_apparatus_unclassified_relations(apparatus:Element) -> list[Relation]:
     location = apparatus.attrib.get("{http://www.w3.org/XML/1998/namespace}id", "")
 
     list_relation = find_element(apparatus, ".//listRelation[@type='transcriptional']")
+    if list_relation is None:
+        note = ET.SubElement(apparatus, "note")
+        list_relation = ET.SubElement(note, "listRelation", type="transcriptional")
 
     # Get readings for apparatus
     readings_dict = {}
@@ -262,7 +282,8 @@ def get_apparatus_unclassified_relations(apparatus:Element) -> list[Relation]:
 
             # Check if relation already exists for this pair
             xpath = f".//relation[@active='{active_id}'][@passive='{passive_id}']"
-            if find_element(list_relation, xpath):
+            relation_element = find_element(list_relation, xpath)
+            if relation_element is not None:
                 continue
 
             active_element = readings_dict[active_id]

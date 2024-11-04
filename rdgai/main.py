@@ -8,7 +8,7 @@ from .tei import read_tei, find_elements, get_language, write_tei
 from .relations import get_relation_categories, get_relation_categories_dict, get_classified_relations, get_apparatus_unclassified_relations, make_readings_list
 from .prompts import build_template
 from .parsers import read_output
-from .apparatus import read_doc, RelationType, Pair
+from .apparatus import read_doc, RelationType, Pair, App
 from .mapper import Mapper
 
 console = Console()
@@ -24,6 +24,7 @@ def classify(
     doc:Path,
     output:Path,
     ignore:list[str]=typer.Option(None, help="Categories to ignore"),
+    verbose:bool=False,
 ):
     """
     Classifies relations in TEI documents.
@@ -31,35 +32,51 @@ def classify(
     doc_path = doc
     doc = read_tei(doc_path)
     relation_category_dict = get_relation_categories_dict(doc, categories_to_ignore=ignore)
-    classified_relations = get_classified_relations(doc, relation_category_dict.keys())
+    get_classified_relations(doc, relation_category_dict.values())
     language = get_language(doc)
     llm = ChatOpenAI()
 
     for apparatus in find_elements(doc, ".//app"):
+        app = App(apparatus)
+        print(f"Analyzing apparatus at {app}")
         unclassified_relations = get_apparatus_unclassified_relations(apparatus)
+        if not unclassified_relations:
+            continue
+
         readings = make_readings_list(apparatus)
 
-        template = build_template(relation_category_dict.keys(), readings, language)
+        template = build_template(relation_category_dict.values(), app, readings, language)
+        if verbose:
+            template.pretty_print()
+            breakpoint()
+
         chain = template | llm.bind(stop="----") | StrOutputParser() | read_output
 
+        print("Classifying reading relations ✨")
         results = chain.invoke({})
 
         for result in results:
             for relation in unclassified_relations:
-                category = relation_category_dict.get(relation.category, None)
+                category = relation_category_dict.get(result.category, None)
                 if category is None:
                     continue
+                
                 if relation.active_name == result.reading_1_id and relation.passive_name == result.reading_2_id:
-                    console.print(f"[bold red]{relation.location}[/bold red]: [green]{relation.active} ➞ {relation.passive}[/green] [bold red]{relation.category}[/bold red]")
+                    console.print(f"[bold red]{relation.location}[/bold red]: [green]{relation.active} ➞ {relation.passive}[/green] [bold red]{category}[/bold red]")
                     relation.add_category(category)
                     relation.set_responsible("#rdgai")
-                    relation.set_justification(result.justification)
                     if result.justification:
                         console.print(f"[green]Justification[/green]: {result.justification}")
                         relation.set_description(result.justification)
+                elif relation.active_name == result.reading_2_id and relation.passive_name == result.reading_1_id:
+                    category = category.inverse if category.inverse else category
+                    console.print(f"[bold red]{relation.location}[/bold red]: [green]{relation.active} ➞ {relation.passive}[/green] [bold red]{category}[/bold red]")
+                    relation.add_category(category)
+                    relation.set_responsible("#rdgai")
+                    relation.set_description(f"c.f. {relation.active} ➞ {relation.passive}")                    
 
-                    break
-        output
+                write_tei(doc, output)
+            return # hack for debugging
 
 
 @app.command()
