@@ -5,7 +5,7 @@ from langchain.schema.output_parser import StrOutputParser
 from rich.console import Console
 from rich.progress import track
 
-from .tei import read_tei, find_elements, get_language, write_tei
+from .tei import read_tei, find_elements, get_language, write_tei, find_parent, find_element
 from .relations import get_relation_categories, get_relation_categories_dict, get_classified_relations, get_apparatus_unclassified_relations, make_readings_list
 from .prompts import build_template
 from .parsers import read_output
@@ -119,7 +119,7 @@ def serve(
     from flask import Flask, request, render_template
 
     doc = read_doc(doc)
-    doc.write(output)
+    write_tei(doc, output)
     mapper = Mapper()
     
     app = Flask(__name__)
@@ -143,7 +143,7 @@ def serve(
                 pair.add_type(relation_type)
             
             print('write', output)
-            doc.write(output)
+            write_tei(doc, output)
             return "Success", 200           
         except Exception as e:  
             return str(e), 400
@@ -151,3 +151,98 @@ def serve(
         return "Failed", 400
 
     app.run(debug=True, use_reloader=True)
+
+
+@app.command()
+def evaluate(
+    doc:Path,
+    ground_truth:Path,
+    confusion_matrix:Path=None,
+    confusion_matrix_plot:Path=None,
+):
+    doc = read_doc(doc)
+    ground_truth = read_doc(ground_truth)
+    
+    # get dictionary of ground truth apps
+    ground_truth_apps = {str(app):app for app in ground_truth.apps}
+
+    # find all classified relations in the doc that have been classified with rdgai
+    rdgai_relations = find_elements(doc.tree, ".//relation[@resp='#rdgai']")
+
+    # find all classified relations in the ground truth that correspond to the classified relations in the doc
+    predicted = []
+    gold = []
+    for rdgai_relation in rdgai_relations:
+        # find app
+        app = find_parent(rdgai_relation, "app")
+        app_id = app.attrib.get("{http://www.w3.org/XML/1998/namespace}id")
+        active = rdgai_relation.attrib['active']
+        passive = rdgai_relation.attrib['passive']
+
+        print(app_id, active, passive)
+
+        ground_truth_app = ground_truth_apps.get(app_id, None)
+        if ground_truth_app is None:
+            continue
+        
+        ground_truth_relations = [element for element in find_elements(ground_truth_app.element, f".//relation[@active='{active}']") if element.attrib['passive'] == passive]
+        if not ground_truth_relations:
+            continue
+        ground_truth_relation = ground_truth_relations[0]
+        
+        # exclude any classified with rdgai
+        if ground_truth_relation.attrib.get('resp', '') == '#rdgai':
+            continue
+
+        ground_truth_ana = ground_truth_relation.attrib['ana'].replace("#", "")
+        rdgai_ana = rdgai_relation.attrib['ana'].replace("#", "")
+
+        predicted.append(rdgai_ana)
+        gold.append(ground_truth_ana)
+
+    print(len(predicted), len(gold))
+    assert len(predicted) == len(gold), f"Predicted and gold lengths do not match: {len(predicted)} != {len(gold)}"
+
+    print("importing metrics")
+    # calculate precision, recall, f1
+    from sklearn.metrics import precision_score, recall_score, f1_score, classification_report
+    print("imported metrics")
+    print(classification_report(gold, predicted))
+
+    precision = precision_score(gold, predicted, average='macro')
+    print(precision)
+
+    # create confusion matrix
+    if confusion_matrix or confusion_matrix_plot:
+        from sklearn.metrics import confusion_matrix as sk_confusion_matrix
+        import numpy as np
+        import pandas as pd
+        labels = np.unique(gold + predicted)
+        cm = sk_confusion_matrix(gold, predicted, labels=labels)
+        confusion_df = pd.DataFrame(cm, index=labels, columns=labels)
+        print(confusion_df)
+        if confusion_matrix:
+            confusion_matrix = Path(confusion_matrix)
+            confusion_matrix.parent.mkdir(parents=True, exist_ok=True)
+            confusion_df.to_csv(confusion_matrix)
+
+        if confusion_matrix_plot:
+            import plotly.graph_objects as go
+
+            fig = go.Figure(data=go.Heatmap(
+                z=cm,
+                x=labels,
+                y=labels,
+                colorscale='Viridis'))
+            fig.update_layout(
+                title='Confusion Matrix',
+                xaxis_title='Predicted',
+                yaxis_title='Actual',
+                xaxis=dict(tickmode='array', tickvals=list(range(len(labels))), ticktext=labels),
+                yaxis=dict(tickmode='array', tickvals=list(range(len(labels))), ticktext=labels),
+            )
+            confusion_matrix_plot = Path(confusion_matrix_plot)
+            confusion_matrix_plot.parent.mkdir(parents=True, exist_ok=True)
+            fig.write_html(confusion_matrix_plot)
+
+
