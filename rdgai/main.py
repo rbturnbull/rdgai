@@ -11,6 +11,7 @@ from .prompts import build_template
 from .parsers import read_output
 from .apparatus import read_doc, RelationType, Pair, App
 from .mapper import Mapper
+from .llms import get_llm
 
 console = Console()
 error_console = Console(stderr=True, style="bold red")
@@ -18,6 +19,7 @@ error_console = Console(stderr=True, style="bold red")
 
 app = typer.Typer()
     
+DEFAULT_MODEL_ID = "gpt-4o"
 
 
 @app.command()
@@ -26,6 +28,9 @@ def classify(
     output:Path,
     ignore:list[str]=typer.Option(None, help="Categories to ignore"),
     verbose:bool=False,
+    hf_auth:str=typer.Option("", envvar=["HF_AUTH"]),
+    openai_api_key:str=typer.Option("", envvar=["OPENAI_API_KEY"]),
+    model_id:str=DEFAULT_MODEL_ID,
 ):
     """
     Classifies relations in TEI documents.
@@ -35,7 +40,7 @@ def classify(
     relation_category_dict = get_relation_categories_dict(doc, categories_to_ignore=ignore)
     get_classified_relations(doc, relation_category_dict.values())
     language = get_language(doc)
-    llm = ChatOpenAI()
+    llm = get_llm(hf_auth=hf_auth, openai_api_key=openai_api_key, model_id=model_id)
 
     for apparatus in track(find_elements(doc, ".//app")):
         app = App(apparatus)
@@ -179,8 +184,6 @@ def evaluate(
         active = rdgai_relation.attrib['active']
         passive = rdgai_relation.attrib['passive']
 
-        print(app_id, active, passive)
-
         ground_truth_app = ground_truth_apps.get(app_id, None)
         if ground_truth_app is None:
             continue
@@ -199,18 +202,18 @@ def evaluate(
 
         predicted.append(rdgai_ana)
         gold.append(ground_truth_ana)
+        print(ground_truth_ana, rdgai_ana)
 
     print(len(predicted), len(gold))
     assert len(predicted) == len(gold), f"Predicted and gold lengths do not match: {len(predicted)} != {len(gold)}"
 
-    print("importing metrics")
-    # calculate precision, recall, f1
-    from sklearn.metrics import precision_score, recall_score, f1_score, classification_report
-    print("imported metrics")
+    from sklearn.metrics import precision_score, recall_score, f1_score, classification_report, accuracy_score
     print(classification_report(gold, predicted))
 
-    precision = precision_score(gold, predicted, average='macro')
-    print(precision)
+    print("precision", precision_score(gold, predicted, average='macro')*100.0)
+    print("recall", recall_score(gold, predicted, average='macro')*100.0)
+    print("f1", f1_score(gold, predicted, average='macro')*100.0)
+    print("accuracy", accuracy_score(gold, predicted)*100.0)
 
     # create confusion matrix
     if confusion_matrix or confusion_matrix_plot:
@@ -220,7 +223,6 @@ def evaluate(
         labels = np.unique(gold + predicted)
         cm = sk_confusion_matrix(gold, predicted, labels=labels)
         confusion_df = pd.DataFrame(cm, index=labels, columns=labels)
-        print(confusion_df)
         if confusion_matrix:
             confusion_matrix = Path(confusion_matrix)
             confusion_matrix.parent.mkdir(parents=True, exist_ok=True)

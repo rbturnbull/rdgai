@@ -27,6 +27,7 @@ lxml = "^5.2.2"
 flask = "^3.0.3"
 scikit-learn = "^1.5.2"
 plotly = "^5.24.1"
+transformers = "^4.46.1"
 
 [tool.poetry.dev-dependencies]
 pytest = ">=6.2.5"
