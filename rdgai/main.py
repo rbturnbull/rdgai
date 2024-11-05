@@ -3,6 +3,7 @@ import typer
 from langchain_openai import ChatOpenAI
 from langchain.schema.output_parser import StrOutputParser
 from rich.console import Console
+from rich.progress import track
 
 from .tei import read_tei, find_elements, get_language, write_tei
 from .relations import get_relation_categories, get_relation_categories_dict, get_classified_relations, get_apparatus_unclassified_relations, make_readings_list
@@ -36,7 +37,7 @@ def classify(
     language = get_language(doc)
     llm = ChatOpenAI()
 
-    for apparatus in find_elements(doc, ".//app"):
+    for apparatus in track(find_elements(doc, ".//app")):
         app = App(apparatus)
         print(f"Analyzing apparatus at {app}")
         unclassified_relations = get_apparatus_unclassified_relations(apparatus)
@@ -48,7 +49,6 @@ def classify(
         template = build_template(relation_category_dict.values(), app, readings, language)
         if verbose:
             template.pretty_print()
-            breakpoint()
 
         chain = template | llm.bind(stop="----") | StrOutputParser() | read_output
 
@@ -76,7 +76,7 @@ def classify(
                     relation.set_description(f"c.f. {relation.active} ➞ {relation.passive}")                    
 
                 write_tei(doc, output)
-            return # hack for debugging
+            
 
 
 @app.command()

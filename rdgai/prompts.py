@@ -4,6 +4,20 @@ from .apparatus import App
 from .relations import RelationCategory, Reading
 
 
+def select_spaced_elements(lst:list, k:int) -> list:
+    n = len(lst)
+    if k >= n:
+        return lst
+    if k == 1:
+        return [lst[0]]
+    if k == 2:
+        return [lst[0], lst[-1]]
+    
+    # Always include the first and last element
+    indices = [0] + [int((n - 1) * i / (k - 1)) for i in range(1, k - 1)] + [n - 1]
+    
+    return [lst[i] for i in indices]
+
 
 def build_template(relation_categories:list[RelationCategory], app:App, readings:list[Reading], language:str, examples:int=3) -> ChatPromptTemplate:
     system_message = f"You are an academic who is an expert in textual criticism in {language}."
@@ -12,15 +26,15 @@ def build_template(relation_categories:list[RelationCategory], app:App, readings
         f"I am analyzing textual variants in a {language} document.\n"
         "I want to classify the types of changes made to readings as the text was copied.\n"
         "If reading 1 were to change to reading 2, what type of change would that be?\n"
-        "I also need to classify the change from reading 2 to reading 1.\n"
     )
     
     # Add the categories to the message
-    human_message += f"\nHere are the types of {len(relation_categories)} categories for the types of changes in the text:\n"     
+    human_message += f"\nHere are {len(relation_categories)} possible categories for the types of changes in the text:\n"     
     for category in relation_categories:
         human_message += f"{category.str_with_description()}\n"
-        for example in category.instances[:examples]:
-            human_message += f"\te.g. {example.reading_transition_str()}\n"
+        instance_strings = sorted(set(instance.reading_transition_str() for instance in category.instances), key=len)
+        for instance_string in select_spaced_elements(instance_strings, examples):
+            human_message += f"\te.g. {instance_string}\n"
 
     # Add the context to the message
     human_message += f"\nI am variation unit is marked as {app.text_with_signs()} in this text:\n"
