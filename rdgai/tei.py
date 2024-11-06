@@ -91,7 +91,8 @@ def find_element(doc:ElementTree|Element, xpath:str) -> Element|None:
     assert doc is not None, f"Document is None in find_element({doc}, {xpath})"
     if isinstance(doc, ElementTree):
         doc = doc.getroot()
-    element = doc.find(xpath, namespaces=doc.nsmap)
+    namespaces = doc.nsmap | {"xml": "http://www.w3.org/XML/1998/namespace"}
+    element = doc.find(xpath, namespaces=namespaces)
     if element is None:
         element = doc.find(xpath)
     return element
@@ -100,7 +101,8 @@ def find_element(doc:ElementTree|Element, xpath:str) -> Element|None:
 def find_elements(doc:ElementTree|Element, xpath:str) -> Element|None:
     if isinstance(doc, ElementTree):
         doc = doc.getroot()
-    return doc.findall(xpath, namespaces=doc.nsmap)
+    namespaces = doc.nsmap | {"xml": "http://www.w3.org/XML/1998/namespace"}
+    return doc.findall(xpath, namespaces=namespaces)
 
 
 

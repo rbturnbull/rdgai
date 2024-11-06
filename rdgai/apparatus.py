@@ -149,8 +149,10 @@ class App():
                             interp_group = ET.Element("interpGrp", attrib={"type":"transcriptional"})
                             text.insert(0, interp_group)
                         
-                        interp = ET.Element("interp", attrib={"{http://www.w3.org/XML/1998/namespace}id":type})
-                        interp_group.append(interp)
+                        interp = find_element(interp_group, f".//interp[@xml:id='{type}']")
+                        if interp is None:
+                            interp = ET.Element("interp", attrib={"{http://www.w3.org/XML/1998/namespace}id":type})
+                            interp_group.append(interp)
 
                         relation_type = RelationType(name=type, element=interp, description="")
                         pair_relation_types.add(relation_type)
