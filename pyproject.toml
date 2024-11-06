@@ -20,14 +20,24 @@ classifiers = [
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
 typer = "^0.12.3"
-langchain = "^0.2.1"
-langchain-openai = "^0.1.8"
+langchain = ">=0.2.1"
+langchain-openai = ">=0.1.8"
 rich = "^13.7.1"
 lxml = "^5.2.2"
 flask = "^3.0.3"
 scikit-learn = "^1.5.2"
 plotly = "^5.24.1"
 transformers = "^4.46.1"
+langchain-community = "^0.3.5"
+
+[tool.poetry.group.llama]
+optional = true
+
+[tool.poetry.group.llama.dependencies]
+accelerate = ">=0.31.0"
+torch = ">=2.3.1"
+transformers = ">=4.41.2"
+bitsandbytes = ">=0.43.1"
 
 [tool.poetry.dev-dependencies]
 pytest = ">=6.2.5"

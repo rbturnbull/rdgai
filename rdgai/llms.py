@@ -33,12 +33,20 @@ def hugging_face_pipeline(hf_auth:str="", model_id='meta-llama/Meta-Llama-3-8B-I
 
     # set quantization configuration to load large model with less GPU memory
     # this requires the `bitsandbytes` library
-    bnb_config = transformers.BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_quant_type='nf4',
-        bnb_4bit_use_double_quant=True,
-        bnb_4bit_compute_dtype=torch.bfloat16
-    )
+    if "90B" in model_id:
+        bnb_config = transformers.BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type='fp4',           # Use 'fp4' for more aggressive quantization
+            bnb_4bit_use_double_quant=True,      # Further reduces memory usage
+            bnb_4bit_compute_dtype=torch.float16 # Lower precision to save memory
+        )
+    else:
+        bnb_config = transformers.BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type='nf4',
+            bnb_4bit_use_double_quant=True,
+            bnb_4bit_compute_dtype=torch.bfloat16,
+        )
 
     # begin initializing HF items, need auth token for these
     model_config = transformers.AutoConfig.from_pretrained(
@@ -200,7 +208,7 @@ def get_llm(
     openai_api_key:str="",
     temperature:float=0.0,
 ):
-    if model_id.startswith('meta-llama/Meta-Llama-3'):
+    if model_id.startswith('meta-llama/Meta-Llama') or model_id.startswith('meta-llama/Llama'):
         llm = hugging_face_llm(hf_auth, model_id=model_id)
         return ChatLlama3(llm=llm)
 
