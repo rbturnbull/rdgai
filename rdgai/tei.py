@@ -94,7 +94,10 @@ def find_element(doc:ElementTree|Element, xpath:str) -> Element|None:
     namespaces = doc.nsmap | {"xml": "http://www.w3.org/XML/1998/namespace"}
     element = doc.find(xpath, namespaces=namespaces)
     if element is None:
-        element = doc.find(xpath)
+        try:
+            element = doc.find(xpath)
+        except SyntaxError:
+            return None
     return element
 
 
