@@ -40,7 +40,7 @@
             {% for app in doc.apps %}
               <li class="nav-item">
                 <a class="nav-link {% if loop.first %}active{% endif %}" aria-current="page" href="#"  id="{{ app }}-tab" data-bs-toggle="tab" data-bs-target="#{{ app }}" type="button" role="tab" aria-controls="{{ app }}" aria-selected="true">
-                  {% include 'assets/img/feather-image.svg' %}
+                  {% include 'assets/img/feather-code.svg' %}
                   {{ app }}
                 </a>
               </li>
@@ -51,7 +51,7 @@
             {% for relation_type in doc.relation_types %}
             <li class="nav-item">
               <a class="nav-link" aria-current="page" href="#"  id="{{ relation_type }}-tab" data-bs-toggle="tab" data-bs-target="#{{ relation_type }}" type="button" role="tab" aria-controls="{{ relation_type }}" aria-selected="true">
-                {% include 'assets/img/feather-image.svg' %}
+                {% include 'assets/img/feather-list.svg' %}
                 {{ relation_type }}
               </a>
             </li>

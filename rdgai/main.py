@@ -4,6 +4,7 @@ from langchain_openai import ChatOpenAI
 from langchain.schema.output_parser import StrOutputParser
 from rich.console import Console
 from rich.progress import track
+from dataclasses import dataclass
 
 from .tei import read_tei, find_elements, get_language, write_tei, find_parent, find_element
 from .relations import get_relation_categories, get_relation_categories_dict, get_classified_relations, get_apparatus_unclassified_relations, make_readings_list
@@ -167,6 +168,7 @@ def evaluate(
     ground_truth:Path,
     confusion_matrix:Path=None,
     confusion_matrix_plot:Path=None,
+    report:Path=None,
 ):
     doc = read_doc(doc)
     ground_truth = read_doc(ground_truth)
@@ -180,10 +182,33 @@ def evaluate(
     # find all classified relations in the ground truth that correspond to the classified relations in the doc
     predicted = []
     gold = []
+    correct_items = []
+    incorrect_items = []
+
+    @dataclass
+    class EvalItem:
+        app_id:str
+        app:App
+        active:str
+        passive:str
+        text_in_context:str
+        reading_transition_str:str
+        ground_truth:str
+        predicted:str
+        description:str = ""
+
+    relation_category_dict = get_relation_categories_dict(doc.tree)
+    predicted_classified_relations = get_classified_relations(doc.tree, relation_category_dict.values())
+    ground_truth_classified_relations = get_classified_relations(ground_truth.tree, relation_category_dict.values())
+
+    predicted_classified_relations_dict = {relation.relation_element:relation for relation in predicted_classified_relations}        
+    ground_truth_classified_relations_dict = {relation.relation_element:relation for relation in ground_truth_classified_relations}
+
     for rdgai_relation in rdgai_relations:
         # find app
         app = find_parent(rdgai_relation, "app")
         app_id = app.attrib.get("{http://www.w3.org/XML/1998/namespace}id")
+        app_object = App(app)
         active = rdgai_relation.attrib['active']
         passive = rdgai_relation.attrib['passive']
 
@@ -203,9 +228,29 @@ def evaluate(
         ground_truth_ana = ground_truth_relation.attrib['ana'].replace("#", "")
         rdgai_ana = rdgai_relation.attrib['ana'].replace("#", "")
 
+        desc = find_element(rdgai_relation, ".//desc")
+        description = desc.text if desc is not None else ""
+
+        ground_truth_relation_object = ground_truth_classified_relations_dict[ground_truth_relation]
+        eval_item = EvalItem(
+            app_id=app_id,
+            app=app_object,
+            text_in_context=app_object.text_in_context(),
+            active=ground_truth_relation_object.active,
+            passive=ground_truth_relation_object.passive,
+            reading_transition_str=ground_truth_relation_object.reading_transition_str(),
+            ground_truth=ground_truth_ana,
+            predicted=rdgai_ana,
+            description=description,
+        )
+        if ground_truth_ana == rdgai_ana:
+            correct_items.append(eval_item)
+        else:
+            incorrect_items.append(eval_item)
+
         predicted.append(rdgai_ana)
         gold.append(ground_truth_ana)
-        print(ground_truth_ana, rdgai_ana)
+        print(eval_item)
 
     print(len(predicted), len(gold))
     assert len(predicted) == len(gold), f"Predicted and gold lengths do not match: {len(predicted)} != {len(gold)}"
@@ -219,7 +264,7 @@ def evaluate(
     print("accuracy", accuracy_score(gold, predicted)*100.0)
 
     # create confusion matrix
-    if confusion_matrix or confusion_matrix_plot:
+    if confusion_matrix or confusion_matrix_plot or report:
         from sklearn.metrics import confusion_matrix as sk_confusion_matrix
         import numpy as np
         import pandas as pd
@@ -231,10 +276,12 @@ def evaluate(
             confusion_matrix.parent.mkdir(parents=True, exist_ok=True)
             confusion_df.to_csv(confusion_matrix)
 
-        if confusion_matrix_plot:
+        if confusion_matrix_plot or report:
             import plotly.graph_objects as go
 
             cm_normalized = cm / cm.sum(axis=1, keepdims=True)
+
+            text_annotations = [[str(cm[i][j]) for j in range(len(labels))] for i in range(len(labels))]
 
             # Plot the normalized confusion matrix
             fig = go.Figure(data=go.Heatmap(
@@ -242,6 +289,7 @@ def evaluate(
                 x=labels,
                 y=labels,
                 colorscale='Viridis',
+                text=text_annotations,      # Add only the raw counts to each cell
                 colorbar=dict(title="Proportion of True Values")  # Updated legend title
             ))
 
@@ -254,9 +302,20 @@ def evaluate(
             )
 
             # Save the plot as HTML
-            confusion_matrix_plot = Path(confusion_matrix_plot)
-            confusion_matrix_plot.parent.mkdir(parents=True, exist_ok=True)
-            fig.write_html(confusion_matrix_plot)
+            if confusion_matrix_plot:
+                confusion_matrix_plot = Path(confusion_matrix_plot)
+                confusion_matrix_plot.parent.mkdir(parents=True, exist_ok=True)
+                fig.write_html(confusion_matrix_plot)
+
+            if report:
+                from flask import Flask, render_template
+                report = Path(report)
+                report.parent.mkdir(parents=True, exist_ok=True)
+                app = Flask(__name__)
+
+                with app.app_context():
+                    text = render_template('report.html', correct_items=correct_items, incorrect_items=incorrect_items, confusion_matrix_fig=fig)
+                report.write_text(text)
 
 
 @app.command()

@@ -252,6 +252,7 @@ def get_classified_relations(doc:ElementTree|Element, relation_categories:list[R
                             categories=categories, 
                             location=location, 
                             apparatus=apparatus, 
+                            relation_element=relation_element,
                             active_element=active_element, 
                             passive_element=passive_element,
                         )
