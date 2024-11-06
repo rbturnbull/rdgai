@@ -101,7 +101,7 @@
                 <div class="tab-pane fade show " id="{{ relation_type }}" role="tabpanel" aria-labelledby="{{ relation_type }}-tab" >
                     <h1>{{ relation_type }}</h1>
                     <ul class="nav flex-column pt-2" style='font-size: 3rem;'>
-                    {% for pair in relation_type.pairs %}
+                    {% for pair in relation_type.pairs_sorted() %}
                       <li class="nav-item">
                       <a class="nav-link" aria-current="page" href="#"  id="{{ pair.app }}-tab" data-bs-toggle="tab" data-bs-target="#{{ pair.app }}" type="button" role="tab" aria-controls="{{ pair.app }}" aria-selected="true">
                         {{ pair.app }}: <span>{{ pair.active }}</span> &lrm;➜ <span>{{ pair.passive }}</span>

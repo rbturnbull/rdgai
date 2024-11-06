@@ -125,7 +125,7 @@ def serve(
     from flask import Flask, request, render_template
 
     doc = read_doc(doc)
-    write_tei(doc, output)
+    doc.write(output)
     mapper = Mapper()
     
     app = Flask(__name__)
@@ -144,12 +144,14 @@ def serve(
 
         try:
             if data['operation'] == 'remove':
+                print('remove', relation_type)
                 pair.remove_type(relation_type)
             elif data['operation'] == 'add':
+                print('add', relation_type)
                 pair.add_type(relation_type)
             
             print('write', output)
-            write_tei(doc, output)
+            doc.write(output)
             return "Success", 200           
         except Exception as e:  
             return str(e), 400
@@ -257,3 +259,33 @@ def evaluate(
             fig.write_html(confusion_matrix_plot)
 
 
+@app.command()
+def clean(
+    doc:Path,
+    output:Path,
+):
+    """ Cleans a TEI XML file for common errors. """
+    doc = read_doc(doc)
+
+    # find all listRelation elements
+    list_relations = find_elements(doc.tree, ".//listRelation")
+    for list_relation in list_relations:
+        relations_so_far = set()
+        for relation in find_elements(list_relation, ".//relation"):
+            # make sure that relation elements have a # at the start of the ana attribute
+            if not relation.attrib['ana'].startswith("#"):
+                relation.attrib['ana'] = f"#{relation.attrib['ana']}"
+            
+            relations_so_far.add( (relation.attrib['active'], relation.attrib['passive']) )
+        
+        # consolidate duplicate relations
+        for active, passive in relations_so_far:
+            relations = find_elements(list_relation, f".//relation[@active='{active}'][@passive='{passive}']")
+            if len(relations) > 1:
+                analytic_set = set(relation.attrib['ana'] for relation in relations)
+                for relation in relations[1:]:
+                    list_relation.remove(relation)
+                relations[0].attrib['ana'] = " ".join(analytic_set)
+    
+    print("writing to", output)
+    doc.write(output)
