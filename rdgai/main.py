@@ -31,6 +31,7 @@ def classify(
     hf_auth:str=typer.Option("", envvar=["HF_AUTH"]),
     openai_api_key:str=typer.Option("", envvar=["OPENAI_API_KEY"]),
     model_id:str=DEFAULT_MODEL_ID,
+    examples:int=10,
 ):
     """
     Classifies relations in TEI documents.
@@ -51,7 +52,7 @@ def classify(
 
         readings = make_readings_list(apparatus)
 
-        template = build_template(relation_category_dict.values(), app, readings, language)
+        template = build_template(relation_category_dict.values(), app, readings, language, examples=examples)
         if verbose:
             template.pretty_print()
 

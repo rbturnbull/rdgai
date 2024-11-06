@@ -88,6 +88,11 @@ class Relation():
     relation_element:Element|None=None
     categories:set[RelationCategory]=field(default_factory=lambda: set())
 
+    def rdgai_resposible(self) -> bool:
+        if self.relation_element is None:
+            return False
+        return self.relation_element.attrib.get("resp", "") == "#rdgai"
+
     def __str__(self) -> str:
         return f"{self.location}: {self.reading_transition_str()} [{', '.join(str(c) for c in self.categories)}]"
     

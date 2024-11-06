@@ -19,7 +19,7 @@ def select_spaced_elements(lst:list, k:int) -> list:
     return [lst[i] for i in indices]
 
 
-def build_template(relation_categories:list[RelationCategory], app:App, readings:list[Reading], language:str, examples:int=3) -> ChatPromptTemplate:
+def build_template(relation_categories:list[RelationCategory], app:App, readings:list[Reading], language:str, examples:int=10) -> ChatPromptTemplate:
     system_message = f"You are an academic who is an expert in textual criticism in {language}."
 
     human_message = (
@@ -32,7 +32,7 @@ def build_template(relation_categories:list[RelationCategory], app:App, readings
     human_message += f"\nHere are {len(relation_categories)} possible categories for the types of changes in the text:\n"     
     for category in relation_categories:
         human_message += f"{category.str_with_description()}\n"
-        instance_strings = sorted(set(instance.reading_transition_str() for instance in category.instances), key=len)
+        instance_strings = sorted(set(instance.reading_transition_str() for instance in category.instances if not instance.rdgai_resposible()), key=len)
         for instance_string in select_spaced_elements(instance_strings, examples):
             human_message += f"\te.g. {instance_string}\n"
 
