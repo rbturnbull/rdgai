@@ -232,18 +232,26 @@ def evaluate(
         if confusion_matrix_plot:
             import plotly.graph_objects as go
 
+            cm_normalized = cm / cm.sum(axis=1, keepdims=True)
+
+            # Plot the normalized confusion matrix
             fig = go.Figure(data=go.Heatmap(
-                z=cm,
+                z=cm_normalized,
                 x=labels,
                 y=labels,
-                colorscale='Viridis'))
+                colorscale='Viridis',
+                colorbar=dict(title="Proportion of True Values")  # Updated legend title
+            ))
+
             fig.update_layout(
                 title='Confusion Matrix',
                 xaxis_title='Predicted',
                 yaxis_title='Actual',
-                xaxis=dict(tickmode='array', tickvals=list(range(len(labels))), ticktext=labels),
-                yaxis=dict(tickmode='array', tickvals=list(range(len(labels))), ticktext=labels),
+                xaxis=dict(tickmode='array', tickvals=list(range(len(labels))), ticktext=labels, side="top"),
+                yaxis=dict(tickmode='array', tickvals=list(range(len(labels))), ticktext=labels, autorange="reversed"),
             )
+
+            # Save the plot as HTML
             confusion_matrix_plot = Path(confusion_matrix_plot)
             confusion_matrix_plot.parent.mkdir(parents=True, exist_ok=True)
             fig.write_html(confusion_matrix_plot)
