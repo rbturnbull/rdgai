@@ -45,6 +45,8 @@ class RelationType():
     def __hash__(self):
         return hash(self.element)
 
+    def pairs_sorted(self) -> list['Pair']:
+        return sorted(self.pairs, key=lambda pair: (str(pair.active.app), pair.active.n, pair.passive.n))
 
 @dataclass
 class Pair():
@@ -72,8 +74,8 @@ class Pair():
         if list_relation is None:
             return None
         
-        for relation in find_elements(list_relation, ".//relation"):
-            if relation.attrib.get("active") == self.active.n and relation.attrib.get("passive") == self.passive.n and relation.attrib.get("ana") == f"#{type.name}":
+        for relation in find_elements(list_relation, f".//relation[@active='{self.active.n}'][@passive='{self.passive.n}']"):
+            if f"#{type.name}" in relation.attrib.get("ana").split():
                 return relation
         return None
     
@@ -90,15 +92,25 @@ class Pair():
         if list_relation is None:
             list_relation = ET.SubElement("listRelation", attrib={"type":"transcriptional"})
         
-        relation = ET.SubElement(list_relation, "relation", attrib={"active":self.active.n, "passive":self.passive.n, "ana":f"#{type.name}"})
+        relation = find_element(list_relation, f".//relation[@active='{self.active.n}'][@passive='{self.passive.n}']")
+        if relation:
+            if type.name not in relation.attrib.get("ana").split():
+                relation.attrib["ana"] += f" #{type.name}"
+        else:
+            relation = ET.SubElement(list_relation, "relation", attrib={"active":self.active.n, "passive":self.passive.n, "ana":f"#{type.name}"})
+
         return relation
 
-    def remove_type(self, type:RelationType):
-        self.types.remove(type.name)
-        type.pairs.remove(self)
-        relation = self.element_for_type(type)
-        if relation is not None:
-            relation.getparent().remove(relation)
+    def remove_type(self, relation_type:RelationType):
+        self.types.remove(relation_type.name)
+        relation_type.pairs.remove(self)
+
+        list_relation = find_element(self.app_element(), ".//listRelation[@type='transcriptional']")
+        for relation in find_elements(list_relation, f".//relation[@active='{self.active.n}'][@passive='{self.passive.n}']"):
+            if f"#{relation_type.name}" in relation.attrib.get("ana").split():
+                relation.attrib['ana'] = " ".join([ana for ana in relation.attrib.get("ana").split() if ana != f"#{relation_type.name}"])
+            if not relation.attrib.get("ana"):
+                relation.getparent().remove(relation)
 
 
 @dataclass
@@ -127,11 +139,11 @@ class App():
                 types = set()
                 for relation_element in relation_elements:
                     if relation_element.attrib.get("active") == active.n and relation_element.attrib.get("passive") == passive.n:
-                        ana = relation_element.attrib.get("ana", "")
-                        if ana.startswith("#"):
-                            ana = ana[1:]
-                        if ana:
-                            types.add(ana)
+                        for ana in relation_element.attrib.get("ana", "").split():
+                            if ana.startswith("#"):
+                                ana = ana[1:]
+                            if ana:
+                                types.add(ana)
 
                 pair_relation_types = set()
                 for type in types:

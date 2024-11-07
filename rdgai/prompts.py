@@ -43,7 +43,8 @@ def build_template(relation_categories:list[RelationCategory], app:App, readings
     # Add the readings to the message        
     human_message += f"\nHere are the {len(readings)} readings at that variation unit. Remember them so you can analyze them later:\n"
     for reading in readings:
-        human_message += f"{reading.id}: {reading.text}\n"
+        reading_text = reading.text or "OMITTED"
+        human_message += f"{reading.id}: {reading_text}\n"
 
     # Describe output format
     human_message += (
@@ -70,7 +71,7 @@ def build_template(relation_categories:list[RelationCategory], app:App, readings
     human_message += "\nIf the change between one of those pairs of readings does not fit one of the categories, then do not output anything for that pair.\n"
     human_message += f"\nWhen you are finished, output 5 hyphens: '-----'.\n"
 
-    ai_message = "Certainly, classifications for combinations of the readings are:\n"
+    ai_message = "Certainly, classifications for combinations of the readings are:"
 
     template = ChatPromptTemplate.from_messages(messages=[
         SystemMessage(system_message),

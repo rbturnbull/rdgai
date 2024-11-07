@@ -4,6 +4,7 @@ from langchain_openai import ChatOpenAI
 from langchain.schema.output_parser import StrOutputParser
 from rich.console import Console
 from rich.progress import track
+from dataclasses import dataclass
 
 from .tei import read_tei, find_elements, get_language, write_tei, find_parent, find_element
 from .relations import get_relation_categories, get_relation_categories_dict, get_classified_relations, get_apparatus_unclassified_relations, make_readings_list
@@ -31,6 +32,7 @@ def classify(
     hf_auth:str=typer.Option("", envvar=["HF_AUTH"]),
     openai_api_key:str=typer.Option("", envvar=["OPENAI_API_KEY"]),
     model_id:str=DEFAULT_MODEL_ID,
+    prompt_only:bool=False,
     examples:int=10,
 ):
     """
@@ -53,10 +55,12 @@ def classify(
         readings = make_readings_list(apparatus)
 
         template = build_template(relation_category_dict.values(), app, readings, language, examples=examples)
-        if verbose:
+        if verbose or prompt_only:
             template.pretty_print()
+            if prompt_only:
+                return
 
-        chain = template | llm.bind(stop="----") | StrOutputParser() | read_output
+        chain = template | llm.bind(stop=["----"]) | StrOutputParser() | read_output
 
         print("Classifying reading relations ✨")
         results = chain.invoke({})
@@ -125,7 +129,7 @@ def serve(
     from flask import Flask, request, render_template
 
     doc = read_doc(doc)
-    write_tei(doc, output)
+    doc.write(output)
     mapper = Mapper()
     
     app = Flask(__name__)
@@ -144,12 +148,14 @@ def serve(
 
         try:
             if data['operation'] == 'remove':
+                print('remove', relation_type)
                 pair.remove_type(relation_type)
             elif data['operation'] == 'add':
+                print('add', relation_type)
                 pair.add_type(relation_type)
             
             print('write', output)
-            write_tei(doc, output)
+            doc.write(output)
             return "Success", 200           
         except Exception as e:  
             return str(e), 400
@@ -165,6 +171,7 @@ def evaluate(
     ground_truth:Path,
     confusion_matrix:Path=None,
     confusion_matrix_plot:Path=None,
+    report:Path=None,
 ):
     doc = read_doc(doc)
     ground_truth = read_doc(ground_truth)
@@ -178,10 +185,33 @@ def evaluate(
     # find all classified relations in the ground truth that correspond to the classified relations in the doc
     predicted = []
     gold = []
+    correct_items = []
+    incorrect_items = []
+
+    @dataclass
+    class EvalItem:
+        app_id:str
+        app:App
+        active:str
+        passive:str
+        text_in_context:str
+        reading_transition_str:str
+        ground_truth:str
+        predicted:str
+        description:str = ""
+
+    relation_category_dict = get_relation_categories_dict(doc.tree)
+    predicted_classified_relations = get_classified_relations(doc.tree, relation_category_dict.values())
+    ground_truth_classified_relations = get_classified_relations(ground_truth.tree, relation_category_dict.values())
+
+    predicted_classified_relations_dict = {relation.relation_element:relation for relation in predicted_classified_relations}        
+    ground_truth_classified_relations_dict = {relation.relation_element:relation for relation in ground_truth_classified_relations}
+
     for rdgai_relation in rdgai_relations:
         # find app
         app = find_parent(rdgai_relation, "app")
         app_id = app.attrib.get("{http://www.w3.org/XML/1998/namespace}id")
+        app_object = App(app)
         active = rdgai_relation.attrib['active']
         passive = rdgai_relation.attrib['passive']
 
@@ -201,9 +231,29 @@ def evaluate(
         ground_truth_ana = ground_truth_relation.attrib['ana'].replace("#", "")
         rdgai_ana = rdgai_relation.attrib['ana'].replace("#", "")
 
+        desc = find_element(rdgai_relation, ".//desc")
+        description = desc.text if desc is not None else ""
+
+        ground_truth_relation_object = ground_truth_classified_relations_dict[ground_truth_relation]
+        eval_item = EvalItem(
+            app_id=app_id,
+            app=app_object,
+            text_in_context=app_object.text_in_context(),
+            active=ground_truth_relation_object.active,
+            passive=ground_truth_relation_object.passive,
+            reading_transition_str=ground_truth_relation_object.reading_transition_str(),
+            ground_truth=ground_truth_ana,
+            predicted=rdgai_ana,
+            description=description,
+        )
+        if ground_truth_ana == rdgai_ana:
+            correct_items.append(eval_item)
+        else:
+            incorrect_items.append(eval_item)
+
         predicted.append(rdgai_ana)
         gold.append(ground_truth_ana)
-        print(ground_truth_ana, rdgai_ana)
+        print(eval_item)
 
     print(len(predicted), len(gold))
     assert len(predicted) == len(gold), f"Predicted and gold lengths do not match: {len(predicted)} != {len(gold)}"
@@ -211,17 +261,20 @@ def evaluate(
     from sklearn.metrics import precision_score, recall_score, f1_score, classification_report, accuracy_score
     print(classification_report(gold, predicted))
 
-    print("precision", precision_score(gold, predicted, average='macro')*100.0)
-    print("recall", recall_score(gold, predicted, average='macro')*100.0)
-    print("f1", f1_score(gold, predicted, average='macro')*100.0)
-    print("accuracy", accuracy_score(gold, predicted)*100.0)
+    precision = precision_score(gold, predicted, average='macro')*100.0
+    print("precision", precision)
+    recall = recall_score(gold, predicted, average='macro')*100.0
+    print("recall", recall)
+    f1 = f1_score(gold, predicted, average='macro')*100.0
+    print("f1", f1)
+    accuracy = accuracy_score(gold, predicted)*100.0
+    print("accuracy", accuracy)
 
     # create confusion matrix
-    if confusion_matrix or confusion_matrix_plot:
+    if confusion_matrix or confusion_matrix_plot or report:
         from sklearn.metrics import confusion_matrix as sk_confusion_matrix
-        import numpy as np
         import pandas as pd
-        labels = np.unique(gold + predicted)
+        labels = list(relation_category_dict.keys())
         cm = sk_confusion_matrix(gold, predicted, labels=labels)
         confusion_df = pd.DataFrame(cm, index=labels, columns=labels)
         if confusion_matrix:
@@ -229,10 +282,12 @@ def evaluate(
             confusion_matrix.parent.mkdir(parents=True, exist_ok=True)
             confusion_df.to_csv(confusion_matrix)
 
-        if confusion_matrix_plot:
+        if confusion_matrix_plot or report:
             import plotly.graph_objects as go
 
             cm_normalized = cm / cm.sum(axis=1, keepdims=True)
+
+            text_annotations = [[str(cm[i][j]) for j in range(len(labels))] for i in range(len(labels))]
 
             # Plot the normalized confusion matrix
             fig = go.Figure(data=go.Heatmap(
@@ -240,11 +295,26 @@ def evaluate(
                 x=labels,
                 y=labels,
                 colorscale='Viridis',
+                text=text_annotations,      # Add only the raw counts to each cell
                 colorbar=dict(title="Proportion of True Values")  # Updated legend title
             ))
+            annotations = []
+            for i in range(len(labels)):
+                for j in range(len(labels)):
+                    count = cm[i][j]  # Raw count
+                    proportion = cm_normalized[i][j]  # Normalized proportion
+                    annotations.append(
+                        go.layout.Annotation(
+                            x=j, y=i,
+                            text=f"{count}",  # Showing both raw count and normalized proportion
+                            showarrow=False,
+                            font=dict(size=10, color="white" if proportion < 0.5 else "black")
+                        )
+                    )
+            fig.update_layout(annotations=annotations)
+
 
             fig.update_layout(
-                title='Confusion Matrix',
                 xaxis_title='Predicted',
                 yaxis_title='Actual',
                 xaxis=dict(tickmode='array', tickvals=list(range(len(labels))), ticktext=labels, side="top"),
@@ -252,8 +322,63 @@ def evaluate(
             )
 
             # Save the plot as HTML
-            confusion_matrix_plot = Path(confusion_matrix_plot)
-            confusion_matrix_plot.parent.mkdir(parents=True, exist_ok=True)
-            fig.write_html(confusion_matrix_plot)
+            if confusion_matrix_plot:
+                confusion_matrix_plot = Path(confusion_matrix_plot)
+                confusion_matrix_plot.parent.mkdir(parents=True, exist_ok=True)
+                fig.write_html(confusion_matrix_plot)
+
+            if report:
+                from flask import Flask, render_template
+                report = Path(report)
+                report.parent.mkdir(parents=True, exist_ok=True)
+                app = Flask(__name__)
+
+                import plotly.io as pio
+                confusion_matrix_html = pio.to_html(fig, full_html=True, include_plotlyjs='inline')
+
+                with app.app_context():
+                    text = render_template(
+                        'report.html', 
+                        correct_items=correct_items, 
+                        incorrect_items=incorrect_items, 
+                        confusion_matrix=confusion_matrix_html,
+                        accuracy=accuracy,
+                        precision=precision,
+                        recall=recall,
+                        f1=f1,
+                        correct_count=len(correct_items),
+                        incorrect_count=len(incorrect_items),
+                    )
+                report.write_text(text)
 
 
+@app.command()
+def clean(
+    doc:Path,
+    output:Path,
+):
+    """ Cleans a TEI XML file for common errors. """
+    doc = read_doc(doc)
+
+    # find all listRelation elements
+    list_relations = find_elements(doc.tree, ".//listRelation")
+    for list_relation in list_relations:
+        relations_so_far = set()
+        for relation in find_elements(list_relation, ".//relation"):
+            # make sure that relation elements have a # at the start of the ana attribute
+            if not relation.attrib['ana'].startswith("#"):
+                relation.attrib['ana'] = f"#{relation.attrib['ana']}"
+            
+            relations_so_far.add( (relation.attrib['active'], relation.attrib['passive']) )
+        
+        # consolidate duplicate relations
+        for active, passive in relations_so_far:
+            relations = find_elements(list_relation, f".//relation[@active='{active}'][@passive='{passive}']")
+            if len(relations) > 1:
+                analytic_set = set(relation.attrib['ana'] for relation in relations)
+                for relation in relations[1:]:
+                    list_relation.remove(relation)
+                relations[0].attrib['ana'] = " ".join(analytic_set)
+    
+    print("writing to", output)
+    doc.write(output)

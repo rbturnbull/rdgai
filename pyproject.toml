@@ -30,6 +30,7 @@ plotly = "^5.24.1"
 transformers = "^4.46.1"
 langchain-community = "^0.3.5"
 pandas = "^2.2.3"
+langchain-anthropic = "^0.2.4"
 
 [tool.poetry.group.llama]
 optional = true
