@@ -258,10 +258,14 @@ def evaluate(
     from sklearn.metrics import precision_score, recall_score, f1_score, classification_report, accuracy_score
     print(classification_report(gold, predicted))
 
-    print("precision", precision_score(gold, predicted, average='macro')*100.0)
-    print("recall", recall_score(gold, predicted, average='macro')*100.0)
-    print("f1", f1_score(gold, predicted, average='macro')*100.0)
-    print("accuracy", accuracy_score(gold, predicted)*100.0)
+    precision = precision_score(gold, predicted, average='macro')*100.0
+    print("precision", precision)
+    recall = recall_score(gold, predicted, average='macro')*100.0
+    print("recall", recall)
+    f1 = f1_score(gold, predicted, average='macro')*100.0
+    print("f1", f1)
+    accuracy = accuracy_score(gold, predicted)*100.0
+    print("accuracy", accuracy)
 
     # create confusion matrix
     if confusion_matrix or confusion_matrix_plot or report:
@@ -292,9 +296,23 @@ def evaluate(
                 text=text_annotations,      # Add only the raw counts to each cell
                 colorbar=dict(title="Proportion of True Values")  # Updated legend title
             ))
+            annotations = []
+            for i in range(len(labels)):
+                for j in range(len(labels)):
+                    count = cm[i][j]  # Raw count
+                    proportion = cm_normalized[i][j]  # Normalized proportion
+                    annotations.append(
+                        go.layout.Annotation(
+                            x=j, y=i,
+                            text=f"{count}",  # Showing both raw count and normalized proportion
+                            showarrow=False,
+                            font=dict(size=10, color="white" if proportion < 0.5 else "black")
+                        )
+                    )
+            fig.update_layout(annotations=annotations)
+
 
             fig.update_layout(
-                title='Confusion Matrix',
                 xaxis_title='Predicted',
                 yaxis_title='Actual',
                 xaxis=dict(tickmode='array', tickvals=list(range(len(labels))), ticktext=labels, side="top"),
@@ -313,8 +331,22 @@ def evaluate(
                 report.parent.mkdir(parents=True, exist_ok=True)
                 app = Flask(__name__)
 
+                import plotly.io as pio
+                confusion_matrix_html = pio.to_html(fig, full_html=True, include_plotlyjs='inline')
+
                 with app.app_context():
-                    text = render_template('report.html', correct_items=correct_items, incorrect_items=incorrect_items, confusion_matrix_fig=fig)
+                    text = render_template(
+                        'report.html', 
+                        correct_items=correct_items, 
+                        incorrect_items=incorrect_items, 
+                        confusion_matrix=confusion_matrix_html,
+                        accuracy=accuracy,
+                        precision=precision,
+                        recall=recall,
+                        f1=f1,
+                        correct_count=len(correct_items),
+                        incorrect_count=len(incorrect_items),
+                    )
                 report.write_text(text)
 
 
