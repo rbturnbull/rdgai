@@ -32,6 +32,7 @@ def classify(
     hf_auth:str=typer.Option("", envvar=["HF_AUTH"]),
     openai_api_key:str=typer.Option("", envvar=["OPENAI_API_KEY"]),
     model_id:str=DEFAULT_MODEL_ID,
+    prompt_only:bool=False,
     examples:int=10,
 ):
     """
@@ -54,10 +55,12 @@ def classify(
         readings = make_readings_list(apparatus)
 
         template = build_template(relation_category_dict.values(), app, readings, language, examples=examples)
-        if verbose:
+        if verbose or prompt_only:
             template.pretty_print()
+            if prompt_only:
+                return
 
-        chain = template | llm.bind(stop="----") | StrOutputParser() | read_output
+        chain = template | llm.bind(stop=["----"]) | StrOutputParser() | read_output
 
         print("Classifying reading relations ✨")
         results = chain.invoke({})
@@ -270,9 +273,8 @@ def evaluate(
     # create confusion matrix
     if confusion_matrix or confusion_matrix_plot or report:
         from sklearn.metrics import confusion_matrix as sk_confusion_matrix
-        import numpy as np
         import pandas as pd
-        labels = np.unique(gold + predicted)
+        labels = list(relation_category_dict.keys())
         cm = sk_confusion_matrix(gold, predicted, labels=labels)
         confusion_df = pd.DataFrame(cm, index=labels, columns=labels)
         if confusion_matrix:
