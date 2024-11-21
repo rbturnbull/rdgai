@@ -13,12 +13,13 @@ from .parsers import read_output
 from .apparatus import read_doc, RelationType, Pair, App
 from .mapper import Mapper
 from .llms import get_llm
+from .export import export_variants_to_excel
 
 console = Console()
 error_console = Console(stderr=True, style="bold red")
 
 
-app = typer.Typer()
+app = typer.Typer(pretty_exceptions_enable=False)
     
 DEFAULT_MODEL_ID = "gpt-4o"
 
@@ -382,3 +383,12 @@ def clean(
     
     print("writing to", output)
     doc.write(output)
+
+
+@app.command()
+def export(
+    doc:Path,
+    output:Path,
+):
+    doc = read_doc(doc)
+    export_variants_to_excel(doc, output)
