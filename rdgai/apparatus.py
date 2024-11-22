@@ -4,7 +4,7 @@ from lxml.etree import _Element as Element
 from lxml.etree import _ElementTree as ElementTree
 from lxml import etree as ET
 
-from .relations import Relation
+from .relations import Relation, get_reading_identifier
 from .tei import read_tei, find_elements, extract_text, find_parent, find_element, write_tei, make_nc_name
 
 
@@ -17,7 +17,7 @@ class Reading():
     witnesses: list[str] = field(default_factory=list)
 
     def __post_init__(self):
-        self.n = self.element.attrib.get("n", "")
+        self.n = get_reading_identifier(self.element)
         self.text = extract_text(self.element).strip()
         self.witnesses = self.element.attrib.get("wit", "").split()
 
@@ -118,6 +118,7 @@ class App():
     element: Element
     readings: list[Reading] = field(default_factory=list)
     pairs: list[Relation] = field(default_factory=list)
+    non_redundant_pairs: list[Relation] = field(default_factory=list)
     relation_types: list[RelationType] = field(default_factory=list)
 
     def __post_init__(self):
@@ -131,7 +132,9 @@ class App():
                 relation_elements.append(relation_element)
         
         # Build list of relation pairs
+        active_visited = set()
         for active in self.readings:
+            active_visited.add(active)
             for passive in self.readings:
                 if active == passive:
                     continue
@@ -172,9 +175,13 @@ class App():
 
                 pair = Pair(active=active, passive=passive, types=types)
                 self.pairs.append(pair)
+                if passive not in active_visited:
+                    self.non_redundant_pairs.append(pair)
 
                 for relation_type in pair_relation_types:
                     relation_type.pairs.add(pair)
+
+        assert len(self.pairs) == len(self.non_redundant_pairs) * 2
 
     def __hash__(self):
         return hash(self.element)

@@ -18,7 +18,7 @@ def export_variants_to_excel(doc:Doc, output:Path):
     ws = wb.active
     ws.title = 'Variants'
 
-    headers = ['App ID', 'Active Reading ID', 'Passive Reading ID',
+    headers = ['App ID', 'Context', 'Active Reading ID', 'Passive Reading ID',
                'Active Reading Text', 'Passive Reading Text', 'Relation Type(s)']
 
     for col_num, header in enumerate(headers, start=1):  # Start from column A (1)
@@ -28,15 +28,16 @@ def export_variants_to_excel(doc:Doc, output:Path):
 
     current_row = 2
     for app in doc.apps:
-        for pair in app.pairs:
+        for pair in app.non_redundant_pairs:
             ws[f'A{current_row}'] = str(app)
-            ws[f'B{current_row}'] = pair.active.n
-            ws[f'C{current_row}'] = pair.passive.n
-            ws[f'D{current_row}'] = pair.active.text
-            ws[f'E{current_row}'] = pair.passive.text
+            ws[f'B{current_row}'] = app.text_in_context()
+            ws[f'C{current_row}'] = pair.active.n
+            ws[f'D{current_row}'] = pair.passive.n
+            ws[f'E{current_row}'] = pair.active.text
+            ws[f'F{current_row}'] = pair.passive.text
             
             for relation_type_index, relation_type in enumerate(pair.types):
-                column = ord('F') + relation_type_index
+                column = ord('G') + relation_type_index
                 ws[f'{chr(column)}{current_row}'] = str(relation_type)
             
             current_row += 1
@@ -45,9 +46,9 @@ def export_variants_to_excel(doc:Doc, output:Path):
     ws.add_data_validation(data_val)
 
     max_relation_types = max(10, max(len(pair.types) for app in doc.apps for pair in app.pairs))
-    end_column = chr(ord('F') + max_relation_types - 1)
+    end_column = chr(ord('G') + max_relation_types - 1)
 
-    data_val.add(f"F2:{end_column}{current_row}")
+    data_val.add(f"G2:{end_column}{current_row}")
 
     # Create new sheet with descriptions of categories and counts
     categories_worksheet = wb.create_sheet('Categories')
@@ -65,8 +66,8 @@ def export_variants_to_excel(doc:Doc, output:Path):
         inverse_name = str(category.inverse) if category.inverse else category_name
         categories_worksheet[f'A{idx}'] = category_name
         categories_worksheet[f'B{idx}'] = inverse_name
-        categories_worksheet[f'C{idx}'] = f'=COUNTIF(Variants!F:{end_column}, "{category_name}")'
-        categories_worksheet[f'D{idx}'] = f'=COUNTIF(Variants!F:{end_column}, "{inverse_name}")'
+        categories_worksheet[f'C{idx}'] = f'=COUNTIF(Variants!G:{end_column}, "{category_name}")'
+        categories_worksheet[f'D{idx}'] = f'=COUNTIF(Variants!G:{end_column}, "{inverse_name}")'
         categories_worksheet[f'E{idx}'] = f'=SUM(C{idx}:D{idx})'
         categories_worksheet[f'F{idx}'] = category.description
 
