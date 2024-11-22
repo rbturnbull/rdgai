@@ -179,6 +179,9 @@ def get_relation_categories(doc:ElementTree|Element, categories_to_ignore:list[s
     relation_categories_dict = {c.name: c for c in relation_categories}
     for category in relation_categories:
         inverse_name = category.element.attrib.get("corresp", "")
+        if inverse_name.startswith("#"):
+            inverse_name = inverse_name[1:]
+
         if inverse_name in relation_categories_dict:
             inverse = relation_categories_dict[inverse_name]
             category.inverse = inverse

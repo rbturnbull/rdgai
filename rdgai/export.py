@@ -44,7 +44,7 @@ def export_variants_to_excel(doc:Doc, output:Path):
     data_val = DataValidation(type="list",formula1=f'"{",".join(relation_category_dict.keys())}"')
     ws.add_data_validation(data_val)
 
-    max_relation_types = max(5, max(len(pair.types) for app in doc.apps for pair in app.pairs))
+    max_relation_types = max(10, max(len(pair.types) for app in doc.apps for pair in app.pairs))
     end_column = chr(ord('F') + max_relation_types - 1)
 
     data_val.add(f"F2:{end_column}{current_row}")
@@ -53,15 +53,22 @@ def export_variants_to_excel(doc:Doc, output:Path):
     categories_worksheet = wb.create_sheet('Categories')
 
     # Add a header to the "Category" column
-    categories_worksheet['A1'] = 'Category'
-    categories_worksheet['B1'] = 'Description'
-    categories_worksheet['A1'].font = header_font
-    categories_worksheet['B1'].font = header_font
+    headers = ['Category', 'Inverse', 'Count', 'Inverse Count', 'Total', 'Description']
+    for col_num, header in enumerate(headers, start=1): 
+        cell = categories_worksheet.cell(row=1, column=col_num)
+        cell.value = header
+        cell.font = header_font
 
     # Populate the categories from relation_category_dict.keys()
     for idx, category in enumerate(relation_category_dict.values(), start=2):  # Start from row 2
-        categories_worksheet[f'A{idx}'] = str(category)
-        categories_worksheet[f'B{idx}'] = category.description
+        category_name = str(category)
+        inverse_name = str(category.inverse) if category.inverse else category_name
+        categories_worksheet[f'A{idx}'] = category_name
+        categories_worksheet[f'B{idx}'] = inverse_name
+        categories_worksheet[f'C{idx}'] = f'=COUNTIF(Variants!F:{end_column}, "{category_name}")'
+        categories_worksheet[f'D{idx}'] = f'=COUNTIF(Variants!F:{end_column}, "{inverse_name}")'
+        categories_worksheet[f'E{idx}'] = f'=SUM(C{idx}:D{idx})'
+        categories_worksheet[f'F{idx}'] = category.description
 
     wb.save(output)
 
