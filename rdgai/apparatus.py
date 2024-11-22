@@ -48,6 +48,7 @@ class RelationType():
     def pairs_sorted(self) -> list['Pair']:
         return sorted(self.pairs, key=lambda pair: (str(pair.active.app), pair.active.n, pair.passive.n))
 
+
 @dataclass
 class Pair():
     active: Reading
@@ -90,10 +91,10 @@ class Pair():
 
         list_relation = find_element(self.app_element(), ".//listRelation[@type='transcriptional']")
         if list_relation is None:
-            list_relation = ET.SubElement("listRelation", attrib={"type":"transcriptional"})
+            list_relation = ET.SubElement(self.app_element(), "listRelation", attrib={"type":"transcriptional"})
         
         relation = find_element(list_relation, f".//relation[@active='{self.active.n}'][@passive='{self.passive.n}']")
-        if relation:
+        if relation is not None:
             if type.name not in relation.attrib.get("ana").split():
                 relation.attrib["ana"] += f" #{type.name}"
         else:

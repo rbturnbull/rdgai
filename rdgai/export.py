@@ -2,9 +2,11 @@ from pathlib import Path
 from openpyxl import Workbook
 from openpyxl.worksheet.datavalidation import DataValidation
 from openpyxl.styles import Font
+import pandas as pd
 
-from .apparatus import read_doc, RelationType, Pair, App, Doc
-from .relations import get_relation_categories, get_relation_categories_dict, get_classified_relations, get_apparatus_unclassified_relations, make_readings_list
+from .tei import write_tei
+from .apparatus import Doc
+from .relations import get_relation_categories_dict
 
 
 def export_variants_to_excel(doc:Doc, output:Path):
@@ -73,3 +75,29 @@ def export_variants_to_excel(doc:Doc, output:Path):
 
     wb.save(output)
 
+
+def import_classifications_from_dataframe(doc:Doc, variants_df:pd.DataFrame, output:Path):
+    apps_dict = {str(app): app for app in doc.apps}
+    relation_category_dict = {str(category): category for category in doc.relation_types}
+    for _, row in variants_df.iterrows():
+        app_id = row['App ID']
+        active_reading_id = row['Active Reading ID']
+        passive_reading_id = row['Passive Reading ID']
+        app = apps_dict[app_id]
+
+        types = set(row[key] for key in row.keys() if (key.startswith('Relation Type') or key.startswith('Unnamed: ')) and row[key])
+        for type in types:
+            assert type in relation_category_dict, f'{type} not in {relation_category_dict.keys()}'
+
+        # relation_type = relation_category_dict[row['Relation Type(s)']]
+        for pair in app.pairs:
+            if str(pair.active.n) == str(active_reading_id) and str(pair.passive.n) == str(passive_reading_id):
+                # Add relations
+                for type in types - pair.types:
+                    pair.add_type(relation_category_dict[type])
+            
+                # Remove relations
+                for type in pair.types - types:
+                    pair.remove_type(relation_category_dict[type])
+
+    doc.write(output)        
