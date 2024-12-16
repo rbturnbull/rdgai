@@ -357,7 +357,8 @@ class Doc():
 
         return pairs
 
-    def print_classified_pairs(self, console:Console) -> None:
+    def print_classified_pairs(self, console:Console|None=None) -> None:
+        console = console or Console()
         for relation_type in self.relation_types.values():
             console.rule(str(relation_type))
             console.print(relation_type.description)
