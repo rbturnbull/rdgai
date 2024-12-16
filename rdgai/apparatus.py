@@ -139,6 +139,11 @@ class Pair():
             if not relation.attrib.get("ana"):
                 relation.getparent().remove(relation)
 
+    # def rdgai_resposible(self) -> bool:
+    #     if self.relation_element is None:
+    #         return False
+    #     return self.relation_element.attrib.get("resp", "") == "#rdgai"
+
 
 @dataclass
 class App():

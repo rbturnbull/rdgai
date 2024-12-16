@@ -1,28 +1,15 @@
-from rdgai.relations import RelationCategory
-from rdgai.prompts import build_template, Reading
-from rdgai.apparatus import App
+from rdgai.prompts import build_template
+from rdgai.apparatus import Doc
 from lxml import etree as ET
 
+from .util import TEST_DATA_DIR
 
 def test_build_template():
-    relation_categories = [
-        RelationCategory(name="category1", element=None, description="Description 1"),
-        RelationCategory(name="category2", element=None, description="Description 2"),
-        RelationCategory(name="category3", element=None),
-    ]
-
-    readings = [
-        Reading(id="1", text="Reading 1"),
-        Reading(id="2", text="Reading 2"),
-        Reading(id="3", text="Reading 3"),
-    ]
-    
-    apparatus_element = ET.Element("app")
-    app = App(apparatus_element)
-    template = build_template(relation_categories=relation_categories, app=app, readings=readings, language="Greek")
+    doc = Doc(TEST_DATA_DIR/"minimal.xml")    
+    template = build_template(app=doc.apps[0])
     assert len(template.messages) == 3
     response = template.invoke({}).to_string()
-    assert "System: You are an academic who is an expert in textual criticism in Greek." in response
+    assert "System: You are an academic who is an expert in textual criticism in Arabic." in response
     assert "Here are 3 possible categories for the types of changes in the text:" in response
     assert "1: Reading 1"
     assert "2: Reading 2"
