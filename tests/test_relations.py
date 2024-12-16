@@ -179,13 +179,13 @@ def test_get_classified_relations():
 
     relations = get_classified_relations(doc)
     assert len(relations) == 166
-    assert str(relations[0]) == 'B10K1V1U24-26: OMISSION -> εν εφεσω [Clar]'
+    assert str(relations[0]) == 'B10K1V1U24-26: OMISSION → εν εφεσω [Clar]'
 
 
 def test_get_unclassified_relations():
     doc = read_tei(TEST_DATA_DIR/"ubs_ephesians.xml")
 
     relations = get_unclassified_relations(doc)
-    assert len(relations) == 646
+    assert len(relations) == 560
 
-    assert str(relations[0]) == "B10K1V1U24-26: εν εφεσω -> εν εφεω []"
+    assert str(relations[0]) == "B10K1V1U24-26: εν εφεσω → εν εφεω []"
