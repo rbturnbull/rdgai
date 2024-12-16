@@ -1,10 +1,10 @@
 from pathlib import Path
 import typer
-from langchain_openai import ChatOpenAI
 from langchain.schema.output_parser import StrOutputParser
 from rich.console import Console
 from rich.progress import track
 from dataclasses import dataclass
+import pandas as pd
 
 from .tei import read_tei, find_elements, get_language, write_tei, find_parent, find_element
 from .relations import get_relation_categories, get_relation_categories_dict, get_classified_relations, get_apparatus_unclassified_relations, make_readings_list
@@ -13,12 +13,13 @@ from .parsers import read_output
 from .apparatus import read_doc, RelationType, Pair, App
 from .mapper import Mapper
 from .llms import get_llm
+from .export import export_variants_to_excel, import_classifications_from_dataframe
 
 console = Console()
 error_console = Console(stderr=True, style="bold red")
 
 
-app = typer.Typer()
+app = typer.Typer(pretty_exceptions_enable=False)
     
 DEFAULT_MODEL_ID = "gpt-4o"
 
@@ -158,6 +159,7 @@ def serve(
             doc.write(output)
             return "Success", 200           
         except Exception as e:  
+            print(str(e))
             return str(e), 400
 
         return "Failed", 400
@@ -382,3 +384,27 @@ def clean(
     
     print("writing to", output)
     doc.write(output)
+
+
+@app.command()
+def export(
+    doc:Path,
+    output:Path,
+):
+    doc = read_doc(doc)
+    export_variants_to_excel(doc, output)
+
+
+@app.command()
+def import_classifications(
+    doc:Path,
+    spreadsheet:Path,
+    output:Path,
+):
+    doc = read_doc(doc)
+    if spreadsheet.suffix == ".xlsx":
+        variants_df = pd.read_excel(spreadsheet, sheet_name="Variants", keep_default_na=False)
+    elif spreadsheet.suffix == ".csv":
+        variants_df = pd.read_csv(spreadsheet, keep_default_na=False)
+
+    import_classifications_from_dataframe(doc, variants_df, output)

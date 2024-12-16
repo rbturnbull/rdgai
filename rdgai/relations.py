@@ -12,10 +12,18 @@ from .tei import find_element, find_elements, extract_text
 error_console = Console(stderr=True, style="bold red")
 
 
-def get_reading_identifier(reading:Element, check:bool=False) -> str:
+def get_reading_identifier(reading:Element, check:bool=False, create_if_necessary:bool=True) -> str:
     identifier = reading.attrib.get("{http://www.w3.org/XML/1998/namespace}id", "")
     if not identifier:
         identifier = reading.attrib.get("n", "")
+
+    if not identifier and create_if_necessary:
+        app = reading.getparent()
+        identifier = 1
+        while find_element(app, f".//rdg[@n='{identifier}']") is not None:
+            identifier += 1
+        identifier = str(identifier)
+        reading.attrib["n"] = identifier
     
     if check:
         assert identifier, f"Reading {reading} must have a name attribute 'xml:id' or 'n'."
@@ -179,6 +187,9 @@ def get_relation_categories(doc:ElementTree|Element, categories_to_ignore:list[s
     relation_categories_dict = {c.name: c for c in relation_categories}
     for category in relation_categories:
         inverse_name = category.element.attrib.get("corresp", "")
+        if inverse_name.startswith("#"):
+            inverse_name = inverse_name[1:]
+
         if inverse_name in relation_categories_dict:
             inverse = relation_categories_dict[inverse_name]
             category.inverse = inverse
