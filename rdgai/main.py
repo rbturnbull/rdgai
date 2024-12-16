@@ -10,7 +10,7 @@ from .tei import read_tei, find_elements, write_tei, find_parent, find_element
 # from .relations import get_relation_categories, get_relation_categories_dict, get_classified_relations
 from .prompts import build_template
 from .parsers import read_output
-from .apparatus import read_doc, RelationType, Pair, App, Doc
+from .apparatus import RelationType, Pair, App, Doc
 from .mapper import Mapper
 from .llms import get_llm
 from .export import export_variants_to_excel, import_classifications_from_dataframe
@@ -105,7 +105,7 @@ def html(
 ):
     from flask import Flask, request, render_template
     
-    doc = read_doc(doc)
+    doc = Doc(doc)
     mapper = Mapper()
     app = Flask(__name__)
 
@@ -121,7 +121,7 @@ def serve(
 ):
     from flask import Flask, request, render_template
 
-    doc = read_doc(doc)
+    doc = Doc(doc)
     doc.write(output)
     mapper = Mapper()
     
@@ -167,8 +167,8 @@ def evaluate(
     confusion_matrix_plot:Path=None,
     report:Path=None,
 ):
-    doc = read_doc(doc)
-    ground_truth = read_doc(ground_truth)
+    doc = Doc(doc)
+    ground_truth = Doc(ground_truth)
     
     # get dictionary of ground truth apps
     ground_truth_apps = {str(app):app for app in ground_truth.apps}
@@ -352,7 +352,7 @@ def clean(
     output:Path,
 ):
     """ Cleans a TEI XML file for common errors. """
-    doc = read_doc(doc)
+    doc = Doc(doc)
 
     # find all listRelation elements
     list_relations = find_elements(doc.tree, ".//listRelation")
@@ -383,7 +383,7 @@ def export(
     doc:Path,
     output:Path,
 ):
-    doc = read_doc(doc)
+    doc = Doc(doc)
     export_variants_to_excel(doc, output)
 
 
@@ -393,7 +393,7 @@ def import_classifications(
     spreadsheet:Path,
     output:Path,
 ):
-    doc = read_doc(doc)
+    doc = Doc(doc)
     if spreadsheet.suffix == ".xlsx":
         variants_df = pd.read_excel(spreadsheet, sheet_name="Variants", keep_default_na=False)
     elif spreadsheet.suffix == ".csv":

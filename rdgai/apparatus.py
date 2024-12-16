@@ -367,7 +367,3 @@ class Doc():
 
             console.print("")
 
-
-def read_doc(doc_path:Path) -> Doc:
-    doc = Doc(doc_path)
-    return doc
