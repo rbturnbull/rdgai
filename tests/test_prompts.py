@@ -1,12 +1,8 @@
 from rdgai.prompts import build_template
-from rdgai.apparatus import Doc
-from lxml import etree as ET
 
-from .util import TEST_DATA_DIR
 
-def test_build_template():
-    doc = Doc(TEST_DATA_DIR/"minimal.xml")    
-    template = build_template(app=doc.apps[0])
+def test_build_template(minimal_doc):
+    template = build_template(app=minimal_doc.apps[0])
     assert len(template.messages) == 3
     response = template.invoke({}).to_string()
     assert "System: You are an academic who is an expert in textual criticism in Arabic." in response
