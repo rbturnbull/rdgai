@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from lxml.etree import _Element as Element
 from lxml.etree import _ElementTree as ElementTree
 from lxml import etree as ET
+from rich.console import Console
 
 # from .relations import Relation, get_reading_identifier
 from .tei import read_tei, find_elements, extract_text, find_parent, find_element, write_tei, make_nc_name, get_language, get_reading_identifier
@@ -351,6 +352,14 @@ class Doc():
 
         return pairs
 
+    def print_classified_pairs(self, console:Console) -> None:
+        for relation_type in self.relation_types.values():
+            console.rule(str(relation_type))
+            console.print(relation_type.description)
+            for pair in relation_type.pairs_sorted():
+                pair.print(console)
+
+            console.print("")
 
 
 def read_doc(doc_path:Path) -> Doc:

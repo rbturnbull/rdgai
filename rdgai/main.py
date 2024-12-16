@@ -90,18 +90,13 @@ def classify(
 
 
 @app.command()
-def show(
+def classified_pairs(
     doc:Path,
 ):
     doc_path = doc
     doc = Doc(doc_path)
-    for relation_type in doc.relation_types.values():
-        console.rule(str(relation_type))
-        console.print(relation_type.description)
-        for pair in relation_type.pairs_sorted():
-            pair.print(console)
+    doc.print_classified_pairs(console)
 
-        console.print("")
 
 @app.command()
 def html(
