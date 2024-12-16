@@ -1,11 +1,12 @@
+from typing import Optional
 from pathlib import Path
 from dataclasses import dataclass, field
 from lxml.etree import _Element as Element
 from lxml.etree import _ElementTree as ElementTree
 from lxml import etree as ET
 
-from .relations import Relation, get_reading_identifier
-from .tei import read_tei, find_elements, extract_text, find_parent, find_element, write_tei, make_nc_name
+# from .relations import Relation, get_reading_identifier
+from .tei import read_tei, find_elements, extract_text, find_parent, find_element, write_tei, make_nc_name, get_language, get_reading_identifier
 
 
 @dataclass
@@ -36,14 +37,28 @@ class RelationType():
     element: Element
     name: str
     description: str
-    inverse: 'RelationType' = None
+    inverse: Optional['RelationType'] = None
     pairs: set['Pair'] = field(default_factory=set)
 
     def __str__(self):
         return self.name
     
+    def __repr__(self) -> str:
+        return str(self)
+
+    def __eq__(self, other):
+        if isinstance(other, RelationType):
+            return (self.name, self.element, self.description) == (other.name, other.element, other.description)
+        return False
+
     def __hash__(self):
-        return hash(self.element)
+        return hash((self.name, self.element, self.description))
+    
+    def str_with_description(self) -> str:
+        result = self.name
+        if self.description:
+            result += f": {self.description}"
+        return result
 
     def pairs_sorted(self) -> list['Pair']:
         return sorted(self.pairs, key=lambda pair: (str(pair.active.app), pair.active.n, pair.passive.n))
@@ -55,9 +70,19 @@ class Pair():
     passive: Reading
     types: set[RelationType] = field(default_factory=set)
 
+    def __post_init__(self):
+        for relation_type in self.types:
+            relation_type.pairs.add(self)
+
     def __str__(self):
         return f"{self.active} ➞ {self.passive}"
     
+    def print(self, console):
+        console.print(f"[bold red]{self.app}[/bold red]: [green]{self.active}[/green] [red]➞[/red] [green]{self.passive}[/green]")
+    
+    def __repr__(self) -> str:
+        return str(self)
+
     @property
     def app(self) -> "App":
         # assert self.active.app == self.passive.app
@@ -117,10 +142,10 @@ class Pair():
 @dataclass
 class App():
     element: Element
+    doc: "Doc"
     readings: list[Reading] = field(default_factory=list)
-    pairs: list[Relation] = field(default_factory=list)
-    non_redundant_pairs: list[Relation] = field(default_factory=list)
-    relation_types: list[RelationType] = field(default_factory=list)
+    pairs: list[Pair] = field(default_factory=list)
+    non_redundant_pairs: list[Pair] = field(default_factory=list)
 
     def __post_init__(self):
         for reading in find_elements(self.element, ".//rdg"):
@@ -150,31 +175,28 @@ class App():
                                 types.add(ana)
 
                 pair_relation_types = set()
-                for type in types:
-                    in_list = False
-                    for relation_type in self.relation_types:
-                        if relation_type.name == type:
-                            in_list = True
-                            pair_relation_types.add(relation_type)
-                            break
-                    if not in_list:
-                        # See if interpGrp exists
+                for type_name in types:
+                    if type_name in self.doc.relation_types:
+                        relation_type = self.doc.relation_types[type_name]
+                    else:
+                        # build RelationType if necessary
                         text = find_parent(self.element, "text")
                         interp_group = find_element(text, ".//interpGrp[@type='transcriptional']")
                         if interp_group is None:
                             interp_group = ET.Element("interpGrp", attrib={"type":"transcriptional"})
                             text.insert(0, interp_group)
                         
-                        interp = find_element(interp_group, f".//interp[@xml:id='{type}']")
+                        interp = find_element(interp_group, f".//interp[@xml:id='{type_name}']")
                         if interp is None:
-                            interp = ET.Element("interp", attrib={"{http://www.w3.org/XML/1998/namespace}id":type})
+                            interp = ET.Element("interp", attrib={"{http://www.w3.org/XML/1998/namespace}id":type_name})
                             interp_group.append(interp)
 
-                        relation_type = RelationType(name=type, element=interp, description="")
-                        pair_relation_types.add(relation_type)
-                        self.relation_types.append(relation_type)
+                        relation_type = RelationType(name=type_name, element=interp, description="")
+                        self.doc.relation_types[type_name] = relation_type
+                    
+                    pair_relation_types.add(relation_type)
 
-                pair = Pair(active=active, passive=passive, types=types)
+                pair = Pair(active=active, passive=passive, types=pair_relation_types)
                 self.pairs.append(pair)
                 if passive not in active_visited:
                     self.non_redundant_pairs.append(pair)
@@ -183,6 +205,12 @@ class App():
                     relation_type.pairs.add(pair)
 
         assert len(self.pairs) == len(self.non_redundant_pairs) * 2
+
+    def get_classified_pairs(self) -> list[Pair]:
+        return [pair for pair in self.pairs if len(pair.types) > 0]
+
+    def get_unclassified_pairs(self) -> list[Pair]:
+        return [pair for pair in self.pairs if len(pair.types) == 0]
 
     def __hash__(self):
         return hash(self.element)
@@ -249,48 +277,81 @@ class App():
         return text.strip()
 
 
-
-def get_relation_types(doc:ElementTree|Element, categories_to_ignore:list[str]|None=None) -> list[RelationType]:
-    interp_group = find_element(doc, ".//interpGrp[@type='transcriptional']")
-    categories_to_ignore = categories_to_ignore or []
-    
-    relation_categories = []
-    if interp_group is None:
-        print("No interpGrp of type='transcriptional' found in TEI file.")
-        return relation_categories
-    
-    for interp in find_elements(interp_group, "./interp"):
-        name = interp.attrib.get("{http://www.w3.org/XML/1998/namespace}id", "")
-        if name in categories_to_ignore:
-            continue
-        description = extract_text(interp).strip()
-        relation_categories.append(RelationType(name=name, element=interp, description=description))
-
-    return relation_categories
-
-
 @dataclass
 class Doc():
     path: Path
     tree: ElementTree = field(default=None)
     apps: list[App] = field(default_factory=list)
-    relation_types: list[RelationType] = field(default_factory=list)
+    relation_types: dict[str,RelationType] = field(default_factory=dict)
     
     def __post_init__(self):
         self.tree = read_tei(self.path)
-        self.relation_types = get_relation_types(self.tree)
+        self.relation_types = self.get_relation_types()
 
         for app_element in find_elements(self.tree, ".//app"):
-            app = App(app_element, relation_types=self.relation_types)
+            app = App(app_element, doc=self)
             self.apps.append(app)
-
 
     def __str__(self):
         return str(self.path)
-    
+
+    def __repr__(self) -> str:
+        return str(self)
+
     def write(self, output:str|Path):
         write_tei(self.tree, output)
+
+    @property
+    def language(self):
+        return get_language(self.tree)
     
+    def get_relation_types(self, categories_to_ignore:list[str]|None=None) -> list[RelationType]:
+        interp_group = find_element(self.tree, ".//interpGrp[@type='transcriptional']")
+        categories_to_ignore = categories_to_ignore or []
+        
+        relation_types = dict()
+        if interp_group is None:
+            print("No interpGrp of type='transcriptional' found in TEI file.")
+            return relation_types
+        
+        for interp in find_elements(interp_group, "./interp"):
+            name = interp.attrib.get("{http://www.w3.org/XML/1998/namespace}id", "")
+            if name in categories_to_ignore:
+                continue
+            description = extract_text(interp).strip()
+            relation_types[name] = RelationType(name=name, element=interp, description=description)
+
+        # get corresponding relations
+        for category in relation_types.values():
+            inverse_name = category.element.attrib.get("corresp", "")
+            if inverse_name.startswith("#"):
+                inverse_name = inverse_name[1:]
+
+            if inverse_name in relation_types:
+                inverse = relation_types[inverse_name]
+                category.inverse = inverse
+                if inverse.inverse is None:
+                    inverse.inverse = category
+                else:
+                    assert inverse.inverse == category, f"Inverse category {inverse} already has an inverse {inverse.inverse}."
+
+        return relation_types
+
+    def get_classified_pairs(self) -> list[Pair]:
+        pairs = []
+        for app in self.apps:
+            pairs.extend(app.get_classified_pairs())
+
+        return pairs
+
+    def get_unclassified_pairs(self) -> list[Pair]:
+        pairs = []
+        for app in self.apps:
+            pairs.extend(app.get_unclassified_pairs())
+
+        return pairs
+
+
 
 def read_doc(doc_path:Path) -> Doc:
     doc = Doc(doc_path)

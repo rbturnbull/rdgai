@@ -6,11 +6,11 @@ from rich.progress import track
 from dataclasses import dataclass
 import pandas as pd
 
-from .tei import read_tei, find_elements, get_language, write_tei, find_parent, find_element
-from .relations import get_relation_categories, get_relation_categories_dict, get_classified_relations, get_apparatus_unclassified_relations, make_readings_list
+from .tei import read_tei, find_elements, write_tei, find_parent, find_element
+# from .relations import get_relation_categories, get_relation_categories_dict, get_classified_relations
 from .prompts import build_template
 from .parsers import read_output
-from .apparatus import read_doc, RelationType, Pair, App
+from .apparatus import read_doc, RelationType, Pair, App, Doc
 from .mapper import Mapper
 from .llms import get_llm
 from .export import export_variants_to_excel, import_classifications_from_dataframe
@@ -39,21 +39,20 @@ def classify(
     """
     Classifies relations in TEI documents.
     """
-    doc_path = doc
-    doc = read_tei(doc_path)
-    relation_category_dict = get_relation_categories_dict(doc, categories_to_ignore=ignore)
-    get_classified_relations(doc, relation_category_dict.values())
-    language = get_language(doc)
     llm = get_llm(hf_auth=hf_auth, openai_api_key=openai_api_key, model_id=model_id)
 
-    for apparatus in track(find_elements(doc, ".//app")):
-        app = App(apparatus)
+    doc_path = doc
+    doc = Doc(doc_path)
+    relation_category_dict = doc.relation_categories_dict(categories_to_ignore=ignore)
+    language = doc.language
+    
+    for app in doc.apps:
         print(f"Analyzing apparatus at {app}")
-        unclassified_relations = get_apparatus_unclassified_relations(apparatus)
+        unclassified_relations = app.unclassified_relations()
         if not unclassified_relations:
             continue
 
-        readings = make_readings_list(apparatus)
+        readings = app.readings_list()
 
         template = build_template(relation_category_dict.values(), app, readings, language, examples=examples)
         if verbose or prompt_only:
@@ -93,18 +92,16 @@ def classify(
 @app.command()
 def show(
     doc:Path,
-    ignore:list[str]=typer.Option(None, help="Categories to ignore"),
 ):
     doc_path = doc
-    doc = read_tei(doc_path)
-    relation_categories = get_relation_categories(doc, ignore)
-    relations = get_classified_relations(doc, relation_categories)
-    for relation in relations:
-        active = relation.active or "OMITTED"
-        passive = relation.passive or "OMITTED"
-        # console.print(f"[purple]{relation.location}\t[bold red]{relation.category}[/bold red]: [green]{active}[bold red] -> [/bold red][green]{passive}")
-        console.print(f"[bold red]{relation.category}[/bold red]: [green]{active}[bold red] ➞ [/bold red][green]{passive}")
+    doc = Doc(doc_path)
+    for relation_type in doc.relation_types.values():
+        console.rule(str(relation_type))
+        console.print(relation_type.description)
+        for pair in relation_type.pairs_sorted():
+            pair.print(console)
 
+        console.print("")
 
 @app.command()
 def html(

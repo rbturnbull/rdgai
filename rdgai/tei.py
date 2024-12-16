@@ -147,3 +147,20 @@ def write_tei(doc:ElementTree, path:Path|str) -> None:
     doc.write(str(path), encoding="utf-8", xml_declaration=True, pretty_print=True)
 
 
+def get_reading_identifier(reading:Element, check:bool=False, create_if_necessary:bool=True) -> str:
+    identifier = reading.attrib.get("{http://www.w3.org/XML/1998/namespace}id", "")
+    if not identifier:
+        identifier = reading.attrib.get("n", "")
+
+    if not identifier and create_if_necessary:
+        app = reading.getparent()
+        identifier = 1
+        while find_element(app, f".//rdg[@n='{identifier}']") is not None:
+            identifier += 1
+        identifier = str(identifier)
+        reading.attrib["n"] = identifier
+    
+    if check:
+        assert identifier, f"Reading {reading} must have a name attribute 'xml:id' or 'n'."
+    
+    return identifier

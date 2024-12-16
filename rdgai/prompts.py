@@ -1,7 +1,6 @@
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langchain.prompts import ChatPromptTemplate
-from .apparatus import App
-from .relations import RelationCategory, Reading
+from .apparatus import App, RelationType, Reading
 
 
 def select_spaced_elements(lst:list, k:int) -> list:
@@ -19,7 +18,7 @@ def select_spaced_elements(lst:list, k:int) -> list:
     return [lst[i] for i in indices]
 
 
-def build_template(relation_categories:list[RelationCategory], app:App, readings:list[Reading], language:str, examples:int=10) -> ChatPromptTemplate:
+def build_template(relation_categories:list[RelationType], app:App, readings:list[Reading], language:str, examples:int=10) -> ChatPromptTemplate:
     system_message = f"You are an academic who is an expert in textual criticism in {language}."
 
     human_message = (

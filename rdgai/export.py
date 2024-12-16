@@ -6,7 +6,6 @@ import pandas as pd
 
 from .tei import write_tei
 from .apparatus import Doc
-from .relations import get_relation_categories_dict
 
 
 def export_variants_to_excel(doc:Doc, output:Path):
@@ -14,7 +13,7 @@ def export_variants_to_excel(doc:Doc, output:Path):
     wb = Workbook()
     header_font = Font(bold=True)
 
-    relation_category_dict = get_relation_categories_dict(doc.tree)
+    relation_category_dict = doc.relation_types_dict()
 
     # Rename the default sheet
     ws = wb.active
