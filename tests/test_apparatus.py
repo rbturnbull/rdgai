@@ -190,3 +190,30 @@ def test_app_text_in_context(app_names):
     assert app_names.apps[2].text_in_context() == 'Word1 Reading 1 Word2 Reading 1 Word3 ⸆ Word4'
     assert app_names.apps[3].text_in_context() == '⸂Reading 1⸃'
 
+
+def test_doc_add_relation_type_existing(minimal):
+    relation_type = list(minimal.relation_types.values())[0]
+    assert len(relation_type.pairs) == 0
+    assert len(minimal.relation_types) == 3
+    result = minimal.add_relation_type(relation_type.name, relation_type.description)
+    assert result == relation_type
+    assert len(minimal.relation_types) == 3
+
+
+def test_doc_write(minimal, tmp_path):
+    file = tmp_path / "minimal.xml"
+    minimal.write(file)
+    assert file.exists()
+    text = file.read_text()
+    assert '<interp xml:id="category1">Description 1</interp>' in text
+    assert '<app xml:id="app">' in text
+    assert '<rdg n="1">Reading 1</rdg>' in text
+
+
+def test_doc_inverse(inverses):
+    assert inverses.relation_types['Addition'].inverse == inverses.relation_types['Omission']
+    assert inverses.relation_types['Omission'].inverse == inverses.relation_types['Addition']
+    assert inverses.relation_types['Major_Addition'].inverse == inverses.relation_types['Major_Omission']
+    assert inverses.relation_types['Major_Omission'].inverse == inverses.relation_types['Major_Addition']
+    assert inverses.relation_types['Substitution'].inverse == None
+
