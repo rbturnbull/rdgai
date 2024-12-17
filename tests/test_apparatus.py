@@ -17,9 +17,15 @@ def test_doc_get_classified_pairs_arb(arb):
         assert len(pair.types) > 0
 
 
-def test_doc_get_classified_pairs_minimal_doc(minimal_doc):
-    result = minimal_doc.get_classified_pairs()
+def test_doc_get_classified_pairs_minimal(minimal):
+    result = minimal.get_classified_pairs()
     assert len(result) == 0
+
+
+def test_doc_get_classified_pairs_minimal(no_interpgrp):
+    assert len(no_interpgrp.relation_types) == 3
+    result = no_interpgrp.get_classified_pairs()
+    assert len(result) == 3
 
 
 def test_doc_get_unclassified_pairs_arb(arb):
@@ -30,20 +36,20 @@ def test_doc_get_unclassified_pairs_arb(arb):
         assert len(pair.types) == 0
 
 
-def test_doc_get_unclassified_pairs_minimal_doc(minimal_doc):
-    result = minimal_doc.get_unclassified_pairs()
+def test_doc_get_unclassified_pairs_minimal(minimal):
+    result = minimal.get_unclassified_pairs()
     assert len(result) == 6
     for pair in result:
         assert isinstance(pair, Pair)
         assert len(pair.types) == 0
 
 
-def test_doc_str(minimal_doc):
-    assert "minimal.xml" in str(minimal_doc)
+def test_doc_str(minimal):
+    assert "minimal.xml" in str(minimal)
 
 
-def test_doc_repr(minimal_doc):
-    assert "minimal.xml" in repr(minimal_doc)    
+def test_doc_repr(minimal):
+    assert "minimal.xml" in repr(minimal)    
 
 
 def test_reading_witnesses_str(arb):
@@ -68,16 +74,16 @@ def test_relationtype_eq(arb):
         assert relation_type == RelationType(name=relation_type.name, element=relation_type.element, description=relation_type.description)
 
 
-def test_pair_str(minimal_doc):
-    assert str(minimal_doc.apps[0].pairs[0]) == 'Reading 1 ➞ Reading 2'
+def test_pair_str(minimal):
+    assert str(minimal.apps[0].pairs[0]) == 'Reading 1 ➞ Reading 2'
 
 
-def test_pair_repr(minimal_doc):
-    assert repr(minimal_doc.apps[0].pairs[0]) == 'Reading 1 ➞ Reading 2'
+def test_pair_repr(minimal):
+    assert repr(minimal.apps[0].pairs[0]) == 'Reading 1 ➞ Reading 2'
     
 
-def test_pair_app_element(minimal_doc):
-    element = minimal_doc.apps[0].pairs[0].app_element()
+def test_pair_app_element(minimal):
+    element = minimal.apps[0].pairs[0].app_element()
     assert isinstance(element, Element)
     assert element.tag.endswith("app")
 
@@ -94,14 +100,14 @@ def test_pair_element_for_type(arb):
     assert pair.element_for_type(arb.relation_types['Orthography']) == None
 
 
-def test_pair_element_for_type_list_relation_none(minimal_doc):
-    pair = minimal_doc.apps[0].pairs[0]
+def test_pair_element_for_type_list_relation_none(minimal):
+    pair = minimal.apps[0].pairs[0]
     assert pair.element_for_type(None) == None
 
 
-def test_pair_add_type(minimal_doc):
-    pair = minimal_doc.apps[0].pairs[0]
-    relation_type = list(minimal_doc.relation_types.values())[0]
+def test_pair_add_type(minimal):
+    pair = minimal.apps[0].pairs[0]
+    relation_type = list(minimal.relation_types.values())[0]
     assert len(relation_type.pairs) == 0
     relation_element = pair.add_type(relation_type)
     assert len(relation_type.pairs) == 1
@@ -109,7 +115,7 @@ def test_pair_add_type(minimal_doc):
     assert relation_element.tag.endswith("relation")
     assert relation_element.attrib == {'active': '1', 'passive': '2', 'ana': '#category1'}
     assert relation_element.getparent().tag.endswith("listRelation")
-    assert minimal_doc.apps[0].element == relation_element.getparent().getparent()
+    assert minimal.apps[0].element == relation_element.getparent().getparent()
 
     assert relation_type in pair.types
 
@@ -119,15 +125,15 @@ def test_pair_add_type(minimal_doc):
     assert relation_element.attrib == {'active': '1', 'passive': '2', 'ana': '#category1'}
 
     # Add second type
-    relation_type2 = list(minimal_doc.relation_types.values())[1]
+    relation_type2 = list(minimal.relation_types.values())[1]
     relation_element2 = pair.add_type(relation_type2)
     assert relation_element2 == relation_element
     assert relation_element.attrib == {'active': '1', 'passive': '2', 'ana': '#category1 #category2'}
     
 
-def test_pair_remove_type(minimal_doc):
-    pair = minimal_doc.apps[0].pairs[0]
-    relation_type = list(minimal_doc.relation_types.values())[0]
+def test_pair_remove_type(minimal):
+    pair = minimal.apps[0].pairs[0]
+    relation_type = list(minimal.relation_types.values())[0]
     relation_element = pair.add_type(relation_type)
     assert relation_type in pair.types
     assert relation_element == pair.element_for_type(relation_type)
@@ -138,10 +144,10 @@ def test_pair_remove_type(minimal_doc):
     assert pair.element_for_type(relation_type) == None
 
 
-def test_pair_remove_type2(minimal_doc):
-    pair = minimal_doc.apps[0].pairs[0]
-    relation_type = list(minimal_doc.relation_types.values())[0]
-    relation_type2 = list(minimal_doc.relation_types.values())[1]
+def test_pair_remove_type2(minimal):
+    pair = minimal.apps[0].pairs[0]
+    relation_type = list(minimal.relation_types.values())[0]
+    relation_type2 = list(minimal.relation_types.values())[1]
 
     relation_element = pair.add_type(relation_type)
     relation_element2 = pair.add_type(relation_type2)
@@ -159,3 +165,28 @@ def test_pair_remove_type2(minimal_doc):
     assert relation_type2 in pair.types
 
     assert relation_element.attrib == {'active': '1', 'passive': '2', 'ana': '#category2'}
+
+
+def test_app_hash(arb):
+    assert hash(arb.apps[0]) == hash(arb.apps[0])
+    assert hash(arb.apps[0]) != hash(arb.apps[1])
+    assert hash(arb.apps[0]) == hash(arb.apps[0].element)
+
+
+def test_app_str(arb):
+    assert str(arb.apps[0]) == "Jn8_12-1"
+
+
+def test_app_str_fallbacks(app_names):
+    assert str(app_names.apps[2]) == "ab-3"
+    assert str(app_names.apps[0]) == "app"
+    assert str(app_names.apps[1]) == "app2"
+    assert str(app_names.apps[3]) == "NoAB"
+    
+
+def test_app_text_in_context(app_names):
+    assert app_names.apps[0].text_in_context() == 'Word1 ⸂Reading 1⸃ Word2 Reading 1 Word3 Word4'
+    assert app_names.apps[1].text_in_context() == 'Word1 Reading 1 Word2 ⸂Reading 1⸃ Word3 Word4'
+    assert app_names.apps[2].text_in_context() == 'Word1 Reading 1 Word2 Reading 1 Word3 ⸆ Word4'
+    assert app_names.apps[3].text_in_context() == '⸂Reading 1⸃'
+

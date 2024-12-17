@@ -1,8 +1,8 @@
 from rdgai.prompts import build_template
 
 
-def test_build_template(minimal_doc):
-    template = build_template(app=minimal_doc.apps[0])
+def test_build_template(minimal):
+    template = build_template(app=minimal.apps[0])
     assert len(template.messages) == 3
     response = template.invoke({}).to_string()
     assert "System: You are an academic who is an expert in textual criticism in Arabic." in response

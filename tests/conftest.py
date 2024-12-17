@@ -5,12 +5,17 @@ from rdgai.apparatus import Doc
 TEST_DATA_DIR = Path(__file__).parent / 'test-data'
 
 
-@pytest.fixture
-def minimal_doc():
-    return Doc(TEST_DATA_DIR/"minimal.xml")
+def make_fixture(path):
+    name = path.stem.replace("-", "_").replace(".", "_")
+    print(name)
+    @pytest.fixture(name=name)
+    def fixture_function():
+        return Doc(path)
+    
+    globals()[name] = fixture_function
+    return fixture_function
 
 
-@pytest.fixture
-def arb():
-    return Doc(TEST_DATA_DIR/"arb.xml")
-
+for path in TEST_DATA_DIR.glob("*.xml"):
+    make_fixture(path)
+    

@@ -182,24 +182,7 @@ class App():
 
                 pair_relation_types = set()
                 for type_name in types:
-                    if type_name in self.doc.relation_types:
-                        relation_type = self.doc.relation_types[type_name]
-                    else:
-                        # build RelationType if necessary
-                        text = find_parent(self.element, "text")
-                        interp_group = find_element(text, ".//interpGrp[@type='transcriptional']")
-                        if interp_group is None:
-                            interp_group = ET.Element("interpGrp", attrib={"type":"transcriptional"})
-                            text.insert(0, interp_group)
-                        
-                        interp = find_element(interp_group, f".//interp[@xml:id='{type_name}']")
-                        if interp is None:
-                            interp = ET.Element("interp", attrib={"{http://www.w3.org/XML/1998/namespace}id":type_name})
-                            interp_group.append(interp)
-
-                        relation_type = RelationType(name=type_name, element=interp, description="")
-                        self.doc.relation_types[type_name] = relation_type
-                    
+                    relation_type = self.doc.relation_types[type_name] if type_name in self.doc.relation_types else self.doc.add_relation_type(type_name)                    
                     pair_relation_types.add(relation_type)
 
                 pair = Pair(active=active, passive=passive, types=pair_relation_types)
@@ -247,16 +230,19 @@ class App():
         if ab is None:
             return ""
         
-        text = ""
+        items = []
         for child in ab:
             if child == self.element:
                 break
-            text += " " + extract_text(child)
+            child_text = extract_text(child)
+            if child_text:
+                items.append(child_text)
 
+        text = " ".join(items)
         return text.strip()
     
     def text_in_context(self) -> str:
-        return f"{self.text_before()} {self.text_with_signs()} {self.text_after()}"
+        return f"{self.text_before()} {self.text_with_signs()} {self.text_after()}".strip()
 
     def text(self) -> str:
         return extract_text(self.element)
@@ -272,14 +258,17 @@ class App():
         if ab is None:
             return ""
         
-        text = ""
+        items = []
         reached_element = False
         for child in ab:
             if reached_element:
-                text += " " + extract_text(child)
+                child_text = extract_text(child)
+                if child_text:
+                    items.append(child_text)
             if child == self.element:
                 reached_element = True
 
+        text = " ".join(items)
         return text.strip()
 
 
@@ -298,6 +287,30 @@ class Doc():
             app = App(app_element, doc=self)
             self.apps.append(app)
 
+    def get_interpgrp(self) -> Element:
+        text = find_element(self.tree, "text") 
+        interp_group = find_element(text, ".//interpGrp[@type='transcriptional']") 
+        if interp_group is None: 
+            interp_group = ET.Element("interpGrp", attrib={"type":"transcriptional"}) 
+            text.insert(0, interp_group) 
+
+        return interp_group
+
+    def add_relation_type(self, name:str, description:str="") -> RelationType:
+        if name in self.relation_types:
+            assert self.relation_types[name].description == description, f"RelationType {name} already exists with a different description."
+            return self.relation_types[name]
+    
+        interp_group = self.get_interpgrp()
+        interp = find_element(interp_group, f".//interp[@xml:id='{name}']")
+        if interp is None:
+            interp = ET.Element("interp", attrib={"{http://www.w3.org/XML/1998/namespace}id":name})
+            interp_group.append(interp)
+
+        relation_type = RelationType(name=name, element=interp, description="")
+        self.relation_types[name] = relation_type
+        return relation_type
+
     def __str__(self):
         return str(self.path)
 
@@ -312,18 +325,16 @@ class Doc():
         return get_language(self.tree)
     
     def get_relation_types(self, categories_to_ignore:list[str]|None=None) -> list[RelationType]:
-        interp_group = find_element(self.tree, ".//interpGrp[@type='transcriptional']")
+        interp_group = self.get_interpgrp()
         categories_to_ignore = categories_to_ignore or []
         
         relation_types = dict()
-        if interp_group is None:
-            print("No interpGrp of type='transcriptional' found in TEI file.")
-            return relation_types
+        assert interp_group is not None, "No interpGrp of type='transcriptional' found in TEI file."
         
         for interp in find_elements(interp_group, "./interp"):
             name = interp.attrib.get("{http://www.w3.org/XML/1998/namespace}id", "")
-            if name in categories_to_ignore:
-                continue
+            if name in categories_to_ignore: continue
+
             description = extract_text(interp).strip()
             relation_types[name] = RelationType(name=name, element=interp, description=description)
 
