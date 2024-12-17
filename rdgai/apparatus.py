@@ -106,13 +106,13 @@ class Pair():
                 return relation
         return None
     
-    def add_type(self, type:RelationType) -> Element|None:
-        self.types.add(type.name)
+    def add_type(self, type:RelationType) -> Element:
+        self.types.add(type)
         type.pairs.add(self)
 
         # Check if the relation already exists
         relation = self.element_for_type(type)
-        if relation:
+        if relation is not None:
             return relation
 
         list_relation = find_element(self.app_element(), ".//listRelation[@type='transcriptional']")
@@ -129,7 +129,7 @@ class Pair():
         return relation
 
     def remove_type(self, relation_type:RelationType):
-        self.types.remove(relation_type.name)
+        self.types.remove(relation_type)
         relation_type.pairs.remove(self)
 
         list_relation = find_element(self.app_element(), ".//listRelation[@type='transcriptional']")

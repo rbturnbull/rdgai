@@ -46,7 +46,7 @@ def extract_text(node:Element, include_tail:bool=True) -> str:
 
 
 def make_nc_name(string):
-    invalid_chars = "!\"#$%&'()*+/:;<=>?@[\]^,{|}~` "
+    invalid_chars = "!\"#$%&'()*+/:;<=>?@[\\]^,{|}~` "
     result = string.translate(str.maketrans(invalid_chars, '_' * len(invalid_chars)))
     # if result[0].isdigit or result[0] in [".", "-"]:
     #     result = "id-" + result
@@ -105,8 +105,9 @@ def find_elements(doc:ElementTree|Element, xpath:str) -> Element|None:
     if isinstance(doc, ElementTree):
         doc = doc.getroot()
     namespaces = doc.nsmap | {"xml": "http://www.w3.org/XML/1998/namespace"}
-    return doc.findall(xpath, namespaces=namespaces)
-
+    results = doc.findall(xpath, namespaces=namespaces)
+    results += doc.findall(xpath)
+    return results
 
 
 def find_parent(element:Element, tag:str) -> Element|None:

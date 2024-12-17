@@ -92,3 +92,70 @@ def test_pair_element_for_type(arb):
     assert element.attrib == {'active': '1', 'passive': '2', 'ana': '#Multiple_Word_Changes'}
 
     assert pair.element_for_type(arb.relation_types['Orthography']) == None
+
+
+def test_pair_element_for_type_list_relation_none(minimal_doc):
+    pair = minimal_doc.apps[0].pairs[0]
+    assert pair.element_for_type(None) == None
+
+
+def test_pair_add_type(minimal_doc):
+    pair = minimal_doc.apps[0].pairs[0]
+    relation_type = list(minimal_doc.relation_types.values())[0]
+    assert len(relation_type.pairs) == 0
+    relation_element = pair.add_type(relation_type)
+    assert len(relation_type.pairs) == 1
+    assert isinstance(relation_element, Element)
+    assert relation_element.tag.endswith("relation")
+    assert relation_element.attrib == {'active': '1', 'passive': '2', 'ana': '#category1'}
+    assert relation_element.getparent().tag.endswith("listRelation")
+    assert minimal_doc.apps[0].element == relation_element.getparent().getparent()
+
+    assert relation_type in pair.types
+
+    assert relation_element == pair.element_for_type(relation_type)
+
+    assert relation_element == pair.add_type(relation_type)
+    assert relation_element.attrib == {'active': '1', 'passive': '2', 'ana': '#category1'}
+
+    # Add second type
+    relation_type2 = list(minimal_doc.relation_types.values())[1]
+    relation_element2 = pair.add_type(relation_type2)
+    assert relation_element2 == relation_element
+    assert relation_element.attrib == {'active': '1', 'passive': '2', 'ana': '#category1 #category2'}
+    
+
+def test_pair_remove_type(minimal_doc):
+    pair = minimal_doc.apps[0].pairs[0]
+    relation_type = list(minimal_doc.relation_types.values())[0]
+    relation_element = pair.add_type(relation_type)
+    assert relation_type in pair.types
+    assert relation_element == pair.element_for_type(relation_type)
+    assert len(relation_type.pairs) == 1
+    pair.remove_type(relation_type)
+    assert relation_type not in pair.types
+    assert len(relation_type.pairs) == 0
+    assert pair.element_for_type(relation_type) == None
+
+
+def test_pair_remove_type2(minimal_doc):
+    pair = minimal_doc.apps[0].pairs[0]
+    relation_type = list(minimal_doc.relation_types.values())[0]
+    relation_type2 = list(minimal_doc.relation_types.values())[1]
+
+    relation_element = pair.add_type(relation_type)
+    relation_element2 = pair.add_type(relation_type2)
+
+    assert relation_type in pair.types
+    assert relation_type2 in pair.types
+    assert relation_element == pair.element_for_type(relation_type)
+    assert relation_element2 == pair.element_for_type(relation_type2)
+
+    assert len(relation_type.pairs) == 1
+    assert len(relation_type2.pairs) == 1
+
+    pair.remove_type(relation_type)
+    assert relation_type not in pair.types
+    assert relation_type2 in pair.types
+
+    assert relation_element.attrib == {'active': '1', 'passive': '2', 'ana': '#category2'}
