@@ -398,3 +398,43 @@ class Doc():
             output.write_text(html)
         
         return html
+
+    def flask_app(self, output:Path):
+        from flask import Flask, request, render_template
+
+        self.write(output)
+        mapper = Mapper()
+        
+        app = Flask(__name__)
+
+        @app.route("/")
+        def root():
+            return render_template('server.html', doc=self, mapper=mapper)
+
+        @app.route("/api/relation-type", methods=['POST'])
+        def api_relation_type():
+            data = request.get_json()
+            relation_type = mapper.obj(data['relation_type'])
+            pair = mapper.obj(data['pair'])
+            assert isinstance(relation_type, RelationType), f"Expected RelationType, got {type(relation_type)}"
+            assert isinstance(pair, Pair)
+
+            try:
+                if data['operation'] == 'remove':
+                    print('remove', relation_type)
+                    pair.remove_type(relation_type)
+                elif data['operation'] == 'add':
+                    print('add', relation_type)
+                    pair.add_type(relation_type)
+                
+                print('write', output)
+                self.write(output)
+                return "Success", 200           
+            except Exception as e:  
+                print(str(e))
+                return str(e), 400
+
+            return "Failed", 400
+
+        return app
+        # app.run(debug=True, use_reloader=True)

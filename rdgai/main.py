@@ -68,45 +68,12 @@ def html(
 def serve(
     doc:Path,
     output:Path,
+    debug:bool=True,
+    use_reloader:bool=True,
 ):
-    from flask import Flask, request, render_template
-
     doc = Doc(doc)
-    doc.write(output)
-    mapper = Mapper()
-    
-    app = Flask(__name__)
-
-    @app.route("/")
-    def root():
-        return render_template('server.html', doc=doc, mapper=mapper)
-
-    @app.route("/api/relation-type", methods=['POST'])
-    def api_relation_type():
-        data = request.get_json()
-        relation_type = mapper.obj(data['relation_type'])
-        pair = mapper.obj(data['pair'])
-        assert isinstance(relation_type, RelationType), f"Expected RelationType, got {type(relation_type)}"
-        assert isinstance(pair, Pair)
-
-        try:
-            if data['operation'] == 'remove':
-                print('remove', relation_type)
-                pair.remove_type(relation_type)
-            elif data['operation'] == 'add':
-                print('add', relation_type)
-                pair.add_type(relation_type)
-            
-            print('write', output)
-            doc.write(output)
-            return "Success", 200           
-        except Exception as e:  
-            print(str(e))
-            return str(e), 400
-
-        return "Failed", 400
-
-    app.run(debug=True, use_reloader=True)
+    flask_app = doc.flask_app(output)
+    flask_app.run(debug=debug, use_reloader=use_reloader)
 
 
 @app.command()

@@ -27,3 +27,18 @@ def test_main_classify(tmp_path):
     assert '<desc>c.f. Reading 2 ➞ Reading 1</desc>' in result
 
 
+def test_main_classified_pairs(capsys):
+    result = runner.invoke(app, ["classified-pairs", str(TEST_DATA_DIR/"arb.xml")])
+    assert result.exit_code == 0
+    assert "Single_Minor_Word_Change ───────────────────────────\nAn addition, omission" in result.stdout
+    assert "Jn8_12-7: الدهر بل تكون له ➞ الدهر بل يكون له\n" in result.stdout
+
+
+def test_main_html(tmp_path):
+    output = tmp_path / "output.html"
+    result = runner.invoke(app, ["html", str(TEST_DATA_DIR/"minimal.xml"), str(output)])
+    assert result.exit_code == 0
+    assert output.exists()
+    result = output.read_text()
+    assert '<h5 class="card-title large">Reading 1</h5>' in result
+    assert '<p class="relation"><span>Reading 1</span> &lrm;➜ <span>Reading 2</span></p>' in result

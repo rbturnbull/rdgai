@@ -1,3 +1,4 @@
+import pytest
 from rdgai.apparatus import Pair, RelationType
 from lxml.etree import _Element as Element
 
@@ -225,3 +226,18 @@ def test_doc_render_html(minimal, tmp_path):
     assert result == file.read_text()
     assert '<h5 class="card-title large">Reading 1</h5>' in result
     assert '<p class="relation"><span>Reading 1</span> &lrm;➜ <span>Reading 2</span></p>' in result
+
+
+@pytest.fixture
+def minimal_flask_test_client(minimal, tmp_path):
+    output = tmp_path / "minimal.xml"
+    flask_app = minimal.flask_app(output)
+    return flask_app.test_client()
+
+
+def test_doc_flask_app(minimal_flask_test_client):
+    response = minimal_flask_test_client.get("/")
+    assert response.status_code == 200
+    assert '<h5 class="card-title large">Reading 1</h5>' in response.data.decode()
+    assert '<p class="relation"><span>Reading 1</span> &lrm;➜ <span>Reading 2</span></p>' in response.data.decode()
+    
