@@ -1753,7 +1753,7 @@ requests-toolbelt = ">=1.0.0,<2.0.0"
 
 [[package]]
 name = "llmloader"
-version = "0.1.0"
+version = "0.1.1"
 description = "Loads a Langchain LLM by model name as a string."
 optional = false
 python-versions = "^3.10"
@@ -1774,7 +1774,7 @@ llama = ["accelerate (>=0.31.0)", "bitsandbytes (>=0.43.1)", "langchain-huggingf
 type = "git"
 url = "https://github.com/rbturnbull/llmloader.git"
 reference = "main"
-resolved_reference = "2c6263689add184db2e6ef459a6297c4cec2ca52"
+resolved_reference = "2e3ba257eb39a44f1465778d9cb9e940e71560e3"
 
 [[package]]
 name = "lxml"

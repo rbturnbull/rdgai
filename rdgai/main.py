@@ -6,14 +6,13 @@ from rich.progress import track
 from dataclasses import dataclass
 import pandas as pd
 
-from .tei import read_tei, find_elements, write_tei, find_parent, find_element
-# from .relations import get_relation_categories, get_relation_categories_dict, get_classified_relations
-from .prompts import build_template
-from .parsers import read_output
+from .tei import find_elements, find_parent, find_element
 from .apparatus import RelationType, Pair, App, Doc
 from .mapper import Mapper
-from .llms import get_llm
 from .export import export_variants_to_excel, import_classifications_from_dataframe
+from .classification import classify as classify_fn
+from .classification import DEFAULT_MODEL_ID
+
 
 console = Console()
 error_console = Console(stderr=True, style="bold red")
@@ -21,72 +20,30 @@ error_console = Console(stderr=True, style="bold red")
 
 app = typer.Typer(pretty_exceptions_enable=False)
     
-DEFAULT_MODEL_ID = "gpt-4o"
-
 
 @app.command()
 def classify(
     doc:Path,
     output:Path,
-    ignore:list[str]=typer.Option(None, help="Categories to ignore"),
     verbose:bool=False,
-    hf_auth:str=typer.Option("", envvar=["HF_AUTH"]),
-    openai_api_key:str=typer.Option("", envvar=["OPENAI_API_KEY"]),
-    model_id:str=DEFAULT_MODEL_ID,
+    api_key:str=typer.Option(""),
+    llm:str=DEFAULT_MODEL_ID,
     prompt_only:bool=False,
     examples:int=10,
 ):
     """
     Classifies relations in TEI documents.
     """
-    llm = get_llm(hf_auth=hf_auth, openai_api_key=openai_api_key, model_id=model_id)
-
-    doc_path = doc
-    doc = Doc(doc_path)
-    relation_category_dict = doc.relation_categories_dict(categories_to_ignore=ignore)
-    language = doc.language
-    
-    for app in doc.apps:
-        print(f"Analyzing apparatus at {app}")
-        unclassified_relations = app.unclassified_relations()
-        if not unclassified_relations:
-            continue
-
-        readings = app.readings_list()
-
-        template = build_template(relation_category_dict.values(), app, readings, language, examples=examples)
-        if verbose or prompt_only:
-            template.pretty_print()
-            if prompt_only:
-                return
-
-        chain = template | llm.bind(stop=["----"]) | StrOutputParser() | read_output
-
-        print("Classifying reading relations ✨")
-        results = chain.invoke({})
-
-        for result in results:
-            for relation in unclassified_relations:
-                category = relation_category_dict.get(result.category, None)
-                if category is None:
-                    continue
-                
-                if relation.active_name == result.reading_1_id and relation.passive_name == result.reading_2_id:
-                    console.print(f"[bold red]{relation.location}[/bold red]: [green]{relation.active} ➞ {relation.passive}[/green] [bold red]{category}[/bold red]")
-                    relation.add_category(category)
-                    relation.set_responsible("#rdgai")
-                    if result.justification:
-                        console.print(f"[green]Justification[/green]: {result.justification}")
-                        relation.set_description(result.justification)
-                elif relation.active_name == result.reading_2_id and relation.passive_name == result.reading_1_id:
-                    category = category.inverse if category.inverse else category
-                    console.print(f"[bold red]{relation.location}[/bold red]: [green]{relation.active} ➞ {relation.passive}[/green] [bold red]{category}[/bold red]")
-                    relation.add_category(category)
-                    relation.set_responsible("#rdgai")
-                    relation.set_description(f"c.f. {relation.active} ➞ {relation.passive}")                    
-
-                write_tei(doc, output)
-            
+    return classify_fn(
+        doc=doc, 
+        output=output, 
+        verbose=verbose, 
+        api_key=api_key, 
+        llm=llm, 
+        prompt_only=prompt_only, 
+        examples=examples, 
+        console=console,
+    )
 
 
 @app.command()

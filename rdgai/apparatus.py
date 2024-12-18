@@ -106,7 +106,7 @@ class Pair():
                 return relation
         return None
     
-    def add_type(self, type:RelationType) -> Element:
+    def add_type(self, type:RelationType, responsible:str="", description:str="") -> Element:
         self.types.add(type)
         type.pairs.add(self)
 
@@ -126,6 +126,17 @@ class Pair():
         else:
             relation = ET.SubElement(list_relation, "relation", attrib={"active":self.active.n, "passive":self.passive.n, "ana":f"#{type.name}"})
 
+        if responsible:
+            relation.set("resp", responsible)
+
+        description = description.strip()
+        if description:
+            description_element = find_element(relation, ".//desc")
+            if description_element is None:
+                description_element = ET.SubElement(relation, "desc")
+                
+            description_element.text = description
+
         return relation
 
     def remove_type(self, relation_type:RelationType):
@@ -138,11 +149,6 @@ class Pair():
                 relation.attrib['ana'] = " ".join([ana for ana in relation.attrib.get("ana").split() if ana != f"#{relation_type.name}"])
             if not relation.attrib.get("ana"):
                 relation.getparent().remove(relation)
-
-    # def rdgai_resposible(self) -> bool:
-    #     if self.relation_element is None:
-    #         return False
-    #     return self.relation_element.attrib.get("resp", "") == "#rdgai"
 
 
 @dataclass
