@@ -21,30 +21,6 @@ def get_language(doc:ElementTree|Element) -> str:
     return convert_language_code(code)
     
 
-def extract_text(node:Element, include_tail:bool=True) -> str:
-    text = node.text or ""
-    for child in node:
-        tag = re.sub(r"{.*}", "", child.tag)
-        if tag in ["pc", "witDetail", "note"]:
-            continue
-        if tag == "app":            
-            lemma = find_element(child, ".//lem")
-            if lemma is None:
-                lemma = find_element(child, ".//rdg")
-            text += extract_text(lemma) or ""
-            text += " "
-        else:
-            text += extract_text(child) or ""
-        
-            if tag == "w":
-                text += " "
-
-    if include_tail:
-        text += node.tail or ""
-
-    return text
-
-
 def make_nc_name(string):
     invalid_chars = "!\"#$%&'()*+/:;<=>?@[\\]^,{|}~` "
     result = string.translate(str.maketrans(invalid_chars, '_' * len(invalid_chars)))

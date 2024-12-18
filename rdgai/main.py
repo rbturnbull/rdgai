@@ -34,6 +34,7 @@ def classify(
     """
     Classifies relations in TEI documents.
     """
+    doc = Doc(doc)
     return classify_fn(
         doc=doc, 
         output=output, 
@@ -50,8 +51,7 @@ def classify(
 def classified_pairs(
     doc:Path,
 ):
-    doc_path = doc
-    doc = Doc(doc_path)
+    doc = Doc(doc)
     doc.print_classified_pairs(console)
 
 
