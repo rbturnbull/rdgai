@@ -1,3 +1,4 @@
+import re
 import pytest
 from rdgai.apparatus import Pair, RelationType
 from lxml.etree import _Element as Element
@@ -264,6 +265,17 @@ def test_doc_flask_app_add_remove(minimal_flask_test_client):
     assert response.data == b"Success"
     output_xml = minimal_flask_test_client.output.read_text()
     assert '<relation active="1" passive="2" ana="#category1"/>' not in output_xml
+
+
+def test_doc_clean(messy, tmp_path):
+    clean_path = tmp_path/"clean.xml"
+    messy.clean(clean_path)
+    assert clean_path.exists()
+    result = clean_path.read_text()
+    assert '<relation active="1" passive="2" ana="#category1 #category3 #category2"/>' in result
+    assert '<relation active="1" passive="3" ana="#category2"/>' in result
+    assert '<relation active="2" passive="3" ana="#category3"/>' in result
+    assert len(re.findall("<relation ", result)) == 3
 
 
 

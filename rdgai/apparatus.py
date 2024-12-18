@@ -440,3 +440,32 @@ class Doc():
 
         return app
         # app.run(debug=True, use_reloader=True)
+
+    def clean(self, output:Path|None=None):
+        """ Cleans a TEI XML file for common errors. """
+        
+        # find all listRelation elements
+        list_relations = find_elements(self.tree, ".//listRelation")
+        for list_relation in list_relations:
+            relations_so_far = set()
+            for relation in find_elements(list_relation, ".//relation"):
+                # make sure that relation elements have a # at the start of the ana attribute
+                if not relation.attrib['ana'].startswith("#"):
+                    relation.attrib['ana'] = f"#{relation.attrib['ana']}"
+                
+                relations_so_far.add( (relation.attrib['active'], relation.attrib['passive']) )
+            
+            # consolidate duplicate relations
+            for active, passive in relations_so_far:
+                relations = find_elements(list_relation, f".//relation[@active='{active}'][@passive='{passive}']")
+                if len(relations) > 1:
+                    analytic_set = set(relation.attrib['ana'] for relation in relations)
+                    for relation in relations[1:]:
+                        list_relation.remove(relation)
+                    relations[0].attrib['ana'] = " ".join(analytic_set)
+        
+        if output:
+            output = Path(output)
+            output.parent.mkdir(parents=True, exist_ok=True)
+            print("Writing to", output)
+            self.write(output)     
