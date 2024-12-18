@@ -217,3 +217,11 @@ def test_doc_inverse(inverses):
     assert inverses.relation_types['Major_Omission'].inverse == inverses.relation_types['Major_Addition']
     assert inverses.relation_types['Substitution'].inverse == None
 
+
+def test_doc_render_html(minimal, tmp_path):
+    file = tmp_path / "minimal.html"
+    result = minimal.render_html(output=file)
+    assert file.exists()
+    assert result == file.read_text()
+    assert '<h5 class="card-title large">Reading 1</h5>' in result
+    assert '<p class="relation"><span>Reading 1</span> &lrm;➜ <span>Reading 2</span></p>' in result

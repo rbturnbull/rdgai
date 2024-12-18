@@ -59,16 +59,9 @@ def classified_pairs(
 def html(
     doc:Path,
     output:Path,
-):
-    from flask import Flask, request, render_template
-    
+):    
     doc = Doc(doc)
-    mapper = Mapper()
-    app = Flask(__name__)
-
-    with app.app_context():
-        text = render_template('server.html', doc=doc, mapper=mapper)
-    output.write_text(text)
+    doc.render_html(output)
 
 
 @app.command()

@@ -8,7 +8,7 @@ from rich.console import Console
 
 # from .relations import Relation, get_reading_identifier
 from .tei import read_tei, find_elements, extract_text, find_parent, find_element, write_tei, make_nc_name, get_language, get_reading_identifier
-
+from .mapper import Mapper
 
 @dataclass
 class Reading():
@@ -384,3 +384,17 @@ class Doc():
 
             console.print("")
 
+    def render_html(self, output:Path|None=None) -> str:
+        from flask import Flask, request, render_template
+        
+        mapper = Mapper()
+        app = Flask(__name__)
+
+        with app.app_context():
+            html = render_template('server.html', doc=self, mapper=mapper)
+        
+        if output:
+            output.parent.mkdir(parents=True, exist_ok=True)
+            output.write_text(html)
+        
+        return html

@@ -97,7 +97,7 @@
                       {% endfor %}
                 </div>
             {% endfor %}     
-            {% for relation_type in doc.relation_types %}
+            {% for relation_type in doc.relation_types.values() %}
                 <div class="tab-pane fade show " id="{{ relation_type }}" role="tabpanel" aria-labelledby="{{ relation_type }}-tab" >
                     <h1>{{ relation_type }}</h1>
                     <ul class="nav flex-column pt-2" style='font-size: 3rem;'>
