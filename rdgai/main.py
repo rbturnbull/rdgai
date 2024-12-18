@@ -69,7 +69,7 @@ def serve(
     doc:Path,
     output:Path,
     debug:bool=True,
-    use_reloader:bool=True,
+    use_reloader:bool=False,
 ):
     doc = Doc(doc)
     flask_app = doc.flask_app(output)

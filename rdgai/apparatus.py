@@ -414,10 +414,12 @@ class Doc():
         @app.route("/api/relation-type", methods=['POST'])
         def api_relation_type():
             data = request.get_json()
+            
             relation_type = mapper.obj(data['relation_type'])
-            pair = mapper.obj(data['pair'])
             assert isinstance(relation_type, RelationType), f"Expected RelationType, got {type(relation_type)}"
-            assert isinstance(pair, Pair)
+            
+            pair = mapper.obj(data['pair'])
+            assert isinstance(pair, Pair), f"Expected Pair, got {type(pair)}"
 
             try:
                 if data['operation'] == 'remove':

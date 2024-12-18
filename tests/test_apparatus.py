@@ -232,7 +232,9 @@ def test_doc_render_html(minimal, tmp_path):
 def minimal_flask_test_client(minimal, tmp_path):
     output = tmp_path / "minimal.xml"
     flask_app = minimal.flask_app(output)
-    return flask_app.test_client()
+    client = flask_app.test_client()
+    client.output = output
+    return client
 
 
 def test_doc_flask_app(minimal_flask_test_client):
@@ -241,3 +243,27 @@ def test_doc_flask_app(minimal_flask_test_client):
     assert '<h5 class="card-title large">Reading 1</h5>' in response.data.decode()
     assert '<p class="relation"><span>Reading 1</span> &lrm;➜ <span>Reading 2</span></p>' in response.data.decode()
     
+
+def test_doc_flask_app_add_remove(minimal_flask_test_client):
+    data = {
+        "relation_type": "category1",
+        "pair": "Reading 1 ➞ Reading 2",
+        "operation": "add"
+    }
+    response = minimal_flask_test_client.get("/")
+
+    response = minimal_flask_test_client.post("/api/relation-type", json=data)
+    assert response.status_code == 200
+    assert response.data == b"Success"
+    output_xml = minimal_flask_test_client.output.read_text()
+    assert '<relation active="1" passive="2" ana="#category1"/>' in output_xml
+
+    data['operation'] = 'remove'
+    response = minimal_flask_test_client.post("/api/relation-type", json=data)
+    assert response.status_code == 200
+    assert response.data == b"Success"
+    output_xml = minimal_flask_test_client.output.read_text()
+    assert '<relation active="1" passive="2" ana="#category1"/>' not in output_xml
+
+
+

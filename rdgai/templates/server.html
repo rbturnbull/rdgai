@@ -48,7 +48,7 @@
           </ul>
           <hr>
           <ul class="nav flex-column pt-2">
-            {% for relation_type in doc.relation_types %}
+            {% for relation_type in doc.relation_types.values() %}
             <li class="nav-item">
               <a class="nav-link" aria-current="page" href="#"  id="{{ relation_type }}-tab" data-bs-toggle="tab" data-bs-target="#{{ relation_type }}" type="button" role="tab" aria-controls="{{ relation_type }}" aria-selected="true">
                 {% include 'assets/img/feather-list.svg' %}
@@ -83,7 +83,7 @@
                       {% for pair in app.pairs %}
                         <p class="relation"><span>{{ pair.active }}</span> &lrm;➜ <span>{{ pair.passive }}</span></p>
                         <div class="row justify-content-center text-center">              
-                        {% for relation_type in doc.relation_types %}
+                        {% for relation_type in doc.relation_types.values() %}
                         <div class="col-2 mb-2">
                           <button type="button" class="btn relation-btn {% if relation_type.name in pair.types %}btn-primary{%else%}btn-secondary{% endif %} btn-block" 
                           data-pair='{{ mapper.key(pair) }}'
