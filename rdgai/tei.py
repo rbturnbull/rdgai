@@ -49,8 +49,8 @@ def extract_text(node:Element, include_tail:bool=True) -> str:
     for child in node:
         text += " " + extract_text(child)
 
-    if include_tail:
-        text += node.tail or ""
+    if include_tail and node.tail:
+        text += " " + node.tail
 
     return text.strip()
 
