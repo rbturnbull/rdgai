@@ -98,7 +98,6 @@ def evaluate_docs(
 
         predicted.append(rdgai_ana)
         gold.append(ground_truth_ana)
-        print(eval_item)
 
     print(len(predicted), len(gold))
     assert len(predicted) == len(gold), f"Predicted and gold lengths do not match: {len(predicted)} != {len(gold)}"
