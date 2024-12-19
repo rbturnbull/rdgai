@@ -1,7 +1,6 @@
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langchain.prompts import ChatPromptTemplate
-from .apparatus import App
-from .relations import RelationCategory, Reading
+from .apparatus import App, RelationType, Reading
 
 
 def select_spaced_elements(lst:list, k:int) -> list:
@@ -19,7 +18,11 @@ def select_spaced_elements(lst:list, k:int) -> list:
     return [lst[i] for i in indices]
 
 
-def build_template(relation_categories:list[RelationCategory], app:App, readings:list[Reading], language:str, examples:int=10) -> ChatPromptTemplate:
+def build_template(app:App, examples:int=10) -> ChatPromptTemplate:
+    doc = app.doc
+    language = doc.language
+    readings = app.readings
+
     system_message = f"You are an academic who is an expert in textual criticism in {language}."
 
     human_message = (
@@ -29,10 +32,11 @@ def build_template(relation_categories:list[RelationCategory], app:App, readings
     )
     
     # Add the categories to the message
+    relation_categories = doc.relation_types.values()
     human_message += f"\nHere are {len(relation_categories)} possible categories for the types of changes in the text:\n"     
     for category in relation_categories:
         human_message += f"{category.str_with_description()}\n"
-        instance_strings = sorted(set(instance.reading_transition_str() for instance in category.instances if not instance.rdgai_resposible()), key=len)
+        instance_strings = sorted(set(instance.reading_transition_str() for instance in category.pairs if not instance.rdgai_resposible()), key=len)
         for instance_string in select_spaced_elements(instance_strings, examples):
             human_message += f"\te.g. {instance_string}\n"
 
@@ -44,7 +48,7 @@ def build_template(relation_categories:list[RelationCategory], app:App, readings
     human_message += f"\nHere are the {len(readings)} readings at that variation unit. Remember them so you can analyze them later:\n"
     for reading in readings:
         reading_text = reading.text or "OMITTED"
-        human_message += f"{reading.id}: {reading_text}\n"
+        human_message += f"{reading.n}: {reading_text}\n"
 
     # Describe output format
     human_message += (
@@ -66,7 +70,7 @@ def build_template(relation_categories:list[RelationCategory], app:App, readings
     for i, reading1 in enumerate(readings):
         for j in range(i + 1, len(readings)):
             reading2 = readings[j]
-            human_message += f"{reading1.id} → {reading2.id}\n"
+            human_message += f"{reading1.n} → {reading2.n}\n"
 
     human_message += "\nIf the change between one of those pairs of readings does not fit one of the categories, then do not output anything for that pair.\n"
     human_message += f"\nWhen you are finished, output 5 hyphens: '-----'.\n"

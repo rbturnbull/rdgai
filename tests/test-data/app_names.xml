@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+  <teiHeader>
+    <fileDesc>
+      <titleStmt>
+        <title>arb - Jn</title>
+      </titleStmt>
+      <publicationStmt>
+        <authority xml:id="RBT"/>
+        <date>2024</date>
+        <availability>
+          <p>This is an open access work licensed under a Creative Commons Attribution 4.0 International license.</p>
+        </availability>
+      </publicationStmt>
+      <sourceDesc>
+            </sourceDesc>
+    </fileDesc>
+  </teiHeader>
+  <text xml:lang="ara">
+    <body>
+      <ab n="ab">
+        <w>Word1</w>
+        <app xml:id="app">
+          <rdg n="1">Reading 1</rdg>
+          <rdg n="2">Reading 2</rdg>
+        </app>
+        <w>Word2</w>
+        <app n="app2">
+          <rdg n="1">Reading 1</rdg>
+          <rdg n="2">Reading 2</rdg>
+        </app>
+        <w>Word3</w>
+        <app>
+          <rdg n="1"></rdg>
+          <rdg n="2">Omitted Text</rdg>
+        </app>
+        <w>Word4</w>
+      </ab>
+      <app n="NoAB">
+          <rdg n="1">Reading 1</rdg>
+          <rdg n="2">Reading 2</rdg>
+      </app>
+    </body>
+  </text>
+</TEI>

@@ -1,0 +1,4 @@
+﻿App ID,Context,Active Reading ID,Passive Reading ID,Active Reading Text,Passive Reading Text,Relation Type(s)
+app,⸂Reading 1⸃,1,2,Reading 1,Reading 2,category1
+app,⸂Reading 1⸃,1,3,Reading 1,Reading 3,category3
+app,⸂Reading 1⸃,2,3,Reading 2,Reading 3,category2

@@ -21,32 +21,8 @@ def get_language(doc:ElementTree|Element) -> str:
     return convert_language_code(code)
     
 
-def extract_text(node:Element, include_tail:bool=True) -> str:
-    text = node.text or ""
-    for child in node:
-        tag = re.sub(r"{.*}", "", child.tag)
-        if tag in ["pc", "witDetail", "note"]:
-            continue
-        if tag == "app":            
-            lemma = find_element(child, ".//lem")
-            if lemma is None:
-                lemma = find_element(child, ".//rdg")
-            text += extract_text(lemma) or ""
-            text += " "
-        else:
-            text += extract_text(child) or ""
-        
-            if tag == "w":
-                text += " "
-
-    if include_tail:
-        text += node.tail or ""
-
-    return text
-
-
 def make_nc_name(string):
-    invalid_chars = "!\"#$%&'()*+/:;<=>?@[\]^,{|}~` "
+    invalid_chars = "!\"#$%&'()*+/:;<=>?@[\\]^,{|}~` "
     result = string.translate(str.maketrans(invalid_chars, '_' * len(invalid_chars)))
     # if result[0].isdigit or result[0] in [".", "-"]:
     #     result = "id-" + result
@@ -73,8 +49,8 @@ def extract_text(node:Element, include_tail:bool=True) -> str:
     for child in node:
         text += " " + extract_text(child)
 
-    if include_tail:
-        text += node.tail or ""
+    if include_tail and node.tail:
+        text += " " + node.tail
 
     return text.strip()
 
@@ -105,8 +81,9 @@ def find_elements(doc:ElementTree|Element, xpath:str) -> Element|None:
     if isinstance(doc, ElementTree):
         doc = doc.getroot()
     namespaces = doc.nsmap | {"xml": "http://www.w3.org/XML/1998/namespace"}
-    return doc.findall(xpath, namespaces=namespaces)
-
+    results = doc.findall(xpath, namespaces=namespaces)
+    results += doc.findall(xpath)
+    return results
 
 
 def find_parent(element:Element, tag:str) -> Element|None:
@@ -147,3 +124,20 @@ def write_tei(doc:ElementTree, path:Path|str) -> None:
     doc.write(str(path), encoding="utf-8", xml_declaration=True, pretty_print=True)
 
 
+def get_reading_identifier(reading:Element, check:bool=False, create_if_necessary:bool=True) -> str:
+    identifier = reading.attrib.get("{http://www.w3.org/XML/1998/namespace}id", "")
+    if not identifier:
+        identifier = reading.attrib.get("n", "")
+
+    if not identifier and create_if_necessary:
+        app = reading.getparent()
+        identifier = 1
+        while find_element(app, f".//rdg[@n='{identifier}']") is not None:
+            identifier += 1
+        identifier = str(identifier)
+        reading.attrib["n"] = identifier
+    
+    if check:
+        assert identifier, f"Reading {reading} must have a name attribute 'xml:id' or 'n'."
+    
+    return identifier

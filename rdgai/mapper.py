@@ -5,9 +5,6 @@ class Mapper():
         self.key_to_object = {}
         self.object_to_key = {}
     
-    def iii(self):
-        return "iii"
-
     def key(self, object):
         if object in self.object_to_key:
             return self.object_to_key[object]
