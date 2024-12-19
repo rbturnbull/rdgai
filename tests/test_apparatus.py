@@ -272,7 +272,7 @@ def test_doc_clean(messy, tmp_path):
     messy.clean(clean_path)
     assert clean_path.exists()
     result = clean_path.read_text()
-    assert '<relation active="1" passive="2" ana="#category1 #category3 #category2"/>' in result
+    assert '<relation active="1" passive="2" ana="#category1 #category2 #category3"/>' in result
     assert '<relation active="1" passive="3" ana="#category2"/>' in result
     assert '<relation active="2" passive="3" ana="#category3"/>' in result
     assert len(re.findall("<relation ", result)) == 3

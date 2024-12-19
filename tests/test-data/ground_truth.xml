@@ -30,8 +30,8 @@
           <rdg n="3">Reading 3</rdg>
           <listRelation type="transcriptional">
               <relation active="1" passive="2" ana="#category1"/>
-              <relation active="1" passive="3" ana="#category2"/>
-              <relation active="2" passive="3" ana="#category3"/>
+              <relation active="1" passive="3" ana="#category3"/>
+              <relation active="2" passive="3" ana="#category2"/>
           </listRelation>
         </app>
       </ab>

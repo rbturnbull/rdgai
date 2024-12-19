@@ -80,6 +80,9 @@ class Pair():
     
     def print(self, console):
         console.print(f"[bold red]{self.app}[/bold red]: [green]{self.active}[/green] [red]➞[/red] [green]{self.passive}[/green]")
+
+    def reading_transition_str(self) -> str:
+        return f"{self.active or 'OMISSION'} → {self.passive or 'OMISSION'}"
     
     def __repr__(self) -> str:
         return str(self)
@@ -95,13 +98,15 @@ class Pair():
     def app_element(self) -> Element:
         return find_parent(self.active.element, "app")
     
-    def element_for_type(self, type:RelationType) -> Element|None:
+    def relation_elements(self) -> list[Element]:
         list_relation = find_element(self.app_element(), ".//listRelation[@type='transcriptional']")
-        
         if list_relation is None:
-            return None
-        
-        for relation in find_elements(list_relation, f".//relation[@active='{self.active.n}'][@passive='{self.passive.n}']"):
+            return []
+
+        return find_elements(list_relation, f".//relation[@active='{self.active.n}'][@passive='{self.passive.n}']")
+    
+    def element_for_type(self, type:RelationType) -> Element|None:        
+        for relation in self.relation_elements():
             if f"#{type.name}" in relation.attrib.get("ana").split():
                 return relation
         return None
@@ -384,14 +389,14 @@ class Doc():
 
             console.print("")
 
-    def render_html(self, output:Path|None=None) -> str:
+    def render_html(self, output:Path|None=None, all_apps:bool=False) -> str:
         from flask import Flask, request, render_template
         
         mapper = Mapper()
         app = Flask(__name__)
 
         with app.app_context():
-            html = render_template('server.html', doc=self, mapper=mapper)
+            html = render_template('server.html', doc=self, mapper=mapper, all_apps=all_apps)
         
         if output:
             output.parent.mkdir(parents=True, exist_ok=True)
@@ -399,7 +404,7 @@ class Doc():
         
         return html
 
-    def flask_app(self, output:Path):
+    def flask_app(self, output:Path, all_apps:bool=False):
         from flask import Flask, request, render_template
 
         self.write(output)
@@ -409,7 +414,7 @@ class Doc():
 
         @app.route("/")
         def root():
-            return render_template('server.html', doc=self, mapper=mapper)
+            return render_template('server.html', doc=self, mapper=mapper, all_apps=all_apps)
 
         @app.route("/api/relation-type", methods=['POST'])
         def api_relation_type():
@@ -443,7 +448,7 @@ class Doc():
 
     def clean(self, output:Path|None=None):
         """ Cleans a TEI XML file for common errors. """
-        
+
         # find all listRelation elements
         list_relations = find_elements(self.tree, ".//listRelation")
         for list_relation in list_relations:
@@ -459,10 +464,14 @@ class Doc():
             for active, passive in relations_so_far:
                 relations = find_elements(list_relation, f".//relation[@active='{active}'][@passive='{passive}']")
                 if len(relations) > 1:
-                    analytic_set = set(relation.attrib['ana'] for relation in relations)
+                    analytic_set = set()
+                    for relation in relations:
+                        analytic_set.update(relation.attrib['ana'].split())
+
                     for relation in relations[1:]:
                         list_relation.remove(relation)
-                    relations[0].attrib['ana'] = " ".join(analytic_set)
+
+                    relations[0].attrib['ana'] = " ".join(sorted(analytic_set))
         
         if output:
             output = Path(output)

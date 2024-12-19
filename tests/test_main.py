@@ -1,3 +1,4 @@
+import re
 from typer.testing import CliRunner
 from rdgai.main import app
 from unittest.mock import patch
@@ -42,3 +43,15 @@ def test_main_html(tmp_path):
     result = output.read_text()
     assert '<h5 class="card-title large">Reading 1</h5>' in result
     assert '<p class="relation"><span>Reading 1</span> &lrm;➜ <span>Reading 2</span></p>' in result
+
+
+def test_main_clean(tmp_path):
+    output = tmp_path / "clean.xml"
+    result = runner.invoke(app, ["clean", str(TEST_DATA_DIR/"messy.xml"), str(output)])
+    assert result.exit_code == 0
+    assert output.exists()
+    result = output.read_text()
+    assert '<relation active="1" passive="2" ana="#category1 #category2 #category3"/>' in result
+    assert '<relation active="1" passive="3" ana="#category2"/>' in result
+    assert '<relation active="2" passive="3" ana="#category3"/>' in result
+    assert len(re.findall("<relation ", result)) == 3
