@@ -58,3 +58,19 @@ def read_output(llm_output:str) -> list[Result]:
 
         results.append( Result(reading1.strip(), reading2.strip(), category.strip(), justification.strip()) )
     return results
+
+
+def read_output_pair(llm_output:str) -> list[Result]:
+    """
+    Parses the output of a language model to category and justification.
+    """
+    llm_output = llm_output.strip()
+    if "\n" not in llm_output:
+        category = llm_output
+        justification = ""
+    else:
+        index = llm_output.find("\n")
+        category = llm_output[:index].strip()
+        justification = llm_output[index + 1:].strip()
+    return category, justification
+    

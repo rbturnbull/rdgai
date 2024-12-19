@@ -1,11 +1,13 @@
 from pathlib import Path
 from langchain.schema.output_parser import StrOutputParser
+from langchain_core.language_models.llms import LLM
 import llmloader
 from rich.console import Console
+from rich.progress import track
 
-from .prompts import build_template
-from .parsers import read_output
-from .apparatus import Doc
+from .prompts import build_template_pair
+from .parsers import read_output_pair
+from .apparatus import Doc, Pair
 
 
 DEFAULT_MODEL_ID = "gpt-4o"
@@ -14,6 +16,7 @@ DEFAULT_MODEL_ID = "gpt-4o"
 def classify(
     doc:Doc,
     output:Path,
+    pairs:list[Pair]|None=None,
     verbose:bool=False,
     api_key:str="",
     llm:str=DEFAULT_MODEL_ID,
@@ -29,45 +32,50 @@ def classify(
     console = console or Console()
     llm = llmloader.load(model=llm, api_key=api_key)
     
-    for app in doc.apps:
-        print(f"Analyzing apparatus at {app}")
-        unclassified_pairs = app.get_unclassified_pairs()
-        if not unclassified_pairs:
-            continue
-
-        template = build_template(app, examples=examples)
-        if verbose or prompt_only:
-            template.pretty_print()
-            if prompt_only:
-                return
-
-        chain = template | llm.bind(stop=["----"]) | StrOutputParser() | read_output
-
-        console.print(f"Saving output to: {output}")
-        doc.write(output)
-
-        print("Classifying reading relations ✨")
-        results = chain.invoke({})
-
-        for result in results:
-            for pair in unclassified_pairs:
-                relation_type = doc.relation_types.get(result.category, None)
-                if relation_type is None:
-                    continue
-                
-                description = result.justification
-                if pair.active.n == result.reading_2_id and pair.passive.n == result.reading_1_id:
-                    # if the pair is in the inverse order, swap the relation type
-                    relation_type = relation_type.inverse if relation_type.inverse else relation_type
-                    description = f"c.f. {pair.active} ➞ {pair.passive}"
-                elif pair.active.n != result.reading_1_id or pair.passive.n != result.reading_2_id:
-                    # if the pair doesn't match the result, skip
-                    continue
-
-                pair.print(console)
-                pair.add_type(relation_type, responsible="#rdgai", description=description)
-
-                doc.write(output)
+    pairs = pairs or doc.get_unclassified_pairs()
+    for pair in track(pairs):
+        classify_pair(doc, pair, llm, output, verbose=verbose, prompt_only=prompt_only, examples=examples, console=console)
         
         
+def classify_pair(
+    doc:Doc,
+    pair:Pair,
+    llm:LLM,
+    output:Path,
+    verbose:bool=False,
+    prompt_only:bool=False,
+    examples:int=10,
+    console:Console|None=None,
+):
+    """
+    Classifies relations for a pair of readings.
+    """
+    assert isinstance(doc, Doc), f"Expected Doc, got {type(doc)}"
+
+    console = console or Console()
+    print(f"Analyzing pair at {pair}")
+
+    template = build_template_pair(pair, examples=examples)
+    if verbose or prompt_only:
+        template.pretty_print()
+        if prompt_only:
+            return
+
+    chain = template | llm.bind(stop=["----"]) | StrOutputParser() | read_output_pair
+
+    console.print(f"Saving output to: {output}")
+    doc.write(output)
+
+    print("Classifying reading relations ✨")
+    category, description = chain.invoke({})
+
+    relation_type = doc.relation_types.get(category, None)
+    if relation_type is None:
+        return
+    
+    pair.print(console)
+    pair.add_type(relation_type, responsible="#rdgai", description=description)
+
+    doc.write(output)
+    
     

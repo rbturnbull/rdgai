@@ -155,6 +155,12 @@ class Pair():
             if not relation.attrib.get("ana"):
                 relation.getparent().remove(relation)
 
+    def rdgai_resposible(self) -> bool:
+        for element in self.relation_elements():
+            if element.attrib.get('resp', '') == '#rdgai':
+                return True
+        return False
+
 
 @dataclass
 class App():
@@ -252,14 +258,14 @@ class App():
         text = " ".join(items)
         return text.strip()
     
-    def text_in_context(self) -> str:
-        return f"{self.text_before()} {self.text_with_signs()} {self.text_after()}".strip()
+    def text_in_context(self, text="") -> str:
+        return f"{self.text_before()} {self.text_with_signs(text)} {self.text_after()}".strip()
 
     def text(self) -> str:
         return extract_text(self.element)
 
-    def text_with_signs(self) -> str:
-        text = self.text()
+    def text_with_signs(self, text="") -> str:
+        text = text or self.text()
         if not text:
             return "⸆"
         return f"⸂{text}⸃"
