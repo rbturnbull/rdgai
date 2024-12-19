@@ -111,7 +111,7 @@ class Pair():
                 return relation
         return None
     
-    def add_type(self, type:RelationType, responsible:str="", description:str="") -> Element:
+    def add_type(self, type:RelationType, responsible:str|None=None, description:str="") -> Element:
         self.types.add(type)
         type.pairs.add(self)
 
@@ -131,7 +131,7 @@ class Pair():
         else:
             relation = ET.SubElement(list_relation, "relation", attrib={"active":self.active.n, "passive":self.passive.n, "ana":f"#{type.name}"})
 
-        if responsible:
+        if responsible is not None:
             relation.set("resp", responsible)
 
         description = description.strip()

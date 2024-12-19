@@ -185,3 +185,4 @@ translate-arabic-categories.py
 translate-arabic-minimal.py
 x.xml
 xx.xml
+~$*.xlsx

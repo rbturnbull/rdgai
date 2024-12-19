@@ -4,7 +4,6 @@ from openpyxl.worksheet.datavalidation import DataValidation
 from openpyxl.styles import Font
 import pandas as pd
 
-from .tei import write_tei
 from .apparatus import Doc
 
 
@@ -13,7 +12,7 @@ def export_variants_to_excel(doc:Doc, output:Path):
     wb = Workbook()
     header_font = Font(bold=True)
 
-    relation_category_dict = doc.relation_types_dict()
+    relation_types = doc.relation_types
 
     # Rename the default sheet
     ws = wb.active
@@ -43,7 +42,7 @@ def export_variants_to_excel(doc:Doc, output:Path):
             
             current_row += 1
 
-    data_val = DataValidation(type="list",formula1=f'"{",".join(relation_category_dict.keys())}"')
+    data_val = DataValidation(type="list",formula1=f'"{",".join(relation_types.keys())}"')
     ws.add_data_validation(data_val)
 
     max_relation_types = max(10, max(len(pair.types) for app in doc.apps for pair in app.pairs))
@@ -61,8 +60,8 @@ def export_variants_to_excel(doc:Doc, output:Path):
         cell.value = header
         cell.font = header_font
 
-    # Populate the categories from relation_category_dict.keys()
-    for idx, category in enumerate(relation_category_dict.values(), start=2):  # Start from row 2
+    # Populate the categories from relation_types.keys()
+    for idx, category in enumerate(relation_types.values(), start=2):  # Start from row 2
         category_name = str(category)
         inverse_name = str(category.inverse) if category.inverse else category_name
         categories_worksheet[f'A{idx}'] = category_name
@@ -75,9 +74,9 @@ def export_variants_to_excel(doc:Doc, output:Path):
     wb.save(output)
 
 
-def import_classifications_from_dataframe(doc:Doc, variants_df:pd.DataFrame, output:Path):
+def import_classifications_from_dataframe(doc:Doc, variants_df:pd.DataFrame, output:Path, responsible:str|None=None):
     apps_dict = {str(app): app for app in doc.apps}
-    relation_category_dict = {str(category): category for category in doc.relation_types}
+    relation_types = doc.relation_types
     for _, row in variants_df.iterrows():
         app_id = row['App ID']
         active_reading_id = row['Active Reading ID']
@@ -86,17 +85,17 @@ def import_classifications_from_dataframe(doc:Doc, variants_df:pd.DataFrame, out
 
         types = set(row[key] for key in row.keys() if (key.startswith('Relation Type') or key.startswith('Unnamed: ')) and row[key])
         for type in types:
-            assert type in relation_category_dict, f'{type} not in {relation_category_dict.keys()}'
+            assert type in relation_types, f'{type} not in {relation_types.keys()}'
+        types = set(relation_types[type] for type in types)
 
-        # relation_type = relation_category_dict[row['Relation Type(s)']]
         for pair in app.pairs:
             if str(pair.active.n) == str(active_reading_id) and str(pair.passive.n) == str(passive_reading_id):
                 # Add relations
                 for type in types - pair.types:
-                    pair.add_type(relation_category_dict[type])
+                    pair.add_type(type, responsible=responsible)
             
                 # Remove relations
                 for type in pair.types - types:
-                    pair.remove_type(relation_category_dict[type])
+                    pair.remove_type(type)
 
     doc.write(output)        
