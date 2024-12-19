@@ -111,6 +111,7 @@ def import_classifications(
     doc:Path,
     spreadsheet:Path,
     output:Path,
+    responsible:str="",
 ):
     doc = Doc(doc)
     if spreadsheet.suffix == ".xlsx":
@@ -118,4 +119,10 @@ def import_classifications(
     elif spreadsheet.suffix == ".csv":
         variants_df = pd.read_csv(spreadsheet, keep_default_na=False)
 
-    import_classifications_from_dataframe(doc, variants_df, output)
+    # TODO add responsible to TEI header
+    responsible = responsible or spreadsheet.stem
+    responsible = responsible.replace(" ", "_")
+    if not responsible.startswith("#"):
+        responsible = "#" + responsible
+    
+    import_classifications_from_dataframe(doc, variants_df, output, responsible=responsible)
