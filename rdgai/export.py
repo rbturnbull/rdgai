@@ -92,10 +92,10 @@ def import_classifications_from_dataframe(doc:Doc, variants_df:pd.DataFrame, out
             if str(pair.active.n) == str(active_reading_id) and str(pair.passive.n) == str(passive_reading_id):
                 # Add relations
                 for type in types - pair.types:
-                    pair.add_type(type, responsible=responsible)
+                    pair.add_type_with_inverse(type, responsible=responsible)
             
                 # Remove relations
                 for type in pair.types - types:
-                    pair.remove_type(type)
+                    pair.remove_type_with_inverse(type)
 
     doc.write(output)        

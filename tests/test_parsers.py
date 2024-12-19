@@ -1,26 +1,5 @@
-from rdgai.parsers import read_output, Result
+from rdgai.parsers import parse_category_and_justification
 
-def test_basic_functionality():
-    llm_output = "r1 → r2 = cat1: justification1"
-    expected = [Result("r1", "r2", "cat1", "justification1")]
-    assert read_output(llm_output) == expected
-
-def test_no_arrow():
-    llm_output = "r1 r2 = cat1: justification1"
-    expected = []
-    assert read_output(llm_output) == expected
-
-def test_no_equals():
-    llm_output = "r1 → r2 cat1: justification1"
-    expected = []
-    assert read_output(llm_output) == expected
-
-def test_no_colon_in_category():
-    llm_output = "r1 → r2 = cat1"
-    expected = [Result("r1", "r2", "cat1", "")]
-    assert read_output(llm_output) == expected
-
-def test_empty_lines():
-    llm_output = "\n\nr1 → r2 = cat1: justification1\n\n"
-    expected = [Result("r1", "r2", "cat1", "justification1")]
-    assert read_output(llm_output) == expected
+def test_parse_category_and_justification():
+    assert parse_category_and_justification("category1\njustification1") == ("category1", "justification1")
+    assert parse_category_and_justification("category1") == ("category1", "")

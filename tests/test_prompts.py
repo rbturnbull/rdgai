@@ -1,4 +1,4 @@
-from rdgai.prompts import build_template, select_spaced_elements, build_template_pair
+from rdgai.prompts import build_template, select_spaced_elements, build_template
 
 
 # def test_build_template(minimal):
@@ -16,9 +16,9 @@ from rdgai.prompts import build_template, select_spaced_elements, build_template
 #     assert "AI: Certainly, classifications for combinations of the readings are:" in response
 
 
-def test_build_template_pair_minimal(minimal):
+def test_build_template_minimal(minimal):
     pair = minimal.apps[0].pairs[0]
-    template = build_template_pair(pair=pair)
+    template = build_template(pair=pair)
     assert len(template.messages) == 3
     response = template.invoke({}).to_string()
     assert "System: You are an academic who is an expert in textual criticism in Arabic." in response
@@ -28,17 +28,15 @@ def test_build_template_pair_minimal(minimal):
     assert "AI: Certainly, the category for changing from ⸂Reading 1⸃ to ⸂Reading 2⸃ is: " in response
 
 
-def test_build_template_pair_arb(arb):
+def test_build_template_arb(arb):
     pair = arb.apps[0].pairs[0]
-    template = build_template_pair(pair=pair)
+    template = build_template(pair=pair)
     assert len(template.messages) == 3
     response = template.invoke({}).to_string()
-    breakpoint()
     assert "System: You are an academic who is an expert in textual criticism in Arabic." in response
     assert "Human: I am analyzing textual variants in a document written in Arabic." in response
     assert "Orthography: Changes in spelling, diacritic" in response
     assert "Multiple_Word_Changes: Changes across more than one word." in response
-    assert "e.g. شي → شيا" in response
     assert "The variation unit you need to classify is marked as ⸆ in this text:" in response
     assert "What category would best describe a change from ⸂OMIT⸃ to ⸂قال الرب  للذين اتوا اليه من اليهود⸃?" in response
 

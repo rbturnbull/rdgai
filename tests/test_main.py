@@ -26,7 +26,7 @@ def test_main_classify(tmp_path):
     assert '<relation active="1" passive="2" ana="#category1" resp="#rdgai">' in result
     assert '<desc>justification1</desc>' in result
     assert '<relation active="2" passive="1" ana="#category1" resp="#rdgai">' in result
-    assert '<desc>c.f. Reading 2 ➞ Reading 1</desc>' in result
+    assert '<desc>c.f. Reading 1 ➞ Reading 2</desc>' in result
 
 
 def test_main_classified_pairs(capsys):

@@ -64,6 +64,9 @@ class RelationType():
     def pairs_sorted(self) -> list['Pair']:
         return sorted(self.pairs, key=lambda pair: (str(pair.active.app), pair.active.n, pair.passive.n))
 
+    def get_inverse(self) -> 'RelationType':
+        return self.inverse if self.inverse else self
+
 
 @dataclass
 class Pair():
@@ -111,6 +114,21 @@ class Pair():
                 return relation
         return None
     
+    def get_inverse(self) -> "Pair":
+        found_pair = None
+        for pair in self.app.pairs:
+            if pair.active == self.passive and pair.passive == self.active:
+                found_pair = pair
+                break
+        assert found_pair is not None, f"No inverse pair found for {self}"
+        return found_pair
+    
+    def add_type_with_inverse(self, type:RelationType, responsible:str|None=None, description:str="", inverse_description:str="") -> Element:
+        relation = self.add_type(type, responsible=responsible, description=description)
+        inverse = self.get_inverse()
+        inverse.add_type(type.get_inverse(), responsible=responsible, description=inverse_description)
+        return relation
+
     def add_type(self, type:RelationType, responsible:str|None=None, description:str="") -> Element:
         self.types.add(type)
         type.pairs.add(self)
@@ -145,8 +163,11 @@ class Pair():
         return relation
 
     def remove_type(self, relation_type:RelationType):
-        self.types.remove(relation_type)
-        relation_type.pairs.remove(self)
+        if relation_type in self.types:
+            self.types.remove(relation_type)
+
+        if self in relation_type.pairs:    
+            relation_type.pairs.remove(self)
 
         list_relation = find_element(self.app_element(), ".//listRelation[@type='transcriptional']")
         for relation in find_elements(list_relation, f".//relation[@active='{self.active.n}'][@passive='{self.passive.n}']"):
@@ -154,6 +175,11 @@ class Pair():
                 relation.attrib['ana'] = " ".join([ana for ana in relation.attrib.get("ana").split() if ana != f"#{relation_type.name}"])
             if not relation.attrib.get("ana"):
                 relation.getparent().remove(relation)
+
+    def remove_type_with_inverse(self, relation_type:RelationType):
+        self.remove_type(relation_type)
+        inverse = self.get_inverse()
+        inverse.remove_type(relation_type.get_inverse())
 
     def rdgai_resposible(self) -> bool:
         for element in self.relation_elements():
@@ -212,11 +238,13 @@ class App():
 
         assert len(self.pairs) == len(self.non_redundant_pairs) * 2
 
-    def get_classified_pairs(self) -> list[Pair]:
-        return [pair for pair in self.pairs if len(pair.types) > 0]
+    def get_classified_pairs(self, redundant:bool=True) -> list[Pair]:
+        pairs = self.pairs if redundant else self.non_redundant_pairs
+        return [pair for pair in pairs if len(pair.types) > 0]
 
-    def get_unclassified_pairs(self) -> list[Pair]:
-        return [pair for pair in self.pairs if len(pair.types) == 0]
+    def get_unclassified_pairs(self, redundant:bool=True) -> list[Pair]:
+        pairs = self.pairs if redundant else self.non_redundant_pairs
+        return [pair for pair in pairs if len(pair.types) == 0]
 
     def __hash__(self):
         return hash(self.element)
@@ -378,10 +406,10 @@ class Doc():
 
         return pairs
 
-    def get_unclassified_pairs(self) -> list[Pair]:
+    def get_unclassified_pairs(self, redundant:bool=True) -> list[Pair]:
         pairs = []
         for app in self.apps:
-            pairs.extend(app.get_unclassified_pairs())
+            pairs.extend(app.get_unclassified_pairs(redundant=redundant))
 
         return pairs
 
@@ -435,10 +463,10 @@ class Doc():
             try:
                 if data['operation'] == 'remove':
                     print('remove', relation_type)
-                    pair.remove_type(relation_type)
+                    pair.remove_type_with_inverse(relation_type)
                 elif data['operation'] == 'add':
                     print('add', relation_type)
-                    pair.add_type(relation_type)
+                    pair.add_type_with_inverse(relation_type)
                 
                 print('write', output)
                 self.write(output)

@@ -1,6 +1,6 @@
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langchain.prompts import ChatPromptTemplate
-from .apparatus import App, Pair, Doc
+from .apparatus import Pair, Doc
 
 
 def select_spaced_elements(lst:list, k:int) -> list:
@@ -118,7 +118,7 @@ def build_preamble(doc:Doc, examples:int=10) -> str:
     return human_message
 
 
-def build_template_pair(pair:Pair, examples:int=10) -> ChatPromptTemplate:
+def build_template(pair:Pair, examples:int=10) -> ChatPromptTemplate:
     app = pair.app
     doc = app.doc
 
