@@ -45,6 +45,9 @@ def classify_pair(
     print("Classifying reading relations ✨")
     category, description = chain.invoke({})
 
+    console.print(category, style="green bold")
+    console.print(description, style="grey46")
+
     relation_type = doc.relation_types.get(category, None)
     if relation_type is None:
         return
