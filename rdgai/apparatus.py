@@ -182,7 +182,7 @@ class Pair():
         inverse.remove_type(relation_type.get_inverse())
 
     def remove_all_types(self):
-        for relation_type in self.types:
+        for relation_type in set(self.types):
             self.remove_type_with_inverse(relation_type)
 
     def rdgai_responsible(self) -> bool:
@@ -192,7 +192,7 @@ class Pair():
         return False
 
     def relation_type_names(self) -> set[str]:
-        return (type.name for type in self.types)
+        return set(type.name for type in self.types)
 
     def get_description(self) -> str:
         description = ""
@@ -413,10 +413,10 @@ class Doc():
 
         return relation_types
 
-    def get_classified_pairs(self) -> list[Pair]:
+    def get_classified_pairs(self, redundant:bool=True) -> list[Pair]:
         pairs = []
         for app in self.apps:
-            pairs.extend(app.get_classified_pairs())
+            pairs.extend(app.get_classified_pairs(redundant=redundant))
 
         return pairs
 

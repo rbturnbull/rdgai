@@ -8,7 +8,7 @@ from .export import export_variants_to_excel, import_classifications_from_datafr
 from .classification import classify as classify_fn
 from .evaluation import evaluate_docs
 from .classification import DEFAULT_MODEL_ID
-
+from .validation import validate as validate_fn
 
 console = Console()
 error_console = Console(stderr=True, style="bold red")
@@ -85,6 +85,35 @@ def evaluate(
     ground_truth = Doc(ground_truth)
     
     evaluate_docs(predicted, ground_truth, confusion_matrix=confusion_matrix, confusion_matrix_plot=confusion_matrix_plot, report=report)
+
+
+@app.command()
+def validate(
+    ground_truth:Path,
+    output:Path,    
+    proportion:float=typer.Option(0.5, help="Proportion of classified pairs to use for validation."),
+    api_key:str=typer.Option(""),
+    llm:str=DEFAULT_MODEL_ID,
+    examples:int=10,
+    confusion_matrix:Path=None,
+    confusion_matrix_plot:Path=None,
+    seed:int=typer.Option(42, help="Seed for random sampling of validation pairs."),
+    report:Path=None,
+):
+    ground_truth = Doc(ground_truth)
+    
+    validate_fn(
+        ground_truth, 
+        output,
+        llm=llm,
+        api_key=api_key,
+        examples=examples,
+        seed=seed,
+        proportion=proportion,
+        confusion_matrix=confusion_matrix, 
+        confusion_matrix_plot=confusion_matrix_plot, 
+        report=report,
+    )
 
 
 @app.command()

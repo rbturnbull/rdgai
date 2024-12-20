@@ -5,6 +5,7 @@ from unittest.mock import patch
 from rdgai.main import app
 
 from .test_classification import mock_llm
+from .test_validation import mock_llm as mock_llm_validation
 from .conftest import TEST_DATA_DIR
 
 runner = CliRunner()
@@ -27,6 +28,58 @@ def test_main_classify(tmp_path):
     assert '<desc>justification1</desc>' in result
     assert '<relation active="2" passive="1" ana="#category1" resp="#rdgai">' in result
     assert '<desc>c.f. Reading 1 ➞ Reading 2</desc>' in result
+
+
+@patch("llmloader.load", lambda *args, **kwargs: mock_llm_validation)
+def test_main_validate(tmp_path):
+    output = tmp_path / "output.xml"
+    report = tmp_path / "report.html"
+    confusion_matrix = tmp_path / "confusion_matrix.csv"
+    confusion_matrix_plot = tmp_path / "confusion_matrix.svg"
+
+    result = runner.invoke(
+        app, 
+        [
+            "validate", 
+            str(TEST_DATA_DIR/"arb.xml"), 
+            str(output),
+            "--proportion", "0.05",
+            "--report", str(report),
+            "--confusion-matrix", str(confusion_matrix),
+            "--confusion-matrix-plot", str(confusion_matrix_plot),
+        ],
+    )
+                                 
+    assert result.exit_code == 0
+
+    assert output.exists()
+    output_text = output.read_text()
+    assert '<relation active="2" passive="4" ana="#Multiple_Word_Changes" resp="#rdgai">' in output_text
+    assert '<desc>justification1</desc>' in output_text
+    assert '<desc>c.f. الدهر بل تكون له ➞ الدهر بل تكون معه</desc>' in output_text
+
+    out = result.stdout
+
+    assert "No rdgai relations found in predicted document" not in out
+    assert "recall 25" in out
+    assert "f1 12" in out
+    assert "accuracy 33" in out
+
+    assert report.exists()
+    report_text = report.read_text()
+    assert "Incorrect (10)" in report_text
+    assert "Correct (5)" in report_text
+
+    assert confusion_matrix.exists()
+    confusion_matrix_text = confusion_matrix.read_text()
+    assert ',Orthography,Single_Minor_Word_Change,Single_Major_Word_Change,Multiple_Word_Changes,Transposition' in confusion_matrix_text
+    assert 'Orthography,0,0,0,1,0' in confusion_matrix_text
+    assert 'Single_Minor_Word_Change,0,0,0,6,0' in confusion_matrix_text
+    assert 'Single_Major_Word_Change,0,0,0,3,0' in confusion_matrix_text
+    assert 'Multiple_Word_Changes,0,0,0,5,0' in confusion_matrix_text
+
+    assert confusion_matrix_plot.exists()
+
 
 
 def test_main_classified_pairs(capsys):

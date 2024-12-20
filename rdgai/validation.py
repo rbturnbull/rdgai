@@ -4,7 +4,7 @@ from rich.console import Console
 
 from .apparatus import Doc, Pair
 from .classification import classify, DEFAULT_MODEL_ID
-from .evaluation import evaluate
+from .evaluation import evaluate_docs
 
 
 def validate(
@@ -13,6 +13,7 @@ def validate(
     validation_pairs:list[Pair]|None=None,
     verbose:bool=False,
     proportion:float=0.5,
+    seed:int=42,
     api_key:str="",
     llm:str=DEFAULT_MODEL_ID,
     examples:int=10,
@@ -30,6 +31,7 @@ def validate(
 
     # Find pairs to classify
     if not validation_pairs:
+        random.seed(seed)
         classified_pairs = doc.get_classified_pairs(redundant=False)
         validation_pairs = random.sample(classified_pairs, int(len(classified_pairs) * proportion))
 
@@ -50,7 +52,7 @@ def validate(
     )
 
     # Evaluate classifications
-    evaluate(
+    evaluate_docs(
         doc,
         ground_truth,
         pairs=validation_pairs,
