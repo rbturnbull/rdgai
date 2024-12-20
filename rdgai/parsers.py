@@ -10,6 +10,9 @@ class CategoryParser(Runnable):
         Parses the output of a language model to category and justification.
         """
         llm_output = llm_output.strip()
+        if "-----" in llm_output:
+            llm_output = llm_output[:llm_output.find("-----")]
+
         category = ""
         justification = ""
         minimim_index = len(llm_output)
