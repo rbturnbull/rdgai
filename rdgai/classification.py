@@ -6,7 +6,7 @@ from rich.console import Console
 from rich.progress import track
 
 from .prompts import build_template
-from .parsers import parse_category_and_justification
+from .parsers import CategoryParser
 from .apparatus import Doc, Pair
 
 
@@ -37,7 +37,7 @@ def classify_pair(
         if prompt_only:
             return
 
-    chain = template | llm.bind(stop=["----"]) | StrOutputParser() | parse_category_and_justification
+    chain = template | llm.bind(stop=["----"]) | StrOutputParser() | CategoryParser(doc.relation_types.keys())
 
     console.print(f"Saving output to: {output}")
     doc.write(output)
