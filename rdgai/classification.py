@@ -29,7 +29,6 @@ def classify_pair(
     assert isinstance(doc, Doc), f"Expected Doc, got {type(doc)}"
 
     console = console or Console()
-    print(f"Analyzing pair at {pair}")
 
     template = build_template(pair, examples=examples)
     if verbose or prompt_only:
@@ -39,12 +38,12 @@ def classify_pair(
 
     chain = template | llm.bind(stop=["----"]) | StrOutputParser() | CategoryParser(doc.relation_types.keys())
 
-    console.print(f"Saving output to: {output}")
     doc.write(output)
 
-    print("Classifying reading relations ✨")
     category, description = chain.invoke({})
 
+    console.print()
+    pair.print(console)
     console.print(category, style="green bold")
     console.print(description, style="grey46")
 
@@ -52,7 +51,6 @@ def classify_pair(
     if relation_type is None:
         return
     
-    pair.print(console)
     inverse_description = f"c.f. {pair.active} ➞ {pair.passive}"
     pair.add_type_with_inverse(relation_type, responsible="#rdgai", description=description, inverse_description=inverse_description)
 
@@ -66,6 +64,7 @@ def classify(
     verbose:bool=False,
     api_key:str="",
     llm:str=DEFAULT_MODEL_ID,
+    temperature:float=0.1,
     prompt_only:bool=False,
     examples:int=10,
     console:Console|None=None,
@@ -76,7 +75,7 @@ def classify(
     assert isinstance(doc, Doc), f"Expected Doc, got {type(doc)}"
 
     console = console or Console()
-    llm = llmloader.load(model=llm, api_key=api_key)
+    llm = llmloader.load(model=llm, api_key=api_key, temperature=temperature)
     
     pairs = pairs or doc.get_unclassified_pairs(redundant=False)
     for pair in track(pairs):

@@ -431,7 +431,7 @@ class Doc():
         console = console or Console()
         for relation_type in self.relation_types.values():
             console.rule(str(relation_type))
-            console.print(relation_type.description)
+            console.print(relation_type.description, style="grey46")
             for pair in relation_type.pairs_sorted():
                 pair.print(console)
 

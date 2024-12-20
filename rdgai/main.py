@@ -24,6 +24,7 @@ def classify(
     verbose:bool=False,
     api_key:str=typer.Option(""),
     llm:str=DEFAULT_MODEL_ID,
+    temperature:float=typer.Option(0.1, help="Temperature for sampling from the language model."),
     prompt_only:bool=False,
     examples:int=10,
 ):
@@ -37,6 +38,7 @@ def classify(
         verbose=verbose, 
         api_key=api_key, 
         llm=llm, 
+        temperature=temperature,
         prompt_only=prompt_only, 
         examples=examples, 
         console=console,
@@ -47,6 +49,7 @@ def classify(
 def classified_pairs(
     doc:Path,
 ):
+    """ Print classified pairs in a document. """
     doc = Doc(doc)
     doc.print_classified_pairs(console)
 
@@ -94,6 +97,7 @@ def validate(
     proportion:float=typer.Option(0.5, help="Proportion of classified pairs to use for validation."),
     api_key:str=typer.Option(""),
     llm:str=DEFAULT_MODEL_ID,
+    temperature:float=typer.Option(0.1, help="Temperature for sampling from the language model."),
     examples:int=10,
     confusion_matrix:Path=None,
     confusion_matrix_plot:Path=None,
@@ -109,6 +113,7 @@ def validate(
         api_key=api_key,
         examples=examples,
         seed=seed,
+        temperature=temperature,
         proportion=proportion,
         confusion_matrix=confusion_matrix, 
         confusion_matrix_plot=confusion_matrix_plot, 

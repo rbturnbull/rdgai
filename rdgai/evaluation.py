@@ -1,3 +1,4 @@
+import numpy as np
 from pathlib import Path
 from dataclasses import dataclass
 
@@ -125,7 +126,8 @@ def evaluate_docs(
         if confusion_matrix_plot or report:
             import plotly.graph_objects as go
 
-            cm_normalized = cm / cm.sum(axis=1, keepdims=True)
+            sums = cm.sum(axis=1, keepdims=True)
+            cm_normalized = cm / np.maximum(sums, 1)
 
             text_annotations = [[str(cm[i][j]) for j in range(len(labels))] for i in range(len(labels))]
 
