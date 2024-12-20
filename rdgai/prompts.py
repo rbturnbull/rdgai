@@ -36,7 +36,7 @@ def select_spaced_elements(lst:list, k:int) -> list:
 #     human_message += f"\nHere are {len(relation_categories)} possible categories for the types of changes in the text:\n"     
 #     for category in relation_categories:
 #         human_message += f"{category.str_with_description()}\n"
-#         instance_strings = sorted(set(instance.reading_transition_str() for instance in category.pairs if not instance.rdgai_resposible()), key=len)
+#         instance_strings = sorted(set(instance.reading_transition_str() for instance in category.pairs if not instance.rdgai_responsible()), key=len)
 #         for instance_string in select_spaced_elements(instance_strings, examples):
 #             human_message += f"\te.g. {instance_string}\n"
 
@@ -102,7 +102,7 @@ def build_preamble(doc:Doc, examples:int=10) -> str:
     human_message += "\n"
     human_message += f"Here are examples of these categories (NB. the word 'OMIT' indicates the absence of text in this reading):\n"
     for category in relation_categories:
-        instance_strings = sorted(set(instance.reading_transition_str() for instance in category.pairs if not instance.rdgai_resposible()), key=len)
+        instance_strings = sorted(set(instance.reading_transition_str() for instance in category.pairs if not instance.rdgai_responsible()), key=len)
         if len(instance_strings) == 0:
             continue
         human_message += f"{category}:\n"        

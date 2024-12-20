@@ -181,11 +181,25 @@ class Pair():
         inverse = self.get_inverse()
         inverse.remove_type(relation_type.get_inverse())
 
-    def rdgai_resposible(self) -> bool:
+    def remove_all_types(self):
+        for relation_type in self.types:
+            self.remove_type_with_inverse(relation_type)
+
+    def rdgai_responsible(self) -> bool:
         for element in self.relation_elements():
             if element.attrib.get('resp', '') == '#rdgai':
                 return True
         return False
+
+    def relation_type_names(self) -> set[str]:
+        return (type.name for type in self.types)
+
+    def get_description(self) -> str:
+        description = ""
+        for relation_element in self.relation_elements():
+            for desc in find_elements(relation_element, ".//desc"):
+                description += "\n" + extract_text(desc)
+        return description.strip()
 
 
 @dataclass

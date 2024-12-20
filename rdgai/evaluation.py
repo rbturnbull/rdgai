@@ -1,8 +1,8 @@
 from pathlib import Path
 from dataclasses import dataclass
 
-from .tei import find_elements, find_parent, find_element
-from .apparatus import App, Doc
+from .tei import find_elements
+from .apparatus import App, Doc, Pair
 
 @dataclass
 class EvalItem:
@@ -20,6 +20,7 @@ class EvalItem:
 def evaluate_docs(
     doc:Doc, 
     ground_truth:Doc,
+    pairs:list[Pair]|None=None,
     confusion_matrix:Path|None=None,
     confusion_matrix_plot:Path|None=None,
     report:Path|None=None,
@@ -34,11 +35,6 @@ def evaluate_docs(
     incorrect_items = []
 
     # Create a dictionary of ground truth relation elements to their corresponding pairs
-    predicted_pair_dict = dict()
-    for pair in doc.get_classified_pairs():
-        for relation_element in pair.relation_elements():
-            predicted_pair_dict[relation_element] = pair
-
     ground_truth_pair_dict = dict()
     for pair in ground_truth.get_classified_pairs():
         for relation_element in pair.relation_elements():
@@ -46,19 +42,19 @@ def evaluate_docs(
 
 
     # find all classified relations in the doc that have been classified with rdgai
-    rdgai_relations = find_elements(doc.tree, ".//relation[@resp='#rdgai']")
+    pairs = pairs or [pair for pair in doc.get_classified_pairs() if pair.rdgai_responsible()]
 
-    if len(rdgai_relations) == 0:
+    if len(pairs) == 0:
         print("No rdgai relations found in predicted document.")
         return
 
-    for rdgai_relation in rdgai_relations:
+    for pair in pairs:
         # find app
-        pair = predicted_pair_dict[rdgai_relation]
         app = pair.app
         app_id = str(app)
-        active = rdgai_relation.attrib['active']
-        passive = rdgai_relation.attrib['passive']
+        
+        active = pair.active.n
+        passive = pair.passive.n
 
         ground_truth_app = ground_truth_apps.get(app_id, None)
         if ground_truth_app is None:
@@ -68,18 +64,17 @@ def evaluate_docs(
         if not ground_truth_relations:
             continue
         ground_truth_relation = ground_truth_relations[0]
+        ground_truth_pair = ground_truth_pair_dict[ground_truth_relation]
         
         # exclude any classified with rdgai
-        if ground_truth_relation.attrib.get('resp', '') == '#rdgai':
+        if ground_truth_pair.rdgai_responsible():
             continue
 
-        ground_truth_ana = ground_truth_relation.attrib['ana'].replace("#", "")
-        rdgai_ana = rdgai_relation.attrib['ana'].replace("#", "")
+        ground_truth_types = ground_truth_pair.relation_type_names()
+        predicted_types = pair.relation_type_names()
 
-        desc = find_element(rdgai_relation, ".//desc")
-        description = desc.text if desc is not None else ""
+        description = pair.get_description()
 
-        ground_truth_pair = ground_truth_pair_dict[ground_truth_relation]
         eval_item = EvalItem(
             app_id=app_id,
             app=app,
@@ -87,17 +82,17 @@ def evaluate_docs(
             active=ground_truth_pair.active,
             passive=ground_truth_pair.passive,
             reading_transition_str=ground_truth_pair.reading_transition_str(),
-            ground_truth=ground_truth_ana,
-            predicted=rdgai_ana,
+            ground_truth=ground_truth_types,
+            predicted=predicted_types,
             description=description,
         )
-        if ground_truth_ana == rdgai_ana:
+        if ground_truth_types == predicted_types:
             correct_items.append(eval_item)
         else:
             incorrect_items.append(eval_item)
 
-        predicted.append(rdgai_ana)
-        gold.append(ground_truth_ana)
+        predicted.append(" ".join(sorted(predicted_types)))
+        gold.append(" ".join(sorted(ground_truth_types)))
 
     print(len(predicted), len(gold))
     assert len(predicted) == len(gold), f"Predicted and gold lengths do not match: {len(predicted)} != {len(gold)}"
