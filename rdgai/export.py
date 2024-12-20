@@ -84,18 +84,18 @@ def import_classifications_from_dataframe(doc:Doc, variants_df:pd.DataFrame, out
         app = apps_dict[app_id]
 
         types = set(row[key] for key in row.keys() if (key.startswith('Relation Type') or key.startswith('Unnamed: ')) and row[key])
-        for type in types:
-            assert type in relation_types, f'{type} not in {relation_types.keys()}'
-        types = set(relation_types[type] for type in types)
+        # for type in types:
+        #     assert type in relation_types, f'{type} not in {relation_types.keys()}'
+        types = set(relation_types[type] for type in types if type in relation_types)
 
         for pair in app.pairs:
             if str(pair.active.n) == str(active_reading_id) and str(pair.passive.n) == str(passive_reading_id):
                 # Add relations
                 for type in types - pair.types:
-                    pair.add_type(type, responsible=responsible)
+                    pair.add_type_with_inverse(type, responsible=responsible)
             
                 # Remove relations
                 for type in pair.types - types:
-                    pair.remove_type(type)
+                    pair.remove_type_with_inverse(type)
 
     doc.write(output)        

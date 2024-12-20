@@ -19,7 +19,7 @@
   <text xml:lang="ara">
     <interpGrp type="transcriptional">
       <interp xml:id="Orthography">Changes in spelling, diacritic marks, or orthography. This includes any alterations to how words are written without affecting their meaning, such as standardizing spelling or correcting errors. Also includes adding or removing an alif as a marker of the accusative or at the end of a plural verb.</interp>
-      <interp xml:id="Single_Minor_Word_Change">An addition, omission or substitution to a single minor word or part of a word, including the sustitution of a conjunction, pronoun, pronominal suffix, definite article, preposition or particle (such as 'قد'). This also includes an expansion or contraction of a word. It also includes changes to the verb form, such as modifications in verb tense, form, or voice, including changes to person or number and transformations between participle and verb. It the root word is the same but the number changes, then it falls in this category.</interp>
+      <interp xml:id="Single_Minor_Word_Change">An addition, omission or substitution to a single minor word or part of a word, including the substitution of a conjunction, pronoun, pronominal suffix, definite article, preposition or particle (such as 'قد'). This includes the expansion or contraction of a word and changes to verb form, such as modifications in verb tense, form, or voice, including changes to person or number and transformations between participle and verb. If the root word is the same but the number changes, then it falls in this category.</interp>
       <interp xml:id="Single_Major_Word_Change">An addition, omission or substitution to a single word that is more significant than a conjunction, pronoun, pronominal suffix, definite article, preposition, or particle (such as 'قد').</interp>
       <interp xml:id="Multiple_Word_Changes">Changes across more than one word. Words can be major or minor. Even if the changes are minor, if multiple words are changed, then it falls in this category.</interp>
       <interp xml:id="Transposition">The reordering of words or phrases within a sentence.</interp>
@@ -1134,8 +1134,8 @@
             <listRelation type="transcriptional">
               <relation active="2" passive="1" ana="#Orthography"/>
               <relation active="1" passive="2" ana="#Orthography"/>
-              <relation active="1" passive="3" ana="#Multiple_Word_Changes"/>
-              <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
               <relation active="2" passive="3" ana="#Single_Minor_Word_Change"/>
               <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
             </listRelation>
