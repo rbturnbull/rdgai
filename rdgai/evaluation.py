@@ -1,10 +1,12 @@
 import numpy as np
 from pathlib import Path
 from dataclasses import dataclass
+from langchain_core.language_models.llms import LLM
+from langchain.schema.output_parser import StrOutputParser
 
 from .tei import find_elements
 from .apparatus import App, Doc, Pair
-from .prompts import build_preamble
+from .prompts import build_preamble, build_review_prompt
 
 @dataclass
 class EvalItem:
@@ -19,6 +21,22 @@ class EvalItem:
     description:str = ""
 
 
+def llm_review_results(
+    doc:Doc,
+    correct_items:list[EvalItem],
+    incorrect_items:list[EvalItem],
+    llm:LLM|None=None,
+    examples:int=10,        
+):
+    template = build_review_prompt(doc, correct_items, incorrect_items, examples=examples)
+    result = ""
+    if llm:
+        chain = template | llm | StrOutputParser()
+        result = chain.invoke({})
+        
+    return template, result
+
+
 def evaluate_docs(
     doc:Doc, 
     ground_truth:Doc,
@@ -26,6 +44,7 @@ def evaluate_docs(
     confusion_matrix:Path|None=None,
     confusion_matrix_plot:Path|None=None,
     report:Path|None=None,
+    llm:LLM|None=None,
     examples:int=10,
 ):
     # get dictionary of ground truth apps
@@ -177,6 +196,14 @@ def evaluate_docs(
                 report.parent.mkdir(parents=True, exist_ok=True)
                 app = Flask(__name__)
 
+                review_template, review_result = llm_review_results(
+                    doc, 
+                    correct_items=correct_items, 
+                    incorrect_items=incorrect_items, 
+                    examples=examples, 
+                    llm=llm,
+                )
+
                 import plotly.io as pio
                 confusion_matrix_html = pio.to_html(fig, full_html=True, include_plotlyjs='inline')
 
@@ -193,5 +220,9 @@ def evaluate_docs(
                         correct_count=len(correct_items),
                         incorrect_count=len(incorrect_items),
                         prompt=build_preamble(doc, examples=examples),
+                        review_template=review_template,
+                        review_result=review_result,
                     )
                 report.write_text(text)
+
+

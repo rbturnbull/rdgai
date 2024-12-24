@@ -145,3 +145,32 @@ def build_template(pair:Pair, examples:int=10) -> ChatPromptTemplate:
         AIMessage(ai_message),        
     ])
     return template
+
+
+def build_review_prompt(
+    doc:Doc,
+    correct_items:list["EvalItem"],
+    incorrect_items:list["EvalItem"],
+    examples:int=10,
+):
+    prompt_preamble = build_preamble(doc, examples=examples)
+
+    system_message = f"You are an expert prompt engineer with expertise in {doc.language}.\n"
+
+    human_message = "Please review the prompt based on results compared with the ground truth.\n"
+    human_message += f"Here is the prompt:\n```\n{prompt_preamble}```\n"
+    human_message += "----\nHere are the correctly classified items:\n"
+    for item in correct_items:
+        human_message += f" - {item.reading_transition_str} in `{item.text_in_context}` was correctly classified as {', '.join(item.predicted)} with this as the justification: {item.description}\n"
+    human_message += "----\nHere are the incorrectly classified items:\n"
+    for item in incorrect_items:
+        human_message += f" - {item.reading_transition_str} in `{item.text_in_context}` was incorrectly classified as {', '.join(item.predicted)} when it should have been {', '.join(item.ground_truth)}. This was the justification given: {item.description}\n"
+
+    human_message += "----\nPlease provide feedback on the prompt. Are the text be editing to improve the accuracy of the results? Are there examples in the test set where the ground truth label is incorrect?.\n"
+
+    template = ChatPromptTemplate.from_messages(messages=[
+        SystemMessage(system_message),
+        HumanMessage(human_message),
+    ])
+
+    return template

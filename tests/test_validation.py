@@ -40,6 +40,7 @@ def test_validate(arb, tmp_path, capsys):
     assert "Correct (5)" in report_text
     assert "Base Prompt" in report_text
     assert "I am analyzing textual variants in a document written in Arabic." in report_text
+    assert "You are an expert prompt engineer with expertise in Arabic." in report_text
 
     assert confusion_matrix.exists()
     confusion_matrix_text = confusion_matrix.read_text()

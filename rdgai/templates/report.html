@@ -48,6 +48,12 @@
                 Prompt
               </a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" aria-current="page" href="#"  id="review-tab" data-bs-toggle="tab" data-bs-target="#review" type="button" role="tab" aria-controls="review" aria-selected="true">
+                {% include 'assets/img/feather-align-left.svg' %}
+                Review
+              </a>
+            </li>
             <li style="text-align: center; font-weight: bold;">Incorrect ({{incorrect_count}})</li>
             {% for item in incorrect_items %}
               <li class="nav-item">
@@ -117,9 +123,16 @@
 
           <div class="tab-pane fade show" id="prompt" role="tabpanel" aria-labelledby="prompt-tab">
             <h1>Base Prompt</h1>
-            <pre class="prompt">
-            {{ prompt }}
-            </pre>
+            <pre class="prompt">{{ prompt }}</pre>
+          </div>
+          <div class="tab-pane fade show" id="review" role="tabpanel" aria-labelledby="review-tab">
+            <h1>Review</h1>
+            <h2>Review Prompt</h2>
+            <pre class="prompt">{{ review_template.pretty_repr() }}</pre>
+            {% if review_result %}
+              <h2>Review Result</h2>
+              <pre class="prompt">{{ review_result }}</pre>
+            {% endif %}
           </div>
 
           {% for item in incorrect_items %}

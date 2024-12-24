@@ -1,6 +1,7 @@
 import random
 from pathlib import Path
 from rich.console import Console
+import llmloader
 
 from .apparatus import Doc, Pair
 from .classification import classify, DEFAULT_MODEL_ID
@@ -30,6 +31,8 @@ def validate(
     ground_truth.write(output)
     doc = Doc(output)
 
+    llm = llmloader.load(model=llm, api_key=api_key, temperature=temperature)
+
     # Find pairs to classify
     if not validation_pairs:
         random.seed(seed)
@@ -47,8 +50,6 @@ def validate(
         pairs=validation_pairs,
         verbose=verbose,
         llm=llm,
-        temperature=temperature,
-        api_key=api_key,
         examples=examples,
         console=console,
     )
@@ -62,5 +63,6 @@ def validate(
         confusion_matrix_plot=confusion_matrix_plot,
         report=report,
         examples=examples,
+        llm=llm,
     )
 
