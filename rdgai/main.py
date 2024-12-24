@@ -66,11 +66,20 @@ def html(
 @app.command()
 def serve(
     doc:Path,
-    output:Path,
+    output:Path=typer.Argument(None, help="The path to the output file."),
+    inplace: bool = typer.Option(False, "-i", help="Overwrite the input file."),
     debug:bool=True,
     use_reloader:bool=False,
     all_apps:bool=False,
 ):
+    if output and inplace:
+        raise typer.BadParameter("You cannot use both an output path and --inplace/-i at the same time.")
+    if not output and not inplace:
+        raise typer.BadParameter("You must provide either an output path or use --inplace/-i.")
+    
+    if inplace:
+        output = doc
+
     doc = Doc(doc)
     flask_app = doc.flask_app(output, all_apps=all_apps)
     flask_app.run(debug=debug, use_reloader=use_reloader)

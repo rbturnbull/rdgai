@@ -38,6 +38,7 @@ def validate(
         random.seed(seed)
         classified_pairs = doc.get_classified_pairs(redundant=False)
         validation_pairs = random.sample(classified_pairs, int(len(classified_pairs) * proportion))
+        validation_pairs = sorted(validation_pairs, key=lambda pair: (str(pair.active.app), pair.active.n, pair.passive.n))
 
     # Remove classifications from validation pairs
     for pair in validation_pairs:

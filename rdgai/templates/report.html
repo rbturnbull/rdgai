@@ -147,7 +147,7 @@
                   <div class="card bg-secondary text-white">
                     <div class="card-body">
                       <p class="card-text small">Ground Truth</p>
-                      <h5 class="card-title large">{{item.ground_truth}}</h5>
+                      <h5 class="card-title large">{{", ".join(item.ground_truth)}}</h5>
                     </div>
                   </div>
                 </div>
@@ -155,7 +155,7 @@
                   <div class="card bg-danger text-white">
                     <div class="card-body">
                       <p class="card-text small">Incorrect Prediction</p>
-                      <h5 class="card-title large">{{item.predicted}}</h5>
+                      <h5 class="card-title large">{{", ".join(item.predicted)}}</h5>
                       <h5 class="card-title large">{{item.description}}</h5>
                     </div>
                   </div>
@@ -176,7 +176,7 @@
                 <div class="card bg-secondary text-white">
                   <div class="card-body">
                     <p class="card-text small">Ground Truth</p>
-                    <h5 class="card-title large">{{item.ground_truth}}</h5>
+                    <h5 class="card-title large">{{", ".join(item.ground_truth)}}</h5>
                   </div>
                 </div>
               </div>
@@ -184,7 +184,7 @@
                 <div class="card bg-success text-white">
                   <div class="card-body">
                     <p class="card-text small">Correct Prediction</p>
-                    <h5 class="card-title large">{{item.predicted}}</h5>
+                    <h5 class="card-title large">{{", ".join(item.predicted)}}</h5>
                     <h5 class="card-title large">{{item.description}}</h5>
                   </div>
                 </div>
