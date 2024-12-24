@@ -5,6 +5,9 @@ from lxml.etree import _Element as Element
 from lxml.etree import _ElementTree as ElementTree
 from lxml import etree as ET
 from rich.console import Console
+import functools
+import Levenshtein
+import numpy as np
 
 # from .relations import Relation, get_reading_identifier
 from .tei import read_tei, find_elements, extract_text, find_parent, find_element, write_tei, make_nc_name, get_language, get_reading_identifier
@@ -61,12 +64,37 @@ class RelationType():
             result += f": {self.description}"
         return result
 
-    def pairs_sorted(self) -> list['Pair']:
-        return sorted(self.pairs, key=lambda pair: (str(pair.active.app), pair.active.n, pair.passive.n))
+    def pairs_sorted(self, exclude_rdgai:bool = False) -> list['Pair']:
+        pairs = sorted(self.pairs, key=lambda pair: (str(pair.active.app), pair.active.n, pair.passive.n))
+        if exclude_rdgai:
+            pairs = [pair for pair in pairs if not pair.rdgai_responsible()]
+        return pairs
 
     def get_inverse(self) -> 'RelationType':
         return self.inverse if self.inverse else self
+    
+    @functools.lru_cache(maxsize=None)
+    def representative_examples(self, k:int, random_state:int=42) -> list['Pair']:
+        import kmedoids
 
+        pairs_list = self.pairs_sorted(exclude_rdgai=True)
+
+        if len(pairs_list) <= k:
+            return pairs_list
+        distance_matrix = np.zeros((len(pairs_list), len(pairs_list)))
+        for index1, pair in enumerate(pairs_list):
+            for index2 in range(index1+1, len(pairs_list)):
+                other_pair = pairs_list[index2]
+                active_text_distance = Levenshtein.distance(pair.active.text, other_pair.active.text)
+                passive_text_distance = Levenshtein.distance(pair.passive.text, other_pair.passive.text)
+                distance = active_text_distance + passive_text_distance
+                distance_matrix[index1, index2] = distance
+                distance_matrix[index2, index1] = distance
+
+        result = kmedoids.fasterpam(distance_matrix, k, random_state=random_state, init="build")
+
+        return [pairs_list[index] for index in result.medoids]
+    
 
 @dataclass
 class Pair():

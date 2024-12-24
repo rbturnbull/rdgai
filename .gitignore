@@ -186,3 +186,4 @@ translate-arabic-minimal.py
 x.xml
 xx.xml
 ~$*.xlsx
+validate.sh

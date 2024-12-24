@@ -30,6 +30,8 @@ transformers = "^4.46.1"
 pandas = "^2.2.3"
 openpyxl = "^3.1.5"
 llmloader = {git = "https://github.com/rbturnbull/llmloader.git", branch = "main"}
+kmedoids = "^0.5.3.1"
+levenshtein = "^0.26.1"
 
 
 [tool.poetry.dev-dependencies]

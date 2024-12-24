@@ -19,6 +19,19 @@ def test_doc_get_classified_pairs_arb(arb):
         assert len(pair.types) > 0
 
 
+def test_relation_type_representative_examples(arb):
+    k = 5
+    relation_type = arb.relation_types['Orthography']
+    examples = relation_type.representative_examples(k)
+    assert len(examples) == k
+    assert str(examples[0]) == "ليس وحدي ➞ ليست وحدي"
+
+    k = 20
+    relation_type = arb.relation_types['Transposition']
+    examples = relation_type.representative_examples(k)
+    assert len(examples) == 8
+
+
 def test_doc_get_classified_pairs_minimal(minimal):
     result = minimal.get_classified_pairs()
     assert len(result) == 0

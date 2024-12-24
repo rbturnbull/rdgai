@@ -102,12 +102,12 @@ def build_preamble(doc:Doc, examples:int=10) -> str:
     human_message += "\n"
     human_message += f"Here are examples of these categories (NB. the word 'OMIT' indicates the absence of text in this reading):\n"
     for category in relation_categories:
-        instance_strings = sorted(set(instance.reading_transition_str() for instance in category.pairs if not instance.rdgai_responsible()), key=len)
-        if len(instance_strings) == 0:
+        representative_category_exampes = category.representative_examples(examples)
+        if len(representative_category_exampes) == 0:
             continue
         human_message += f"{category}:\n"        
-        for instance_string in select_spaced_elements(instance_strings, examples):
-            human_message += f"\te.g. {instance_string}\n"
+        for pair in representative_category_exampes:
+            human_message += f"\te.g. {pair.reading_transition_str()}\n"
 
     human_message += "\n"
     human_message += "I will give you a two variant readings. On the first line of your response, provide the correct category name for changing from the first reading to the second reading.\n"
