@@ -61,5 +61,6 @@ def validate(
         confusion_matrix=confusion_matrix,  
         confusion_matrix_plot=confusion_matrix_plot,
         report=report,
+        examples=examples,
     )
 

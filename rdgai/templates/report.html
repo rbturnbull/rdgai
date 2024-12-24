@@ -42,6 +42,12 @@
                 Overview
               </a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" aria-current="page" href="#"  id="prompt-tab" data-bs-toggle="tab" data-bs-target="#prompt" type="button" role="tab" aria-controls="prompt" aria-selected="true">
+                {% include 'assets/img/feather-align-left.svg' %}
+                Prompt
+              </a>
+            </li>
             <li style="text-align: center; font-weight: bold;">Incorrect ({{incorrect_count}})</li>
             {% for item in incorrect_items %}
               <li class="nav-item">
@@ -107,6 +113,13 @@
 
             <h2>Confusion Matrix</h2>
             {{ confusion_matrix|safe }}
+          </div>
+
+          <div class="tab-pane fade show" id="prompt" role="tabpanel" aria-labelledby="prompt-tab">
+            <h1>Base Prompt</h1>
+            <pre class="prompt">
+            {{ prompt }}
+            </pre>
           </div>
 
           {% for item in incorrect_items %}

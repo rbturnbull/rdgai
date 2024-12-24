@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from .tei import find_elements
 from .apparatus import App, Doc, Pair
+from .prompts import build_preamble
 
 @dataclass
 class EvalItem:
@@ -25,6 +26,7 @@ def evaluate_docs(
     confusion_matrix:Path|None=None,
     confusion_matrix_plot:Path|None=None,
     report:Path|None=None,
+    examples:int=10,
 ):
     # get dictionary of ground truth apps
     ground_truth_apps = {str(app):app for app in ground_truth.apps}
@@ -190,5 +192,6 @@ def evaluate_docs(
                         f1=f1,
                         correct_count=len(correct_items),
                         incorrect_count=len(incorrect_items),
+                        prompt=build_preamble(doc, examples=examples),
                     )
                 report.write_text(text)
