@@ -1919,7 +1919,7 @@ llama = ["accelerate (>=0.31.0)", "bitsandbytes (>=0.43.1)", "langchain-huggingf
 type = "git"
 url = "https://github.com/rbturnbull/llmloader.git"
 reference = "main"
-resolved_reference = "2e3ba257eb39a44f1465778d9cb9e940e71560e3"
+resolved_reference = "0157ab1a8f8a320670c660c3b56295bca73786fa"
 
 [[package]]
 name = "lxml"
