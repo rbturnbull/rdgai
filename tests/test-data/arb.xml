@@ -48,7 +48,7 @@
               </relation>
               <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
               <relation active="3" passive="2" ana="#Orthography"/>
-              <relation active="2" passive="3" ana="#Orthography" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="2" passive="3" ana="#Orthography">
                 <desc>The only change is the removal of the alif in اتوا which is merely an orthographic change.</desc>
               </relation>
             </listRelation>
@@ -79,18 +79,18 @@
           <rdg n="3" wit="S71+">صوته وقال</rdg>
           <note>
             <listRelation type="transcriptional">
-              <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
                 <desc>A single major word is added.</desc>
               </relation>
-              <relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-              <relation active="1" passive="3" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+              <relation active="1" passive="3" ana="#Single_Major_Word_Change">
                 <desc>A single major word is added.</desc>
               </relation>
-              <relation active="3" passive="1" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-              <relation active="2" passive="3" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="3" passive="1" ana="#Single_Major_Word_Change"/>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes">
                 <desc>Two words are added.</desc>
               </relation>
-              <relation active="3" passive="2" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
             </listRelation>
           </note>
         </app>
@@ -98,10 +98,10 @@
           <rdg n="1" wit="CSA S71+">انا  نور</rdg>
           <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139">انا هو نور</rdg>
           <listRelation type="transcriptional">
-            <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+            <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
               <desc>The pronoun هو is added which is a minor word.</desc>
             </relation>
-            <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+            <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
           </listRelation>
         </app>
         <app xml:id="Jn8_12-5">
@@ -113,10 +113,10 @@
           <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139">يمشي في الظلمه الي</rdg>
           <rdg n="2" wit="S71+">يمشي فى الظلمه</rdg>
           <listRelation type="transcriptional">
-            <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+            <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
               <desc>The preposition الي is added, which is a minor word.</desc>
             </relation>
-            <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+            <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
           </listRelation>
         </app>
         <app xml:id="Jn8_12-7">
@@ -203,10 +203,10 @@
           <rdg n="2" wit="S122 S128">اتشهد</rdg>
           <note>
             <listRelation type="transcriptional">
-              <relation active="1" passive="2" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
                 <desc>The pronoun انت is added and an alif is added to تشهد.</desc>
               </relation>
-              <relation active="2" passive="1" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
             </listRelation>
           </note>
         </app>
@@ -215,10 +215,10 @@
           <rdg n="1" wit="CSA J67 S118 S120 S122 S128 S137 S138 S139 S71+">ليس هى بحق</rdg>
           <rdg n="2" wit="J30">ليس هى حق</rdg>
           <listRelation type="transcriptional">
-            <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+            <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
               <desc>A ب preposition is add to حق.</desc>
             </relation>
-            <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+            <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
           </listRelation>
         </app>
       </ab>
@@ -322,8 +322,8 @@
           <rdg n="7" wit="S71+">اين جيت ولا  اين انطلق</rdg>
           <note>
             <listRelation type="transcriptional">
-              <relation active="7" passive="4" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-              <relation active="4" passive="7" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="7" passive="4" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="7" ana="#Multiple_Word_Changes">
                 <desc>Multiple words are changed.</desc>
               </relation>
             </listRelation>
@@ -338,8 +338,8 @@
           <rdg n="4" wit="S71+">انتم</rdg>
           <note>
             <listRelation type="transcriptional">
-              <relation active="4" passive="2" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-              <relation active="2" passive="4" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="4" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="4" ana="#Multiple_Word_Changes">
                 <desc>Multiple words are changed. The conjunction و is added to انتم and the word انما is added.</desc>
               </relation>
             </listRelation>
@@ -356,10 +356,10 @@
               <relation active="3" passive="4" ana="#Multiple_Word_Changes">
                 <desc>Two words are omitted.</desc>
               </relation>
-              <relation active="2" passive="4" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="2" passive="4" ana="#Single_Major_Word_Change">
                 <desc>The major word تقظون is omitted.</desc>
               </relation>
-              <relation active="4" passive="2" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="4" passive="2" ana="#Single_Major_Word_Change"/>
             </listRelation>
           </note>
         </app>
@@ -368,10 +368,10 @@
           <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139">الجسد</rdg>
           <rdg n="2" wit="S71+">الجسد انتم</rdg>
           <listRelation type="transcriptional">
-            <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+            <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
               <desc>The pronoun انتم is added.</desc>
             </relation>
-            <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+            <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
           </listRelation>
         </app>
         <app xml:id="Jn8_15-4">
@@ -379,10 +379,10 @@
           <rdg n="2" wit="S71+">تقضوا</rdg>
           <note>
             <listRelation type="transcriptional">
-              <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
                 <desc>The major word تقضوا is added.</desc>
               </relation>
-              <relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
             </listRelation>
           </note>
         </app>
@@ -416,7 +416,7 @@
           <rdg n="5" wit="S71+">فليس ادين احد</rdg>
           <note>
             <listRelation type="transcriptional">
-              <relation active="2" passive="5" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="2" passive="5" ana="#Multiple_Word_Changes">
                 <desc>Two changes occur. The conjunction ف is added at the start and the orthographic change occurs by addings an alif of nasb to احد.</desc>
               </relation>
               <relation active="5" passive="2" ana="#Multiple_Word_Changes"/>
@@ -500,10 +500,10 @@
               </relation>
               <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
               <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
-              <relation active="2" passive="4" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="2" passive="4" ana="#Single_Minor_Word_Change">
                 <desc>The form of ليست is changed to ليس.</desc>
               </relation>
-              <relation active="4" passive="2" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="4" passive="2" ana="#Single_Minor_Word_Change"/>
             </listRelation>
           </note>
         </app>
@@ -533,10 +533,10 @@
               <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
                 <desc>The و conjunction is omitted.</desc>
               </relation>
-              <relation active="1" passive="3" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
                 <desc>A و conjunction is omitted and pronominal suffix is added to a single word.</desc>
               </relation>
-              <relation active="3" passive="1" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
             </listRelation>
           </note>
         </app>
@@ -571,18 +571,18 @@
           <rdg n="3" wit="S71+">حق هي</rdg>
           <note>
             <listRelation type="transcriptional">
-              <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
                 <desc>The major word حق is omitted.</desc>
               </relation>
-              <relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-              <relation active="1" passive="3" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
                 <desc>The pronoun هي is added.</desc>
               </relation>
-              <relation active="3" passive="1" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-              <relation active="2" passive="3" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes">
                 <desc>Two words are added.</desc>
               </relation>
-              <relation active="3" passive="2" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
             </listRelation>
           </note>
         </app>
@@ -598,14 +598,14 @@
               <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
                 <desc>The conjunction و is added.</desc>
               </relation>
-              <relation active="1" passive="3" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
                 <desc>The pronoun انا is omitted.</desc>
               </relation>
-              <relation active="3" passive="1" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-              <relation active="2" passive="3" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
                 <desc>The pronoun (with conjunction) وانا is omitted.</desc>
               </relation>
-              <relation active="3" passive="2" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
             </listRelation>
           </note>
         </app>
@@ -614,10 +614,10 @@
           <rdg n="2" wit="S128"/>
           <note>
             <listRelation type="transcriptional">
-              <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
                 <desc>The major word اشهد is omitted.</desc>
               </relation>
-              <relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
             </listRelation>
           </note>
         </app>
@@ -626,10 +626,10 @@
           <rdg n="2" wit="S128"/>
           <note>
             <listRelation type="transcriptional">
-              <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
                 <desc>The preposition علي is omitted.</desc>
               </relation>
-              <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
             </listRelation>
           </note>
         </app>
@@ -638,10 +638,10 @@
           <rdg n="2" wit="S128"/>
           <note>
             <listRelation type="transcriptional">
-              <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
                 <desc>The major word نفسى is omitted.</desc>
               </relation>
-              <relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
             </listRelation>
           </note>
         </app>
@@ -751,10 +751,10 @@
           <rdg n="1" wit="CSA S71+">بيت الكنز</rdg>
           <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139">بيت القربان</rdg>
           <listRelation type="transcriptional">
-            <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+            <relation active="1" passive="2" ana="#Single_Major_Word_Change">
               <desc>The noun الكنز is changed to القربان.</desc>
             </relation>
-            <relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+            <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
           </listRelation>
         </app>
         <span>اذ</span>
@@ -884,10 +884,10 @@
           <rdg n="2" wit="J67 S118 S120 S122 S128 S137 S138 S139">انا</rdg>
           <note>
             <listRelation type="transcriptional">
-              <relation active="1" passive="2" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
                 <desc>Two words are omitted.</desc>
               </relation>
-              <relation active="2" passive="1" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
             </listRelation>
           </note>
         </app>
@@ -899,10 +899,10 @@
           <rdg n="5" wit="S71+">انطلق وتطلبونى ولا</rdg>
           <note>
             <listRelation type="transcriptional">
-              <relation active="3" passive="5" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="3" passive="5" ana="#Multiple_Word_Changes">
                 <desc>The verb انطلق is changed to اذهب and the final word وفي was changed to ولا</desc>
               </relation>
-              <relation active="5" passive="3" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="5" passive="3" ana="#Multiple_Word_Changes"/>
             </listRelation>
           </note>
         </app>
@@ -939,18 +939,18 @@
           <rdg n="3" wit="S71+">انطلق انا فانتم</rdg>
           <note>
             <listRelation type="transcriptional">
-              <relation active="2" passive="3" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes">
                 <desc>The verb انطلق is changed to اذهب and the pronoun (with conjunction) فانتم is added.</desc>
               </relation>
-              <relation active="3" passive="2" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-              <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
                 <desc>The verb انطلق is changed to اذهب.</desc>
               </relation>
-              <relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-              <relation active="1" passive="3" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
                 <desc>The pronoun (with conjunction) فانتم is added.</desc>
               </relation>
-              <relation active="3" passive="1" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
             </listRelation>
           </note>
         </app>
@@ -1150,24 +1150,24 @@
             <listRelation type="transcriptional">
               <relation active="2" passive="5" ana="#Multiple_Word_Changes"/>
               <relation active="5" passive="2" ana="#Multiple_Word_Changes"/>
-              <relation active="1" passive="3" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes">
                 <desc>Multiple words are omitted.</desc>
               </relation>
-              <relation active="3" passive="1" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-              <relation active="1" passive="5" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-              <relation active="5" passive="1" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-              <relation active="2" passive="3" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="5" ana="#Multiple_Word_Changes"/>
+              <relation active="5" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes">
                 <desc>Multiple words are omitted.</desc>
               </relation>
-              <relation active="3" passive="2" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-              <relation active="3" passive="4" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="4" ana="#Multiple_Word_Changes">
                 <desc>Multiple words are added.</desc>
               </relation>
-              <relation active="4" passive="3" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-              <relation active="3" passive="5" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="5" ana="#Multiple_Word_Changes">
                 <desc>Multiple words are added.</desc>
               </relation>
-              <relation active="5" passive="3" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="5" passive="3" ana="#Multiple_Word_Changes"/>
             </listRelation>
           </note>
         </app>
@@ -1217,10 +1217,10 @@
           <rdg n="1" wit="CSA J30 S118 S120 S122 S128 S137 S138 S139 S71+">هو فانكم تموتون</rdg>
           <rdg n="2" wit="J67">هو</rdg>
           <listRelation type="transcriptional">
-            <relation active="1" passive="2" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+            <relation active="1" passive="2" ana="#Multiple_Word_Changes">
               <desc>Two words are omitted.</desc>
             </relation>
-            <relation active="2" passive="1" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+            <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
           </listRelation>
         </app>
         <app xml:id="Jn8_24-5">
@@ -1231,14 +1231,14 @@
             <listRelation type="transcriptional">
               <relation active="1" passive="3" ana="#Single_Major_Word_Change"/>
               <relation active="3" passive="1" ana="#Single_Major_Word_Change"/>
-              <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
                 <desc>The major word بخطاياكم is omitted.</desc>
               </relation>
-              <relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-              <relation active="2" passive="3" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+              <relation active="2" passive="3" ana="#Single_Major_Word_Change">
                 <desc>The major word باثامكم is added.</desc>
               </relation>
-              <relation active="3" passive="2" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="3" passive="2" ana="#Single_Major_Word_Change"/>
             </listRelation>
           </note>
         </app>
@@ -1446,10 +1446,10 @@
           <rdg n="1" wit="CSA J67 S118 S120 S122 S128 S137 S138 S139 S71+">ولم يعلموا</rdg>
           <rdg n="2" wit="J30">ولم يعلمون</rdg>
           <listRelation type="transcriptional">
-            <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+            <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
               <desc>The form of يعلموا is changed to يعلمون.</desc>
             </relation>
-            <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+            <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
           </listRelation>
         </app>
         <app xml:id="Jn8_27-2">
@@ -1457,8 +1457,8 @@
           <rdg n="2" wit="J67 S118 S120 S122 S128 S137 S138 S139 S71+">انه من</rdg>
           <note>
             <listRelation type="transcriptional">
-              <relation active="2" passive="1" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-              <relation active="1" passive="2" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
                 <desc>A pronominal suffix is added to ان and the preposition من is added.</desc>
               </relation>
             </listRelation>
@@ -1519,8 +1519,8 @@
           <rdg n="2" wit="J30 J67 S118 S122 S128 S137 S138">وليس</rdg>
           <note>
             <listRelation type="transcriptional">
-              <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-              <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
                 <desc>The form of ولست is changed to وليس.</desc>
               </relation>
             </listRelation>
@@ -1546,10 +1546,10 @@
               <relation active="1" passive="2" ana="#Orthography">
                 <desc>The alif of nasb is added.</desc>
               </relation>
-              <relation active="1" passive="3" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
                 <desc>The preposition ب is added and the alif of nasb is added to the single word شي.</desc>
               </relation>
-              <relation active="3" passive="1" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
               <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
                 <desc>The preposition ب is added.</desc>
               </relation>
@@ -1599,10 +1599,10 @@
           <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139">معي وليس</rdg>
           <rdg n="3" wit="S71+">معي لم</rdg>
           <listRelation type="transcriptional">
-            <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c">
+            <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
               <desc>The minor word لم is replaced with ليس.</desc>
             </relation>
-            <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c"/>
+            <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
           </listRelation>
         </app>
         <span>يتركني</span>
@@ -1647,10 +1647,10 @@
                 <desc>The minor word ان is omitted.</desc>
               </relation>
               <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
-              <relation active="2" passive="3" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="2" passive="3" ana="#Single_Major_Word_Change">
                 <desc>The major word يسوع is added.</desc>
               </relation>
-              <relation active="3" passive="2" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="3" passive="2" ana="#Single_Major_Word_Change"/>
             </listRelation>
           </note>
         </app>
@@ -1685,10 +1685,10 @@
               <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
                 <desc>The form of the verb امنوا is changed to امن.</desc>
               </relation>
-              <relation active="2" passive="3" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
                 <desc>The preposition (with suffix) به is added.</desc>
               </relation>
-              <relation active="3" passive="2" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
             </listRelation>
           </note>
         </app>
@@ -1889,10 +1889,10 @@
           <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139">الحق والحق</rdg>
           <rdg n="2" wit="S71+">الحق والحق هو</rdg>
           <listRelation type="transcriptional">
-            <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+            <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
               <desc>The pronoun هو is added which is a minor word.</desc>
             </relation>
-            <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+            <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
           </listRelation>
         </app>
         <app xml:id="Jn8_32-3">
@@ -2087,14 +2087,14 @@
                 <desc>The number of تقول is changed to تقولوا.</desc>
               </relation>
               <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
-              <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
                 <desc>The pronoun انت is added.</desc>
               </relation>
-              <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-              <relation active="2" passive="3" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes">
                 <desc>The number of تقول is changed to تقولوا and the pronoun انت is added.</desc>
               </relation>
-              <relation active="3" passive="2" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
             </listRelation>
           </note>
         </app>
@@ -2191,17 +2191,17 @@
               <relation active="1" passive="2" ana="#Multiple_Word_Changes">
                 <desc>Changes are made to multiple words. The spelling of يسوع is changed to ايسوع and the preposition (with suffix) لهم is added.</desc>
               </relation>
-              <relation active="1" passive="5" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="1" passive="5" ana="#Single_Minor_Word_Change">
                 <desc>The preposition (with suffix) لهم is added.</desc>
               </relation>
-              <relation active="1" passive="6" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="1" passive="6" ana="#Single_Minor_Word_Change">
                 <desc>The conjunction ف is changed to و.</desc>
               </relation>
-              <relation active="2" passive="4" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="2" passive="4" ana="#Multiple_Word_Changes">
                 <desc>Multiple minor changes occur. The spelling of ايسوع is changed to يسوع and the conjunction ف is changed to و.</desc>
               </relation>
-              <relation active="4" passive="2" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-              <relation active="2" passive="6" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="4" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="6" ana="#Multiple_Word_Changes">
                 <desc>Multiple minor changes occur. The spelling of ايسوع is changed to يسوع and the conjunction ف is changed to و and the preposition (with suffix) لهم is omitted.</desc>
               </relation>
             </listRelation>
@@ -2243,10 +2243,10 @@
                 <desc>The minor word كل is added.</desc>
               </relation>
               <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
-              <relation active="2" passive="3" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
                 <desc>The minor word كل is omitted.</desc>
               </relation>
-              <relation active="3" passive="2" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
             </listRelation>
           </note>
         </app>
@@ -2291,7 +2291,7 @@
           <rdg n="2" wit="S71+">للدهر</rdg>
           <note>
             <listRelation type="transcriptional">
-            <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c"><desc>The major word للدهر is added.</desc></relation><relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c"/></listRelation>
+            <relation active="1" passive="2" ana="#Single_Major_Word_Change"><desc>The major word للدهر is added.</desc></relation><relation active="2" passive="1" ana="#Single_Major_Word_Change"/></listRelation>
           </note>
         </app>
         <app xml:id="Jn8_35-3">
@@ -2350,14 +2350,14 @@
                 <desc>The alif for the plural verb is omitted.</desc>
               </relation>
               <relation active="2" passive="1" ana="#Orthography"/>
-              <relation active="1" passive="3" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes">
                 <desc>The two words are transposed.</desc>
               </relation>
-              <relation active="3" passive="1" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-              <relation active="2" passive="3" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes">
                 <desc>The two words are transposed and the alif for the plural verb is added.</desc>
               </relation>
-              <relation active="3" passive="2" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
               <relation active="4" passive="1" ana="#Single_Minor_Word_Change"/>
               <relation active="1" passive="4" ana="#Single_Minor_Word_Change">
                 <desc>The form of the verb تكونوا is changed to تكونون.</desc>
@@ -2374,17 +2374,17 @@
               <relation active="3" passive="4" ana="#Multiple_Word_Changes">
                 <desc>The two words are transposed and the form of the verb تكونوا is changed to تكونون.</desc>
               </relation>
-              <relation active="3" passive="5" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="3" passive="5" ana="#Multiple_Word_Changes">
                 <desc>The two words are transposed and the alif of nasb is added.</desc>
               </relation>
               <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
               <relation active="5" passive="1" ana="#Orthography"/>
               <relation active="5" passive="2" ana="#Orthography"/>
-              <relation active="5" passive="3" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-              <relation active="4" passive="5" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="5" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="5" ana="#Multiple_Word_Changes">
                 <desc>The form of the verb تكونون is changed to تكونوا and the alif of nasb is added.</desc>
               </relation>
-              <relation active="5" passive="4" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="5" passive="4" ana="#Multiple_Word_Changes"/>
               <relation active="4" passive="2" ana="#Single_Minor_Word_Change"/>
             </listRelation>
           </note>
@@ -2476,18 +2476,18 @@
             <listRelation type="transcriptional">
               <relation active="3" passive="4" ana="#Multiple_Word_Changes"/>
               <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
-              <relation active="1" passive="2" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
                 <desc>Multiple words are omitted.</desc>
               </relation>
-              <relation active="2" passive="1" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-              <relation active="2" passive="3" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes">
                 <desc>Multiple words are added.</desc>
               </relation>
-              <relation active="3" passive="2" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-              <relation active="2" passive="4" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="4" ana="#Multiple_Word_Changes">
                 <desc>Multiple words are added.</desc>
               </relation>
-              <relation active="4" passive="2" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="4" passive="2" ana="#Multiple_Word_Changes"/>
             </listRelation>
           </note>
         </app>
@@ -2504,7 +2504,7 @@
               <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
               <relation active="1" passive="2" ana="#Multiple_Word_Changes"/>
               <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
-              <relation active="2" passive="3" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes"/>
             </listRelation>
           </note>
         </app>
@@ -2545,14 +2545,14 @@
               <relation active="2" passive="3" ana="#Orthography">
                 <desc>The spelling of ابراهيم is changed to ابرهيم.</desc>
               </relation>
-              <relation active="1" passive="2" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
                 <desc>The spelling of ابرهيم is changed to ابراهيم and the minor word فاما is added.</desc>
               </relation>
-              <relation active="2" passive="1" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-              <relation active="1" passive="3" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
                 <desc>The minor word فاما is added.</desc>
               </relation>
-              <relation active="3" passive="1" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
             </listRelation>
           </note>
         </app>
@@ -2561,10 +2561,10 @@
           <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139 S71+"/>
           <note>
             <listRelation type="transcriptional">
-              <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
                 <desc>The major word ابرهيم is omitted.</desc>
               </relation>
-              <relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
             </listRelation>
           </note>
         </app>
@@ -2585,10 +2585,10 @@
           <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S139 S71+">هذا</rdg>
           <rdg n="2" wit="S138">هذا واما</rdg>
           <listRelation type="transcriptional">
-            <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+            <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
               <desc>The minor word واما is added.</desc>
             </relation>
-            <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+            <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
           </listRelation>
         </app>
         <app xml:id="Jn8_40-8">
@@ -2596,10 +2596,10 @@
           <rdg n="2" wit="S138">ابراهيم فلم يفعل هذا</rdg>
           <note>
             <listRelation type="transcriptional">
-              <relation active="1" passive="2" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
                 <desc>Multiple words are added.</desc>
               </relation>
-              <relation active="2" passive="1" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
             </listRelation>
           </note>
         </app>
@@ -2687,10 +2687,10 @@
           <rdg n="4" wit="S137">ولنا ابا واحدا</rdg>
           <note>
             <listRelation type="transcriptional">
-              <relation active="1" passive="4" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="1" passive="4" ana="#Multiple_Word_Changes">
                 <desc>A conjunction is added to the start and the alif of nasb is added.</desc>
               </relation>
-              <relation active="4" passive="1" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="4" passive="1" ana="#Multiple_Word_Changes"/>
               <relation active="3" passive="4" ana="#Single_Minor_Word_Change">
                 <desc>A conjunction was added.</desc>
               </relation>
@@ -2704,12 +2704,12 @@
               <relation active="2" passive="3" ana="#Orthography">
                 <desc>The alif of nasb is added.</desc>
               </relation>
-              <relation active="2" passive="4" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="2" passive="4" ana="#Multiple_Word_Changes">
                 <desc>A conjunction is added to the start and the alif of nasb is added.</desc>
               </relation>
               <relation active="3" passive="1" ana="#Orthography"/>
               <relation active="3" passive="2" ana="#Orthography"/>
-              <relation active="4" passive="2" ana="#Single_Minor_Word_Change #Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="4" passive="2" ana="#Single_Minor_Word_Change #Multiple_Word_Changes"/>
               <relation active="4" passive="3" ana="#Single_Minor_Word_Change"/>
             </listRelation>
           </note>
@@ -2810,7 +2810,7 @@
           <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139"/>
           <note>
             <listRelation type="transcriptional">
-            <relation active="1" passive="2" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c"><desc>Two words are omitted.</desc></relation><relation active="2" passive="1" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c"/></listRelation>
+            <relation active="1" passive="2" ana="#Multiple_Word_Changes"><desc>Two words are omitted.</desc></relation><relation active="2" passive="1" ana="#Multiple_Word_Changes"/></listRelation>
           </note>
         </app>
         <app xml:id="Jn8_42-7">
@@ -2818,7 +2818,7 @@
           <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139"/>
           <note>
             <listRelation type="transcriptional">
-            <relation active="1" passive="2" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c"><desc>Multiple words are omitted.</desc></relation><relation active="2" passive="1" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c"/></listRelation>
+            <relation active="1" passive="2" ana="#Multiple_Word_Changes"><desc>Multiple words are omitted.</desc></relation><relation active="2" passive="1" ana="#Multiple_Word_Changes"/></listRelation>
           </note>
         </app>
       </ab>
@@ -2884,18 +2884,18 @@
           <rdg n="2" wit="S138">كلامي</rdg>
           <rdg n="3" wit="S71+">كلامي عندما</rdg>
           <listRelation type="transcriptional">
-            <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+            <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
               <desc>The minor word لانكم was omitted.</desc>
             </relation>
-            <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-            <relation active="1" passive="3" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+            <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
               <desc>The minor word لانكم was changed to عندما.</desc>
             </relation>
-            <relation active="3" passive="1" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-            <relation active="2" passive="3" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+            <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+            <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
               <desc>The minor word عندما was added.</desc>
             </relation>
-            <relation active="3" passive="2" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+            <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
           </listRelation>
         </app>
         <app xml:id="Jn8_43-6">
@@ -3024,10 +3024,10 @@
           <rdg n="1" wit="CSA J30 J67 S120 S122 S128 S138 S139 S71+">ذلك الذي هو</rdg>
           <rdg n="2" wit="S118 S137"/>
           <listRelation type="transcriptional">
-            <relation active="1" passive="2" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c">
+            <relation active="1" passive="2" ana="#Multiple_Word_Changes">
               <desc>Multiple words are omitted.</desc>
             </relation>
-            <relation active="2" passive="1" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c"/>
+            <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
           </listRelation>
         </app>
         <app xml:id="Jn8_44-5">
@@ -3037,22 +3037,22 @@
           <rdg n="4" wit="S118 S137"/>
           <rdg n="5" wit="S71+">من اول قاتل الناس</rdg>
           <listRelation type="transcriptional">
-            <relation active="1" passive="4" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c">
+            <relation active="1" passive="4" ana="#Multiple_Word_Changes">
               <desc>Multiple words are omitted.</desc>
             </relation>
-            <relation active="4" passive="1" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c"/>
-            <relation active="2" passive="4" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c">
+            <relation active="4" passive="1" ana="#Multiple_Word_Changes"/>
+            <relation active="2" passive="4" ana="#Multiple_Word_Changes">
               <desc>Multiple words are omitted.</desc>
             </relation>
-            <relation active="4" passive="2" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c"/>
-            <relation active="3" passive="4" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c">
+            <relation active="4" passive="2" ana="#Multiple_Word_Changes"/>
+            <relation active="3" passive="4" ana="#Multiple_Word_Changes">
               <desc>Multiple words are omitted.</desc>
             </relation>
-            <relation active="4" passive="3" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c"/>
-            <relation active="4" passive="5" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c">
+            <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
+            <relation active="4" passive="5" ana="#Multiple_Word_Changes">
               <desc>Multiple words are added.</desc>
             </relation>
-            <relation active="5" passive="4" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c"/>
+            <relation active="5" passive="4" ana="#Multiple_Word_Changes"/>
           </listRelation>
         </app>
         <app xml:id="Jn8_44-6">
@@ -3069,10 +3069,10 @@
                 <desc>The conjunction moves from one word to another and the word الحق is added.</desc>
               </relation>
               <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
-              <relation active="1" passive="3" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes">
                 <desc>The conjunction moves from one word to another.</desc>
               </relation>
-              <relation active="3" passive="1" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
             </listRelation>
           </note>
         </app>
@@ -3105,16 +3105,16 @@
           <rdg n="1" wit="CSA J30 S118 S120 S122 S128 S137 S138 S139 S71+">اقول الحق</rdg>
           <rdg n="2" wit="J67">صادق</rdg>
           <listRelation type="transcriptional">
-            <relation active="1" passive="2" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c"/>
-            <relation active="2" passive="1" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c"/>
+            <relation active="1" passive="2" ana="#Multiple_Word_Changes"/>
+            <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
           </listRelation>
         </app>
         <app xml:id="Jn8_45-3">
           <rdg n="1" wit="CSA J30 S118 S120 S122 S128 S137 S138 S139 S71+">وليس</rdg>
           <rdg n="2" wit="J67">لاي شي لم</rdg>
           <listRelation type="transcriptional">
-            <relation active="1" passive="2" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c"/>
-            <relation active="2" passive="1" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c"/>
+            <relation active="1" passive="2" ana="#Multiple_Word_Changes"/>
+            <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
           </listRelation>
         </app>
         <app xml:id="Jn8_45-4">
@@ -3178,10 +3178,10 @@
           <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S139 S71+">له</rdg>
           <rdg n="2" wit="S138"/>
           <listRelation type="transcriptional">
-            <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+            <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
               <desc>The preposition (with suffix) له is omitted.</desc>
             </relation>
-            <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+            <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
           </listRelation>
         </app>
         <app xml:id="Jn8_48-5">
@@ -3189,10 +3189,10 @@
           <rdg n="2" wit="J30 S120 S122 S128 S138 S139">ليس نعما</rdg>
           <rdg n="3" wit="S118 S137">اليس حق</rdg>
           <listRelation type="transcriptional">
-            <relation active="1" passive="3" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c">
+            <relation active="1" passive="3" ana="#Single_Major_Word_Change">
               <desc>The word نعما was changed to حق.</desc>
             </relation>
-            <relation active="3" passive="1" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c"/>
+            <relation active="3" passive="1" ana="#Single_Major_Word_Change"/>
           </listRelation>
         </app>
         <app xml:id="Jn8_48-6">
@@ -3200,14 +3200,14 @@
           <rdg n="2" wit="J30 S122 S128 S138">ما نقول</rdg>
           <rdg n="3" wit="J67"/>
           <listRelation type="transcriptional">
-            <relation active="1" passive="3" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c">
+            <relation active="1" passive="3" ana="#Single_Major_Word_Change">
               <desc>One major word is omitted.</desc>
             </relation>
-            <relation active="3" passive="1" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c"/>
-            <relation active="2" passive="3" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c">
+            <relation active="3" passive="1" ana="#Single_Major_Word_Change"/>
+            <relation active="2" passive="3" ana="#Multiple_Word_Changes">
               <desc>Two words are omitted.</desc>
             </relation>
-            <relation active="3" passive="2" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c"/>
+            <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
           </listRelation>
         </app>
         <span>ان</span>
@@ -3221,14 +3221,14 @@
           <rdg n="2" wit="J67 S120 S71+"/>
           <rdg n="3" wit="S138">الشيطان</rdg>
           <listRelation type="transcriptional">
-            <relation active="1" passive="3" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c">
+            <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
               <desc>The article is added to شيطان.</desc>
             </relation>
-            <relation active="3" passive="1" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c"/>
-            <relation active="2" passive="3" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c">
+            <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+            <relation active="2" passive="3" ana="#Single_Major_Word_Change">
               <desc>One major word is added.</desc>
             </relation>
-            <relation active="3" passive="2" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c"/>
+            <relation active="3" passive="2" ana="#Single_Major_Word_Change"/>
           </listRelation>
         </app>
         <app xml:id="Jn8_48-9">
@@ -3253,14 +3253,14 @@
           <rdg n="4" wit="S118 S137 S71+">اجاب يسوع وقال</rdg>
           <rdg n="5" wit="S122 S128">اجاب ايسوع فقال</rdg>
           <listRelation type="transcriptional">
-            <relation active="3" passive="4" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c">
+            <relation active="3" passive="4" ana="#Multiple_Word_Changes">
               <desc>Multiple words are added.</desc>
             </relation>
-            <relation active="4" passive="3" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c"/>
-            <relation active="3" passive="5" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c">
+            <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
+            <relation active="3" passive="5" ana="#Multiple_Word_Changes">
               <desc>Multiple words are added.</desc>
             </relation>
-            <relation active="5" passive="3" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c"/>
+            <relation active="5" passive="3" ana="#Multiple_Word_Changes"/>
           </listRelation>
         </app>
         <app xml:id="Jn8_49-2">
@@ -3268,10 +3268,10 @@
           <rdg n="2" wit="J30 S118 S120 S122 S128 S137 S138 S139">لهم</rdg>
           <rdg n="3" wit="J67">لهم ايسوع ⦿</rdg>
           <listRelation type="transcriptional">
-            <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c">
+            <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
               <desc>The preposition (with suffix) لهم is added.</desc>
             </relation>
-            <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c"/>
+            <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
           </listRelation>
         </app>
         <app xml:id="Jn8_49-3">
@@ -3319,10 +3319,10 @@
           <rdg n="1" wit="CSA J30 S118 S120 S122 S128 S137 S138 S139 S71+"/>
           <rdg n="2" wit="J67">شيطان</rdg>
           <listRelation type="transcriptional">
-            <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c">
+            <relation active="1" passive="2" ana="#Single_Major_Word_Change">
               <desc>The major word شيطان is added.</desc>
             </relation>
-            <relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c"/>
+            <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
           </listRelation>
         </app>
         <app xml:id="Jn8_49-5">
@@ -3345,18 +3345,18 @@
           <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S139">اطلب</rdg>
           <rdg n="3" wit="S138"/>
           <listRelation type="transcriptional">
-            <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+            <relation active="1" passive="2" ana="#Single_Major_Word_Change">
               <desc>The major word التمس was changed to اطلب.</desc>
             </relation>
-            <relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-            <relation active="1" passive="3" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+            <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+            <relation active="1" passive="3" ana="#Single_Major_Word_Change">
               <desc>The major word التمس is omitted.</desc>
             </relation>
-            <relation active="3" passive="1" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-            <relation active="2" passive="3" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+            <relation active="3" passive="1" ana="#Single_Major_Word_Change"/>
+            <relation active="2" passive="3" ana="#Single_Major_Word_Change">
               <desc>The major word اطلب is omitted.</desc>
             </relation>
-            <relation active="3" passive="2" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+            <relation active="3" passive="2" ana="#Single_Major_Word_Change"/>
           </listRelation>
         </app>
         <span>مجدي</span>
@@ -3366,18 +3366,18 @@
           <rdg n="2" wit="S118">الذى</rdg>
           <rdg n="3" wit="S137">الذي هو</rdg>
           <listRelation type="transcriptional">
-            <relation active="1" passive="3" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+            <relation active="1" passive="3" ana="#Multiple_Word_Changes">
               <desc>The two words are transposed.</desc>
             </relation>
-            <relation active="3" passive="1" ana="#Multiple_Word_Changes" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-            <relation active="2" passive="3" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+            <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
+            <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
               <desc>The preposition هو was added.</desc>
             </relation>
-            <relation active="3" passive="2" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
-            <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c">
+            <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+            <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
               <desc>The pronoun هو is added which is a minor word.</desc>
             </relation>
-            <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Jan2c"/>
+            <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
           </listRelation>
         </app>
         <span>يطلب</span>
@@ -3421,10 +3421,10 @@
           <rdg n="1" wit="CSA S71+">الى الابد</rdg>
           <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139">الى الدهر</rdg>
           <listRelation type="transcriptional">
-            <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes">
+            <relation active="1" passive="2" ana="#Single_Major_Word_Change">
               <desc>The major word الابد is changed to الدهر.</desc>
             </relation>
-            <relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#John8-NewCategories-fixed-clean-no-verb-minimal-explicit2-corrected-Dec24-manual-changes"/>
+            <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
           </listRelation>
         </app>
       </ab>
