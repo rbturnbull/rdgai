@@ -40,19 +40,19 @@
                 <desc>More than one word is changed because by transposing اليهود it also affects the ل preposition.</desc>
               </relation>
               <relation active="1" passive="2" ana="#Multiple_Word_Changes" resp="#rdgai">
-                <desc>This is because multiple words are being added where there was previously no text. The added text consists of several words including قال, الرب, للذين, اتوا, اليه, and من اليهود. This matches examples like "OMIT → قال الرب لليهود الذين اتوا اليه" and "OMIT → فاما انا فلست من هذا العالم" where multiple words are added where there was previously no text.</desc>
+                <desc>This is because multiple words are added where there was previously no text (OMIT). The added text consists of several words including قال, الرب, للذين, اتوا, اليه, and من اليهود. This matches examples like "OMIT → قال الرب لليهود الذين اتوا اليه" in the Multiple_Word_Changes category.</desc>
               </relation>
               <relation active="2" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
                 <desc>c.f. OMIT ➞ قال الرب  للذين اتوا اليه من اليهود</desc>
               </relation>
               <relation active="1" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
-                <desc>This is a case where multiple words are added to the text that were not present before. The addition includes several words (قال الرب للذين اتو اليه من اليهود) which matches examples in the Multiple_Word_Changes category such as "OMIT → قال الرب لليهود الذين اتوا اليه" and "OMIT → فاما انا فلست من هذا العالم" where multiple words are added to the text.</desc>
+                <desc>This is because multiple words are being added where there was previously no text. The addition includes several words (قال الرب للذين اتو اليه من اليهود) which constitute more than one word being changed. This matches similar examples provided such as "OMIT → قال الرب لليهود الذين اتوا اليه" which was categorized as Multiple_Word_Changes because several words were added.</desc>
               </relation>
               <relation active="3" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
                 <desc>c.f. OMIT ➞ قال الرب  للذين اتو اليه من اليهود</desc>
               </relation>
               <relation active="2" passive="3" ana="#Orthography" resp="#rdgai">
-                <desc>The only difference between these readings is the omission of the final alif in اتوا which becomes اتو. This is a purely orthographic change that doesn't affect the meaning or grammatical function of the word. The examples provided show that changes involving the addition or omission of an alif at the end of a plural verb are classified as orthographic changes (e.g. "تكونوا احرار → تكونو احرار").</desc>
+                <desc>The only difference between these readings is the omission of the final alif in اتوا, which becomes اتو. This is a purely orthographic change that doesn't affect the meaning or grammatical function of the word. The examples provided specifically include this type of change: "قال الرب للذين اتوا اليه من اليهود → قال الرب للذين اتو اليه من اليهود [The final alif in اتوا is omitted.]"</desc>
               </relation>
               <relation active="3" passive="2" ana="#Orthography" resp="#rdgai">
                 <desc>c.f. قال الرب  للذين اتوا اليه من اليهود ➞ قال الرب  للذين اتو اليه من اليهود</desc>
@@ -124,7 +124,7 @@
           <rdg n="2" wit="S71+">يمشي فى الظلمه</rdg>
           <listRelation type="transcriptional">
             <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
-              <desc>The preposition الي is omitted, which counts as a single minor word change since prepositions are considered minor words according to the category definitions. The change in spelling of في/فى is purely orthographic and can be ignored when determining the category.</desc>
+              <desc>The preposition الي is omitted, which counts as a single minor word change since prepositions are considered minor words according to the category definitions. The change in spelling of في to فى is purely orthographic and can be ignored when determining the category.</desc>
             </relation>
             <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
               <desc>c.f. يمشي في الظلمه الي ➞ يمشي فى الظلمه</desc>
@@ -148,7 +148,7 @@
               <relation active="4" passive="2" ana="#Single_Minor_Word_Change"/>
               <relation active="5" passive="2" ana="#Single_Minor_Word_Change"/>
               <relation active="1" passive="2" ana="#Multiple_Word_Changes" resp="#rdgai">
-                <desc>This variation involves changes to two words: الابد is changed to الدهر (a major word change) and معه is changed to له (a minor word change involving a preposition with suffix). When there are changes to more than one word, even if one is minor and one is major, it falls under Multiple_Word_Changes according to the definition.</desc>
+                <desc>This variation involves changes to two words: الابد is changed to الدهر (a major word change) and معه is changed to له (a change in preposition with suffix). Since there are changes to multiple words, even though one is minor, this falls under Multiple_Word_Changes according to the definition.</desc>
               </relation>
               <relation active="2" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
                 <desc>c.f. الابد بل تكون معه ➞ الدهر بل تكون له</desc>
@@ -160,25 +160,25 @@
                 <desc>c.f. الابد بل تكون معه ➞ الدهر بل يكون له</desc>
               </relation>
               <relation active="1" passive="4" ana="#Single_Major_Word_Change" resp="#rdgai">
-                <desc>The word الابد is changed to الدهر. This is a change of a single major word (noun) to another noun with a different root. The rest of the phrase remains identical. This is similar to other examples of Single_Major_Word_Change where one major word is substituted for another, like بيت الكنز → بيت القربان.</desc>
+                <desc>The word الابد is changed to الدهر. This is a change of a single major word (noun) to another noun with a different root. The rest of the phrase remains identical. This matches examples like "بيت الكنز → بيت القربان" where one major noun is substituted for another.</desc>
               </relation>
               <relation active="4" passive="1" ana="#Single_Major_Word_Change" resp="#rdgai">
                 <desc>c.f. الابد بل تكون معه ➞ الدهر بل تكون معه</desc>
               </relation>
               <relation active="1" passive="5" ana="#Multiple_Word_Changes" resp="#rdgai">
-                <desc>This is because there are two distinct changes: (1) الابد is changed to للدهر, which is a change in a major word, and (2) معه is changed to له, which is a change in a preposition with pronominal suffix. Since there are changes to more than one word (even though one is minor), this falls under Multiple_Word_Changes according to the definition.</desc>
+                <desc>This variation involves changes to more than one word: الابد is changed to للدهر (a major word change) and معه is changed to له (a change in preposition with pronominal suffix). Since there are changes to multiple words, even though one is minor, this falls under Multiple_Word_Changes according to the definition.</desc>
               </relation>
               <relation active="5" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
                 <desc>c.f. الابد بل تكون معه ➞ للدهر بل تكون له</desc>
               </relation>
               <relation active="2" passive="3" ana="#Single_Minor_Word_Change" resp="#rdgai">
-                <desc>The change from تكون to يكون is a modification to the form of a single verb (from t-prefix to y-prefix), which falls under the definition of Single_Minor_Word_Change as it involves "changes to verb form, such as modifications in verb tense, form, or voice, including changes to person or number." The root of the verb remains the same (ك-و-ن).</desc>
+                <desc>The change from تكون to يكون is a modification to the form of the verb (from t-prefix to y-prefix), which falls under Single_Minor_Word_Change according to the definition that includes "changes to verb form, such as modifications in verb tense, form, or voice, including changes to person or number." The root of the verb remains the same (ك-و-ن).</desc>
               </relation>
               <relation active="3" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
                 <desc>c.f. الدهر بل تكون له ➞ الدهر بل يكون له</desc>
               </relation>
               <relation active="3" passive="4" ana="#Multiple_Word_Changes" resp="#rdgai">
-                <desc>This variation involves two distinct changes: (1) the verb form changes from يكون to تكون, and (2) the preposition with pronominal suffix changes from له to معه. Even though both changes could individually be considered minor word changes, when multiple words are changed - even if they are minor changes - it falls under the Multiple_Word_Changes category according to the definition provided.</desc>
+                <desc>This variation involves two distinct changes: (1) the verb form changes from يكون to تكون, and (2) the preposition with pronominal suffix changes from له to معه. Even though both changes could individually be considered minor word changes, when multiple words are changed (even if they are minor changes), it falls under the Multiple_Word_Changes category according to the definition provided.</desc>
               </relation>
               <relation active="4" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
                 <desc>c.f. الدهر بل يكون له ➞ الدهر بل تكون معه</desc>
@@ -190,7 +190,7 @@
                 <desc>c.f. الدهر بل يكون له ➞ للدهر بل تكون له</desc>
               </relation>
               <relation active="4" passive="5" ana="#Multiple_Word_Changes" resp="#rdgai">
-                <desc>This variation involves changes to two words: (1) الدهر is changed to للدهر by adding the preposition ل, and (2) معه is changed to له, which involves changing one preposition with a pronominal suffix to a different preposition with a pronominal suffix. Since there are changes to multiple words (even though they are both minor changes), this falls under Multiple_Word_Changes according to the definition.</desc>
+                <desc>This variation involves changes to two words: (1) الدهر is changed to للدهر by adding the preposition ل, and (2) معه is changed to له. Even though both changes involve prepositions (which are minor words), because there are changes to multiple words, this must be categorized as Multiple_Word_Changes according to the definition provided.</desc>
               </relation>
               <relation active="5" passive="4" ana="#Multiple_Word_Changes" resp="#rdgai">
                 <desc>c.f. الدهر بل تكون معه ➞ للدهر بل تكون له</desc>
@@ -204,7 +204,7 @@
           <note>
             <listRelation type="transcriptional">
               <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#rdgai">
-                <desc>The word نور is added, which is a major word (noun) that changes the meaning substantially. Since this involves the addition of just one major word, while the rest of the reading remains identical, it falls under Single_Major_Word_Change according to the definition and similar examples provided (like "OMIT → باثامكم" or "OMIT → الشيطان" where a single major word is added).</desc>
+                <desc>The word نور is added, which is a major word (noun) that changes the meaning substantially. Since this involves the addition of just one major word, while the rest of the reading remains identical, it falls under Single_Major_Word_Change according to the definition and examples provided.</desc>
               </relation>
               <relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#rdgai">
                 <desc>c.f. الحياه ➞ نور الحياه</desc>
@@ -220,7 +220,7 @@
           <note>
             <listRelation type="transcriptional">
               <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
-                <desc>The word الي is a preposition, which falls under the category of minor words according to the definition. The change involves adding a single minor word where there was none before (OMIT). This is similar to examples like "اتوا اليه → اتوا اليه من" where a single preposition is added.</desc>
+                <desc>The word الي is a preposition, which falls under the category of minor words as defined in the guidelines. The change involves adding a single minor word where there was previously no text (OMIT). This is similar to examples provided such as "اتوا اليه → اتوا اليه من" where a single preposition is added.</desc>
               </relation>
               <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
                 <desc>c.f. OMIT ➞ الي</desc>
@@ -282,13 +282,13 @@
               <relation active="4" passive="1" ana="#Single_Minor_Word_Change"/>
               <relation active="5" passive="1" ana="#Orthography"/>
               <relation active="1" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
-                <desc>This is because multiple changes occur: the word اجاب is omitted, the words are reordered, and there is an orthographic change to يسوع/ايسوع. Even though one change is just orthographic (يسوع/ايسوع), when combined with the other changes affecting multiple words, it must be classified as Multiple_Word_Changes according to the definition.</desc>
+                <desc>This is because multiple changes occur across different words: the word اجاب is omitted, the spelling of يسوع is changed to ايسوع, and the words are reordered. Even though the spelling change of يسوع/ايسوع would alone be orthographic, when combined with other changes affecting multiple words, it falls under Multiple_Word_Changes.</desc>
               </relation>
               <relation active="3" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
                 <desc>c.f. اجاب يسوع فقال لهم ➞ فقال لهم ايسوع</desc>
               </relation>
               <relation active="2" passive="4" ana="#Orthography" resp="#rdgai">
-                <desc>The change involves only the spelling of يسوع/ايسوع, which is a common orthographic variation in Arabic manuscripts. This exact variation appears multiple times in the example list under Orthography (e.g. "اجاب ايسوع فقال لهم → اجاب يسوع فقال لهم"). The addition or removal of the initial alif in يسوع/ايسوع does not affect the meaning or pronunciation of the word.</desc>
+                <desc>The change involves only the spelling of يسوع/ايسوع, which is a common orthographic variation in Arabic manuscripts. This exact variation appears multiple times in the example list under Orthography (e.g. "اجاب يسوع فقال لهم → اجاب ايسوع فقال لهم" and "يسوع → ايسوع"). The addition or removal of the initial alif does not affect the meaning or grammatical function of the word.</desc>
               </relation>
               <relation active="4" passive="2" ana="#Orthography" resp="#rdgai">
                 <desc>c.f. اجاب ايسوع وقال لهم ➞ اجاب يسوع وقال لهم</desc>
@@ -300,13 +300,13 @@
                 <desc>c.f. اجاب ايسوع وقال لهم ➞ اجاب ايسوع فقال لهم</desc>
               </relation>
               <relation active="3" passive="5" ana="#Multiple_Word_Changes" resp="#rdgai">
-                <desc>The change involves multiple words: the addition of the major word اجاب and a reordering of the other words. Even though the words لهم and ايسوع remain the same, the fact that multiple words are affected by the change means it must be classified as Multiple_Word_Changes according to the definition and examples provided.</desc>
+                <desc>The change involves multiple words: the addition of the major word اجاب and a reordering of the other words. Even though the words لهم and ايسوع are the same in both readings, the fact that multiple words are affected by the changes means this must be classified as Multiple_Word_Changes according to the definition provided.</desc>
               </relation>
               <relation active="5" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
                 <desc>c.f. فقال لهم ايسوع ➞ اجاب ايسوع فقال لهم</desc>
               </relation>
               <relation active="4" passive="5" ana="#Multiple_Word_Changes" resp="#rdgai">
-                <desc>Two changes occur in this variation: (1) the spelling of يسوع is changed to ايسوع, and (2) the conjunction و is changed to ف. Even though both changes are relatively minor (an orthographic change and a change in conjunction), because they affect multiple words, this must be classified as Multiple_Word_Changes according to the definitions provided.</desc>
+                <desc>Two changes occur in this variation: (1) the spelling of يسوع is changed to ايسوع, and (2) the conjunction و is changed to ف. Even though both changes are relatively minor (an orthographic change and a change of conjunction), because they affect multiple words, this must be classified as Multiple_Word_Changes according to the definitions provided.</desc>
               </relation>
               <relation active="5" passive="4" ana="#Multiple_Word_Changes" resp="#rdgai">
                 <desc>c.f. اجاب يسوع وقال لهم ➞ اجاب ايسوع فقال لهم</desc>
@@ -383,7 +383,7 @@
           <note>
             <listRelation type="transcriptional">
               <relation active="2" passive="4" ana="#Multiple_Word_Changes" resp="#rdgai">
-                <desc>Two minor words are changed: the conjunction و is omitted and the particle انما is omitted. Even though both are minor words, because multiple words are affected, this falls under Multiple_Word_Changes according to the definition.</desc>
+                <desc>Two minor words are changed: the conjunction و is omitted and the particle انما is omitted. Even though both are minor words, since multiple words are affected, this falls under Multiple_Word_Changes according to the definition.</desc>
               </relation>
               <relation active="4" passive="2" ana="#Multiple_Word_Changes" resp="#rdgai">
                 <desc>c.f. وانتم انما ➞ انتم</desc>
@@ -428,7 +428,7 @@
           <note>
             <listRelation type="transcriptional">
               <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#rdgai">
-                <desc>The addition of تقضوا represents the addition of a single major word (a verb). This is similar to examples like "تكونوا → OMIT" and "تقدروا → OMIT" in the Single_Major_Word_Change category, where a single major verb is added or removed.</desc>
+                <desc>The addition of تقضوا represents the addition of a single major word (a verb). Since it is not a minor word like a conjunction, pronoun, or particle, and it involves only one word being added, this falls under Single_Major_Word_Change. This is similar to examples like "تكونوا → OMIT" and "OMIT → باثامكم" where a single major word is added or removed.</desc>
               </relation>
               <relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#rdgai">
                 <desc>c.f. OMIT ➞ تقضوا</desc>
@@ -447,7 +447,7 @@
                 <desc>The conjunction و is added.</desc>
               </relation>
               <relation active="1" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
-                <desc>The change involves both the removal of اما and the addition of و. Even though both are minor words (اما is a particle and و is a conjunction), because the change affects multiple words, it must be classified as Multiple_Word_Changes according to the definition provided.</desc>
+                <desc>The change involves both the removal of اما and the addition of و. Since this affects two words (even though they are both minor words), it must be classified as Multiple_Word_Changes according to the definition. The examples show that even when multiple minor words are changed, it falls into this category rather than Single_Minor_Word_Change.</desc>
               </relation>
               <relation active="3" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
                 <desc>c.f. اما انا ➞ وانا</desc>
@@ -486,13 +486,13 @@
               <relation active="4" passive="3" ana="#Orthography"/>
               <relation active="4" passive="2" ana="#Single_Minor_Word_Change"/>
               <relation active="1" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
-                <desc>Two changes occur in this variation: (1) the conjunction ف is added at the start, and (2) an alif of nasb is added to احد. While the second change is orthographic and the first is a minor word change, when taken together they constitute changes to multiple parts of the reading, similar to the example "ليس ادين احد → فليس ادين احدًا" provided in the Multiple_Word_Changes category.</desc>
+                <desc>Two changes occur: The conjunction ف is added at the start and an alif of nasb is added to احد. While each change individually would be minor (adding a conjunction is a Single_Minor_Word_Change and adding an alif of nasb is Orthography), when combined they constitute changes to multiple words, which puts this in the Multiple_Word_Changes category according to the examples provided.</desc>
               </relation>
               <relation active="3" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
                 <desc>c.f. ليس ادين احد ➞ فليس ادين احدا</desc>
               </relation>
               <relation active="1" passive="5" ana="#Single_Minor_Word_Change" resp="#rdgai">
-                <desc>The conjunction ف is added at the start of the phrase. Since this is just the addition of a single minor word (a conjunction), it falls under Single_Minor_Word_Change according to the definition. This matches similar examples provided such as "ليس ادين احدا → فليس ادين احدًا" and "اما انتم فتفعلون → واما انتم فتفعلون" where a single conjunction is added.</desc>
+                <desc>The conjunction ف is added at the start of the phrase. Since this is the addition of a single minor word (a conjunction), and no other changes are made, this falls under Single_Minor_Word_Change according to the definition. This is similar to other examples provided where a conjunction is added, such as "ليس ادين احدا → فليس ادين احدًا" and "اما انتم فتفعلون → واما انتم فتفعلون".</desc>
               </relation>
               <relation active="5" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
                 <desc>c.f. ليس ادين احد ➞ فليس ادين احد</desc>
@@ -504,19 +504,19 @@
                 <desc>c.f. ليس ادين احدا ➞ فليس ادين احدا</desc>
               </relation>
               <relation active="2" passive="5" ana="#Multiple_Word_Changes" resp="#rdgai">
-                <desc>This falls under Multiple_Word_Changes because there are two distinct changes: (1) the addition of the conjunction ف at the beginning, and (2) the removal of the alif of nasb from احدا. While the second change is orthographic in nature, when combined with the addition of a conjunction, it constitutes changes to multiple words. This matches examples like "ليس ادين احد → فليس ادين احدًا" which is explicitly categorized as Multiple_Word_Changes in the examples provided.</desc>
+                <desc>This falls under Multiple_Word_Changes because there are two distinct changes: (1) the addition of the conjunction ف at the beginning, and (2) the removal of the alif of nasb from احدا. While the second change is orthographic in nature, when combined with the addition of a conjunction, it constitutes changes to multiple words. This matches the example given: "ليس ادين احد → فليس ادين احدًا [Two changes occur. The conjunction ف is added at the start and the orthographic change occurs by addings an alif of nasb to احد.]"</desc>
               </relation>
               <relation active="5" passive="2" ana="#Multiple_Word_Changes" resp="#rdgai">
                 <desc>c.f. ليس ادين احدا ➞ فليس ادين احد</desc>
               </relation>
               <relation active="3" passive="5" ana="#Orthography" resp="#rdgai">
-                <desc>The change involves removing the alif of nasb (accusative marker) from احدا to become احد. This is a purely orthographic change that does not affect the meaning or grammatical function of the word. This type of change is explicitly mentioned in the category description for Orthography and appears in multiple examples (e.g. "ليس ادين احدا → ليس ادين احد").</desc>
+                <desc>The change involves removing the alif of nasb (alif al-tanwin) from احدا to become احد. This is a purely orthographic change that does not affect the meaning or grammatical function of the word. This type of change is explicitly mentioned in the category description for Orthography and appears in multiple examples (e.g. "ليس ادين احدا → ليس ادين احد").</desc>
               </relation>
               <relation active="5" passive="3" ana="#Orthography" resp="#rdgai">
                 <desc>c.f. فليس ادين احدا ➞ فليس ادين احد</desc>
               </relation>
               <relation active="4" passive="5" ana="#Orthography" resp="#rdgai">
-                <desc>The only difference between these readings is the removal of the alif of nasb (accusative marker) from احدًا. According to the category definitions, changes involving the alif of nasb are considered orthographic changes. This is supported by similar examples in the Orthography category such as "ليس ادين احدا → ليس ادين احد" and "تكونوا احرارا → تكونوا احرار".</desc>
+                <desc>The change involves removing the alif of nasb (accusative marker) from احدًا to become احد. This is a purely orthographic change that does not affect the meaning or grammatical function of the word. This matches similar examples provided such as "ليس ادين احدا → ليس ادين احد" and "احدا → احد".</desc>
               </relation>
               <relation active="5" passive="4" ana="#Orthography" resp="#rdgai">
                 <desc>c.f. فليس ادين احدًا ➞ فليس ادين احد</desc>
@@ -536,7 +536,7 @@
           <note>
             <listRelation type="transcriptional">
               <relation active="1" passive="2" ana="#Multiple_Word_Changes" resp="#rdgai">
-                <desc>The change involves both the addition of the pronoun هو and the modification of لاني to لان (removing the pronominal suffix ي). Since this affects two separate words (even though they are both minor word changes), it must be classified as Multiple_Word_Changes according to the definition provided.</desc>
+                <desc>This variation involves two changes: the addition of the pronoun هو and the removal of the pronominal suffix ي from لان. Even though both changes involve minor words (a pronoun and a pronominal suffix), the fact that changes occur to multiple words means it must be classified as Multiple_Word_Changes according to the definitions provided.</desc>
               </relation>
               <relation active="2" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
                 <desc>c.f. لاني ➞ هو لان</desc>
@@ -564,13 +564,13 @@
               </relation>
               <relation active="4" passive="2" ana="#Single_Minor_Word_Change"/>
               <relation active="1" passive="4" ana="#Single_Minor_Word_Change" resp="#rdgai">
-                <desc>The change involves modifying the form of the negative particle from لست to ليس. This is a change to a single minor word (a particle) that affects the person of the negation but maintains the same basic meaning and function. This is similar to other examples in the Single_Minor_Word_Change category where verb forms or particles are modified, such as "ليست واحدى → ليس وحدي".</desc>
+                <desc>The change involves modifying the form of ليست to ليس, which is a change in the form of a single word. Since this is a change to the form of the word without changing its root meaning, and it only affects one word, it falls under Single_Minor_Word_Change according to the definition provided.</desc>
               </relation>
               <relation active="4" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
                 <desc>c.f. لست وحدي ➞ ليس وحدي</desc>
               </relation>
               <relation active="3" passive="4" ana="#Single_Minor_Word_Change" resp="#rdgai">
-                <desc>The change involves modifying the form of ليست to ليس, which is a change in the form of a single word. Since this is a change to the form of the same word (not changing its root), and it only affects one word, it falls under Single_Minor_Word_Change. This is similar to the example "ليست واحدى → ليس وحدي" provided in the Single_Minor_Word_Change category.</desc>
+                <desc>The change involves modifying the form of ليست to ليس, which is a change in the form of a single word. Since this is a change to the form of the word without changing its root, and it only affects one word, it falls under Single_Minor_Word_Change. This is similar to the example "ليست واحدى → ليس وحدي" provided in the Single_Minor_Word_Change category.</desc>
               </relation>
               <relation active="4" passive="3" ana="#Single_Minor_Word_Change" resp="#rdgai">
                 <desc>c.f. ليست وحدي ➞ ليس وحدي</desc>
@@ -655,7 +655,7 @@
                 <desc>c.f. حق ➞ OMIT</desc>
               </relation>
               <relation active="1" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
-                <desc>The change involves adding two words (حق هي) where there was previously only one word (حق). This matches an example provided: "OMIT → حق هي [Two words are added.]" Even though هي is a minor word (pronoun), when multiple words are involved in the change, it falls under Multiple_Word_Changes according to the definition.</desc>
+                <desc>The change involves adding two words (حق هي) where there was previously only one word (حق). This matches the example "OMIT → حق هي" provided in the Multiple_Word_Changes category. Even though هي is a minor word (pronoun), when multiple words are involved in the change, it falls under Multiple_Word_Changes according to the definition.</desc>
               </relation>
               <relation active="3" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
                 <desc>c.f. حق ➞ حق هي</desc>
@@ -735,7 +735,7 @@
           <note>
             <listRelation type="transcriptional">
               <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
-                <desc>The preposition على is changed to لي. Since this is a change of a single preposition, which is classified as a minor word, and no other words are affected, this falls under Single_Minor_Word_Change according to the definitions provided.</desc>
+                <desc>The preposition على is changed to لي. Since this is a change of a single preposition, which is considered a minor word according to the definitions provided, and no other words are affected, this falls under the Single_Minor_Word_Change category.</desc>
               </relation>
               <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
                 <desc>c.f. على ذلك ➞ لي ذلك</desc>
@@ -790,7 +790,7 @@
               </relation>
               <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
               <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
-                <desc>The change involves replacing the conjunction ف with و, which is a change to a single minor word (conjunction). This matches similar examples provided such as "فقال → وقال" and "فلم يمسكه → ولم يمسكه" where a conjunction ف is changed to و.</desc>
+                <desc>The conjunction ف is changed to و, which is a change to a single minor word (conjunction). This matches examples like "فقال → وقال" and "فلم يمسكه → ولم يمسكه" where a conjunction is changed from ف to و.</desc>
               </relation>
               <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
                 <desc>c.f. فقال لهم ➞ وقال لهم</desc>
@@ -902,19 +902,19 @@
               <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
               <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
               <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
-                <desc>The change involves removing the pronominal suffix ه from ساعته, making it ساعه. Since this is a modification to a single word that only affects a pronominal suffix, it falls under the Single_Minor_Word_Change category according to the definition provided. The examples show that changes to pronominal suffixes are considered minor word changes.</desc>
+                <desc>The change involves removing the pronominal suffix ه from ساعته, which counts as a minor word change since pronominal suffixes are classified as minor words according to the definition. This is similar to other examples where pronominal suffixes are added or removed, such as "اجابوا → اجابوه" and "ولكن → ولكني".</desc>
               </relation>
               <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
                 <desc>c.f. لان ساعته لم ➞ لان ساعه لم</desc>
               </relation>
               <relation active="1" passive="3" ana="#Single_Minor_Word_Change" resp="#rdgai">
-                <desc>The change involves adding the definite article ال and removing the pronominal suffix ه. Since this only affects a single word and involves changes to minor elements (article and pronominal suffix), it falls under Single_Minor_Word_Change. This is similar to the example "لان ساعه لم → لان الساعه لم" where the article ال is added.</desc>
+                <desc>The change involves adding the definite article ال to ساعه and removing the pronominal suffix ه. Since this only affects one word and involves changes to minor elements (the definite article and pronominal suffix), it falls under Single_Minor_Word_Change. This is similar to the example "لان ساعه لم → لان الساعه لم" where the article ال is added.</desc>
               </relation>
               <relation active="3" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
                 <desc>c.f. لان ساعته لم ➞ لان الساعه لم</desc>
               </relation>
               <relation active="2" passive="4" ana="#Multiple_Word_Changes" resp="#rdgai">
-                <desc>Two words are changed: لان is changed to اذ, and ساعه is changed to كانت. When multiple words are changed, even if the changes are minor, it falls into the Multiple_Word_Changes category according to the definition.</desc>
+                <desc>Two words are changed: لان is changed to اذ, and ساعه is changed to كانت. When multiple words are changed, even if the changes are minor, it falls into the Multiple_Word_Changes category according to the definition and similar examples provided.</desc>
               </relation>
               <relation active="4" passive="2" ana="#Multiple_Word_Changes" resp="#rdgai">
                 <desc>c.f. لان ساعه لم ➞ اذ كانت لم</desc>
@@ -951,13 +951,13 @@
                 <desc>c.f. تكن بلغت ➞ تكون اقتربت</desc>
               </relation>
               <relation active="2" passive="4" ana="#Single_Minor_Word_Change" resp="#rdgai">
-                <desc>The change involves modifying the form of تكون to تكن, which is a change in the form of a single verb. According to the category definitions, changes to verb form fall under Single_Minor_Word_Change, and since only one word is affected while اتت remains unchanged, this is the appropriate category.</desc>
+                <desc>The change involves modifying the form of the verb تكون to تكن, which is a change in the form of a single verb without changing its root. According to the category definitions, changes to verb form fall under Single_Minor_Word_Change, and since only one word is affected while اتت remains unchanged, this fits the criteria for this category.</desc>
               </relation>
               <relation active="4" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
                 <desc>c.f. تكون اتت ➞ تكن اتت</desc>
               </relation>
               <relation active="3" passive="4" ana="#Multiple_Word_Changes" resp="#rdgai">
-                <desc>Two changes occur: the form of تكون is changed to تكن (a minor change) and the verb اقتربت is changed to اتت (a major change since it involves a different root). Since there are changes to multiple words, even though one is minor and one is major, this falls under Multiple_Word_Changes according to the definition.</desc>
+                <desc>Two changes occur here: the form of تكون is changed to تكن (a minor change), and the verb اقتربت is changed to اتت (a major change since it involves a different root). Since there are changes to multiple words, even though one is minor and one is major, this falls under Multiple_Word_Changes according to the definition.</desc>
               </relation>
             </listRelation>
           </note>
@@ -1061,7 +1061,7 @@
               </relation>
               <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
               <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#rdgai">
-                <desc>The verb انطلق is changed to اذهب, which represents a change in the root of the verb (different lexeme). Since this affects only one major word (the verb) and involves a change in the root, it qualifies as a Single_Major_Word_Change. The pronoun انا remains unchanged.</desc>
+                <desc>The verb انطلق is changed to اذهب, which involves a change in the root of the verb. Since this affects only one word and changes its root, it qualifies as a Single_Major_Word_Change. The pronoun انا remains unchanged.</desc>
               </relation>
               <relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#rdgai">
                 <desc>c.f. انطلق انا ➞ اذهب انا</desc>
@@ -1089,13 +1089,13 @@
               </relation>
               <relation active="4" passive="2" ana="#Multiple_Word_Changes"/>
               <relation active="1" passive="4" ana="#Multiple_Word_Changes" resp="#rdgai">
-                <desc>This variation involves changes to multiple words: ليس is changed to لا (both negative particles but different words), and تاتون is changed to تجون (different root verbs). Even though one change involves minor words (the negative particles), when combined with the change to the main verb, this constitutes changes to multiple words, placing it in the Multiple_Word_Changes category.</desc>
+                <desc>This variation involves changes to more than one word: ليس is changed to لا (both negative particles but different words), and تاتون is changed to تجون (different root verbs). Even though one change involves minor words (the negative particles), when combined with the change to the main verb, it constitutes changes across multiple words, which by definition falls into the Multiple_Word_Changes category.</desc>
               </relation>
               <relation active="4" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
                 <desc>c.f. ليس تقدرون تاتون ➞ لا تقدرون تجون</desc>
               </relation>
               <relation active="2" passive="3" ana="#Single_Minor_Word_Change" resp="#rdgai">
-                <desc>The change involves modifying the form of the verb تقدرو to تقدرون. This is a change in the form of a single verb without changing its root, which falls under the Single_Minor_Word_Change category according to the definition. This is similar to other examples provided like "تقدروا → تقدرون" and "تكونوا احرار → تكونون احرار" where the form of the verb changes.</desc>
+                <desc>The change involves modifying the form of the verb تقدرو to تقدرون. This is a change to the form of a single verb without changing its root, which falls under the Single_Minor_Word_Change category according to the definition. This is similar to other examples provided like "تقدروا → تقدرون" and "تكونوا احرار → تكونون احرار" where the form of the verb changes.</desc>
               </relation>
               <relation active="3" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
                 <desc>c.f. ليس تقدرو تاتوا ➞ ليس تقدرون تاتوا</desc>
@@ -1176,13 +1176,13 @@
                 <desc>The pronoun انتم is changed to ان and the form of the verb تاتون is changed to تاتوا. Both are minor changes but taken together, they are a changes to multiple words.</desc>
               </relation>
               <relation active="1" passive="4" ana="#Multiple_Word_Changes" resp="#rdgai">
-                <desc>This is because there are two changes occurring: the pronoun انتم is changed to ان and the form of the verb تاتون is changed to تاتون. Even though both are minor changes (changing a pronoun and modifying a verb form), because they affect multiple words, this falls under Multiple_Word_Changes according to the definition. This matches the example given: "انتم تاتون → ان تاتوا [The pronoun انتم is changed to ان and the form of the verb تاتون is changed to تاتوا. Both are minor changes but taken together, they are a changes to multiple words.]"</desc>
+                <desc>The change involves two separate minor word changes: (1) the pronoun انتم is changed to the particle ان, and (2) the form of the verb تاتون remains the same. Even though both changes are minor, because they affect multiple words, this falls under Multiple_Word_Changes according to the definition and similar examples provided (like "انتم تاتون → ان تاتوا" in the Multiple_Word_Changes examples).</desc>
               </relation>
               <relation active="4" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
                 <desc>c.f. انتم تاتون ➞ ان تاتون</desc>
               </relation>
               <relation active="1" passive="5" ana="#Single_Major_Word_Change" resp="#rdgai">
-                <desc>The verb تاتون is changed to تحون, which involves a change in the root of the verb (from اتى to حوى). Since this affects only one word and involves a change in the root, it qualifies as a Single_Major_Word_Change. The pronoun انتم remains unchanged.</desc>
+                <desc>The verb تاتون is changed to تحون, which involves a change in the root of the verb (from اتى to حوى). Since this is a change to the root of a single word (while انتم remains unchanged), and it affects a major word (a verb), this falls under Single_Major_Word_Change according to the definitions provided.</desc>
               </relation>
               <relation active="5" passive="1" ana="#Single_Major_Word_Change" resp="#rdgai">
                 <desc>c.f. انتم تاتون ➞ انتم تحون</desc>
@@ -1234,7 +1234,7 @@
           <note>
             <listRelation type="transcriptional">
               <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#rdgai">
-                <desc>The word ايضا is a major word (an adverb meaning "also") that is being omitted. Since this involves the omission of a single major word while انتم remains unchanged, it falls under Single_Major_Word_Change. This is similar to other examples in the Single_Major_Word_Change category where a single major word is omitted, such as "كثيرين → OMIT" or "تكونوا → OMIT".</desc>
+                <desc>The word ايضا is a major word (an adverb meaning "also") that is being omitted. Since this involves the omission of a single major word while انتم remains unchanged, it falls under Single_Major_Word_Change. This is similar to other examples in the category where a single major word is omitted, such as "كثيرين → OMIT" or "تكونوا → OMIT".</desc>
               </relation>
               <relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#rdgai">
                 <desc>c.f. ايضا انتم ➞ انتم</desc>
@@ -1268,7 +1268,7 @@
                 <desc>c.f. انا انتم ➞ اما انتم</desc>
               </relation>
               <relation active="1" passive="4" ana="#Single_Minor_Word_Change" resp="#rdgai">
-                <desc>The pronoun انا is omitted. Since this is a change to a single minor word (a pronoun), and pronouns are explicitly listed as minor words in the category definition, this falls under Single_Minor_Word_Change. This is similar to other examples where a single pronoun is added or removed, such as "الجسد → الجسد انتم" or "OMIT → هو".</desc>
+                <desc>The pronoun انا is omitted. Since this is the omission of a single pronoun, which is classified as a minor word according to the definitions provided, this falls under Single_Minor_Word_Change. The examples show that changes involving pronouns are considered minor word changes.</desc>
               </relation>
               <relation active="4" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
                 <desc>c.f. انا انتم ➞ انتم</desc>
@@ -1287,13 +1287,13 @@
               </relation>
               <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
               <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
-                <desc>The change involves adding the conjunction ف at the beginning of the phrase. Since this is a change to a single minor word (adding a conjunction), and conjunctions are explicitly listed as minor words in the category definition, this falls under Single_Minor_Word_Change.</desc>
+                <desc>The only change is the addition of the conjunction ف at the start of the phrase. Since this is a change to a single minor word (conjunctions are explicitly listed as minor words in the definition), and no other words are affected, this falls under Single_Minor_Word_Change. This is similar to examples like "ليس ادين احدا → فليس ادين احدًا" where a ف is added at the start.</desc>
               </relation>
               <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
                 <desc>c.f. من هذا العالم ➞ فمن هذا العالم</desc>
               </relation>
               <relation active="2" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
-                <desc>This is because multiple words (فمن هذا العالم) are omitted. According to the definition, if more than one word is added or omitted, then it falls in this category. Similar examples include "تسمعون اقوالى → OMIT" and "ان شهاده رجلين فانها → OMIT" where multiple words are omitted.</desc>
+                <desc>This is because multiple words (فمن هذا العالم) are being omitted. According to the definition, if more than one word is added or omitted, then it falls in this category. Similar examples include "تسمعون اقوالى → OMIT" and "ان شهاده رجلين فانها → OMIT" where multiple words are omitted.</desc>
               </relation>
               <relation active="3" passive="2" ana="#Multiple_Word_Changes" resp="#rdgai">
                 <desc>c.f. فمن هذا العالم ➞ OMIT</desc>
@@ -1328,7 +1328,7 @@
                 <desc>c.f. فاما انا فليس من هذا العالم ➞ OMIT</desc>
               </relation>
               <relation active="3" passive="5" ana="#Multiple_Word_Changes" resp="#rdgai">
-                <desc>This change involves the addition of three words (من هذا العالم). Since more than one word is added, it falls under Multiple_Word_Changes according to the definition which states "If more than one word is added or omitted, then it is in this category."</desc>
+                <desc>This is because the change involves the addition of three words (من هذا العالم). According to the definition, if more than one word is added or omitted, then it falls into the Multiple_Word_Changes category.</desc>
               </relation>
               <relation active="5" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
                 <desc>c.f. OMIT ➞ من هذا العالم</desc>
@@ -1359,7 +1359,7 @@
               <relation active="1" passive="3" ana="#Single_Minor_Word_Change"/>
               <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
               <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
-                <desc>The conjunction و is removed, which represents a change to a single minor word (specifically the removal of a conjunction). This is similar to examples like "اما انتم فتفعلون → واما انتم فتفعلون" where a conjunction is added/removed.</desc>
+                <desc>The conjunction و is removed, which is a minor word change. This is similar to other examples where a conjunction is added or removed, such as "اما انتم فتفعلون → واما انتم فتفعلون" where the conjunction و is added, or cases where ف/و conjunctions are changed or removed.</desc>
               </relation>
               <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
                 <desc>c.f. وان ➞ ان</desc>
@@ -1409,7 +1409,7 @@
               </relation>
               <relation active="3" passive="2" ana="#Single_Major_Word_Change"/>
               <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#rdgai">
-                <desc>The word بخطاياكم is a single major word (noun with preposition and pronominal suffix) that is being omitted. This is similar to examples like "باثامكم → OMIT" where a single major word is omitted. It is not a minor word like a conjunction, pronoun, or particle, and only one word is affected.</desc>
+                <desc>The word بخطاياكم is a single major word (a noun with preposition and pronominal suffix) that is being omitted. This is similar to examples like "باثامكم → OMIT" where a single major word is omitted. It is not a minor word like a conjunction, pronoun, or particle, and only one word is affected.</desc>
               </relation>
               <relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#rdgai">
                 <desc>c.f. بخطاياكم ➞ OMIT</desc>
@@ -1520,6 +1520,18 @@
               <relation active="2" passive="3" ana="#Multiple_Word_Changes">
                 <desc>A pronominal suffix is omitted and the demonstrative pronoun ذلك is omitted.</desc>
               </relation>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The change involves adding a pronominal suffix (ي) to ولكن, which falls under the category of minor word changes as it only affects a single word by adding a pronominal suffix. This is similar to other examples provided where pronominal suffixes are added, such as "ولكن → ولكني" and "اجابوا → اجابوه".</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. ولكن ذلك ➞ ولكني ذلك</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>The demonstrative pronoun ذلك is omitted and the conjunction ولكن is changed to ولكن. This involves changes to multiple words, similar to the example "ولكني ذلك → ولكن" which shows that when multiple words are affected (even if they are minor words), it falls under Multiple_Word_Changes.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. ولكن ذلك ➞ ولكن</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -1532,7 +1544,14 @@
           <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S71+">حق</rdg>
           <rdg n="2" wit="S139"/>
           <note>
-            <listRelation type="transcriptional"/>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>The word حق is a major word (noun/adjective) being omitted. This fits the definition of Single_Major_Word_Change since it involves the omission of a single major word (not a minor word like a conjunction, pronoun, or particle). This is similar to other examples in the Single_Major_Word_Change category where a single major word is omitted, such as "كثيرين → OMIT" or "تكونوا → OMIT".</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>c.f. حق ➞ OMIT</desc>
+              </relation>
+            </listRelation>
           </note>
         </app>
         <app xml:id="Jn8_26-7">
@@ -1562,7 +1581,14 @@
           <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139">منه</rdg>
           <rdg n="2" wit="S71+"/>
           <note>
-            <listRelation type="transcriptional"/>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The word منه consists of the preposition من with a pronominal suffix ه. Since this is a change (omission) to a single preposition with its suffix, and prepositions with their suffixes are explicitly listed as minor words in the category definition, this falls under Single_Minor_Word_Change.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. منه ➞ OMIT</desc>
+              </relation>
+            </listRelation>
           </note>
         </app>
         <app xml:id="Jn8_26-10">
@@ -1576,10 +1602,16 @@
               </relation>
               <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
               <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
-                <desc>The pronoun انا is omitted. Since this is a change to a single minor word (a pronoun), and pronouns are explicitly listed as minor words in the category description, this falls under Single_Minor_Word_Change.</desc>
+                <desc>The pronoun انا is omitted, which is a minor word change since pronouns are classified as minor words. This is similar to examples where other pronouns are added or removed, such as "الجسد → الجسد انتم" or "OMIT → هو".</desc>
               </relation>
               <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
                 <desc>c.f. انا اياه ➞ اياه</desc>
+              </relation>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>This is a change involving two words, where اياه is replaced by فهو (which consists of the conjunction ف plus the pronoun هو). Even though both variants involve pronouns which are minor words, because multiple words are affected, this must be classified as Multiple_Word_Changes. This matches the example given: "انا اياه → فهو [Two words are changed.]"</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. اياه ➞ فهو</desc>
               </relation>
             </listRelation>
           </note>
@@ -1602,7 +1634,14 @@
         <app xml:id="Jn8_27-1">
           <rdg n="1" wit="CSA J67 S118 S120 S122 S128 S137 S138 S139 S71+">ولم يعلموا</rdg>
           <rdg n="2" wit="J30">ولم يعلمون</rdg>
-          <listRelation type="transcriptional"/>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+              <desc>This is a change in the form of the verb يعلموا to يعلمون, similar to examples like تقدروا → تقدرون and تكونوا → تكونون. The root of the verb remains the same, and it only involves a change in the verb form, which falls under the Single_Minor_Word_Change category according to the definition.</desc>
+            </relation>
+            <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+              <desc>c.f. ولم يعلموا ➞ ولم يعلمون</desc>
+            </relation>
+          </listRelation>
         </app>
         <app xml:id="Jn8_27-2">
           <rdg n="1" wit="CSA J30">ان</rdg>
@@ -1682,7 +1721,14 @@
           <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S139 S71+">اعمل</rdg>
           <rdg n="2" wit="S138"/>
           <note>
-            <listRelation type="transcriptional"/>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>The verb اعمل is a major word (not a conjunction, pronoun, article, preposition, or particle) and it is being omitted. This is similar to examples like "تكونوا → OMIT" and "تقدروا → OMIT" where a single major word is omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>c.f. اعمل ➞ OMIT</desc>
+              </relation>
+            </listRelation>
           </note>
         </app>
         <app xml:id="Jn8_28-7">
@@ -1695,6 +1741,18 @@
                 <desc>The preposition ب is added.</desc>
               </relation>
               <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Orthography" resp="#rdgai">
+                <desc>This is an orthographic change because it involves adding an alif of nasb (ا) to the end of the word شي, similar to examples like احد → احدا and تكونوا احرار → تكونوا احرارا. This change does not affect the meaning or grammatical function of the word, it just represents the same accusative case in a different orthographic form.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Orthography" resp="#rdgai">
+                <desc>c.f. شي ➞ شيا</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>This is a Single_Minor_Word_Change because it involves adding a preposition (ب) and an alif of nasb (ا) to a single word. While there are two changes to the word, they are both minor changes (a preposition and an orthographic marker) affecting a single word, which fits the definition of Single_Minor_Word_Change. This is similar to the example "بحق → فحقا" where a preposition is changed and an alif is added to a single word.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. شي ➞ بشيا</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -1708,7 +1766,14 @@
           <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139">ابي</rdg>
           <rdg n="2" wit="S71+">الاب</rdg>
           <note>
-            <listRelation type="transcriptional"/>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>This is a change from ابي ('my father') to الاب ('the father'). While both words share the same root (اب), the change involves both removing a pronominal suffix and adding the definite article, which together constitute a change in the word's meaning beyond just minor grammatical elements. This is similar to the example where الاب is changed to الله, which is classified as a Single_Major_Word_Change.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>c.f. ابي ➞ الاب</desc>
+              </relation>
+            </listRelation>
           </note>
         </app>
         <span>كذلك</span>
@@ -1719,7 +1784,14 @@
           <rdg n="1" wit="CSA S120 S139 S71+">وابي</rdg>
           <rdg n="2" wit="J30 J67 S118 S122 S128 S137 S138">وان</rdg>
           <note>
-            <listRelation type="transcriptional"/>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>The change involves replacing ابي (my father) with ان (that/indeed). While both variants begin with the conjunction و, the word ابي is changed to ان. Since ابي is a major word (not a conjunction, pronoun, article, or particle) and is being replaced with a different root word, this qualifies as a Single_Major_Word_Change.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>c.f. وابي ➞ وان</desc>
+              </relation>
+            </listRelation>
           </note>
         </app>
         <span>الذي</span>
@@ -1729,7 +1801,14 @@
           <rdg n="1" wit="CSA">معى ولم</rdg>
           <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139">معي وليس</rdg>
           <rdg n="3" wit="S71+">معي لم</rdg>
-          <listRelation type="transcriptional"/>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+              <desc>The change involves replacing the negative particle لم with ليس. Both are minor words (particles) that serve a grammatical function, and only one word is changed. This is similar to other examples where minor particles are changed, such as changing ف to و in conjunctions.</desc>
+            </relation>
+            <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+              <desc>c.f. معى ولم ➞ معي وليس</desc>
+            </relation>
+          </listRelation>
         </app>
         <span>يتركني</span>
         <app xml:id="Jn8_29-3">
@@ -1750,7 +1829,14 @@
           <rdg n="1" wit="CSA S120 S139 S71+">مسرته</rdg>
           <rdg n="2" wit="J30 J67 S118 S122 S128 S137 S138">مشيته</rdg>
           <note>
-            <listRelation type="transcriptional"/>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>The change involves a single word where the root of the word is different (مسر vs مشي). Since this is more significant than a change in conjunction, pronoun, article, or other minor word, and involves a different root, it qualifies as a Single_Major_Word_Change. This is similar to other examples in this category where one major word is changed to another, like تكن بلغت → تكن اتت or يعتقكم → يعرفكم.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>c.f. مسرته ➞ مشيته</desc>
+              </relation>
+            </listRelation>
           </note>
         </app>
         <span>في</span>
@@ -1768,6 +1854,12 @@
                 <desc>The minor word ان is omitted.</desc>
               </relation>
               <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="3" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>The word يسوع is added, which is a major word (a proper noun) and not a minor word like a conjunction, pronoun, or particle. Since only one major word is added, this falls under Single_Major_Word_Change rather than Multiple_Word_Changes.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>c.f. تكلم ➞ تكلم يسوع</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -1781,6 +1873,18 @@
                 <desc>The preposition ب is omitted.</desc>
               </relation>
               <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="3" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>The word كثيرين is added, which is a major word (not a particle, pronoun, conjunction, or other minor word). Since only one major word is added, this falls under Single_Major_Word_Change, similar to examples like "OMIT → كثير" or "OMIT → باثامكم" where a single major word is added.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>c.f. بهذا ➞ بهذا كثيرين</desc>
+              </relation>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>This is because there are two distinct changes: (1) the addition of the preposition ب to هذا and (2) the addition of the major word كثيرين. Even though the first change is minor (adding a preposition), when combined with the addition of a major word, it constitutes changes to multiple words and thus falls under Multiple_Word_Changes according to the definition.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. هذا ➞ بهذا كثيرين</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -1789,7 +1893,20 @@
           <rdg n="2" wit="J30 S120 S122 S128">امن</rdg>
           <rdg n="3" wit="S118 S137 S138 S139">امن به</rdg>
           <note>
-            <listRelation type="transcriptional"/>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The change involves modifying the verb form from the plural امنوا to the singular امن. Since this is a change in the form of a single verb (number) without changing its root (ا م ن), and the به remains unchanged, this qualifies as a Single_Minor_Word_Change according to the definition. Changes to verb form, including modifications in number, are explicitly included in the Single_Minor_Word_Change category.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. امنوا به ➞ امن به</desc>
+              </relation>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The preposition ب with a pronominal suffix (به) is added to the verb. This is similar to examples like "اجابوا → اجابوه" where a pronominal suffix is added, or cases where prepositions are added like "هذا الكلام → بهذا الكلام". Changes involving prepositions and pronouns are classified as minor word changes according to the category definitions.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. امن ➞ امن به</desc>
+              </relation>
+            </listRelation>
           </note>
         </app>
         <app xml:id="Jn8_30-4">
@@ -1815,6 +1932,36 @@
               <relation active="5" passive="2" ana="#Single_Major_Word_Change"/>
               <relation active="1" passive="5" ana="#Single_Major_Word_Change">
                 <desc>The major word كثيرين is omitted.</desc>
+              </relation>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The justification is that this is a change in number (plural to singular) of the same root word. According to the category definitions, if the root word is the same but the number changes, then it falls in the Single_Minor_Word_Change category. This is similar to the example "تسمعون اقوالى → تسمعون قولي" where the number changes but the root remains the same.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. كثيرين ➞ كثير</desc>
+              </relation>
+              <relation active="2" passive="4" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>The major word خلق is added while كثير remains unchanged. Since this involves the addition of a single major word (خلق), and not a minor word like a conjunction or particle, this falls under Single_Major_Word_Change according to the definition and examples provided.</desc>
+              </relation>
+              <relation active="4" passive="2" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>c.f. كثير ➞ خلق كثير</desc>
+              </relation>
+              <relation active="3" passive="4" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>This is a change involving multiple words. The word خلق is substituted for من اليهود, and the word كثير is transposed. Since more than one word is affected by these changes, it must be classified as Multiple_Word_Changes according to the definitions provided.</desc>
+              </relation>
+              <relation active="4" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. كثير من اليهود ➞ خلق كثير</desc>
+              </relation>
+              <relation active="3" passive="5" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>This is because multiple words (كثير من اليهود) are being omitted. Even though من is a minor word (preposition), when combined with the omission of other words, it falls under Multiple_Word_Changes according to the definition. This is similar to examples like "تسمعون اقوالى → OMIT" where multiple words are omitted.</desc>
+              </relation>
+              <relation active="5" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. كثير من اليهود ➞ OMIT</desc>
+              </relation>
+              <relation active="4" passive="5" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>Two words (خلق and كثير) are omitted, and since this involves changes to more than one word, it must be classified as Multiple_Word_Changes according to the definition. This is similar to the example "تسمعون اقوالى → OMIT" where two words are omitted.</desc>
+              </relation>
+              <relation active="5" passive="4" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. خلق كثير ➞ OMIT</desc>
               </relation>
             </listRelation>
           </note>
@@ -1855,6 +2002,18 @@
               </relation>
               <relation active="4" passive="1" ana="#Single_Minor_Word_Change"/>
               <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>The change involves two words being modified: امنوا is changed to اتوا (a change in the root of the verb), and به is changed to اليه (a change in the preposition with suffix). Additionally, من is omitted. Since there are changes to multiple words, this must be classified as Multiple_Word_Changes, similar to the example "اتوا اليه من → امنوا من" given in the Multiple_Word_Changes category.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. امنوا به من ➞ اتوا اليه</desc>
+              </relation>
+              <relation active="2" passive="4" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>Two words are changed: اتوا is changed to امنوا, and اليه is changed to من. Even though these could be considered minor changes individually, because multiple words are affected, this must be classified as Multiple_Word_Changes according to the definition. This matches the example "اتوا اليه من → امنوا  من" provided in the Multiple_Word_Changes category.</desc>
+              </relation>
+              <relation active="4" passive="2" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. اتوا اليه ➞ امنوا  من</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -1863,7 +2022,14 @@
           <rdg n="1" wit="CSA J30 J67 S120 S122 S128 S138 S139 S71+">ان</rdg>
           <rdg n="2" wit="S118 S137">اذا</rdg>
           <note>
-            <listRelation type="transcriptional"/>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>This is a change to a single minor word - both ان and اذا are particles that introduce conditional or temporal clauses. Since particles are explicitly listed as minor words in the category definition, and only one word is changed, this falls under Single_Minor_Word_Change.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. ان ➞ اذا</desc>
+              </relation>
+            </listRelation>
           </note>
         </app>
         <app xml:id="Jn8_31-4">
@@ -1880,6 +2046,12 @@
                 <desc>The major word ثبتم is changed to حفظتم.</desc>
               </relation>
               <relation active="3" passive="2" ana="#Single_Major_Word_Change"/>
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>This variation involves two distinct changes: (1) the addition of the pronoun انتم and (2) changing the verb ثبتم to حفظتم (which involves a different root). Since there are changes to more than one word, this must be classified as Multiple_Word_Changes, even though one of the changes (adding انتم) would be considered minor if it occurred alone.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. ثبتم ➞ انتم حفظتم</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -1910,6 +2082,12 @@
                 <desc>The preposition ب is omitted and the conjunction ف is added to a single word.</desc>
               </relation>
               <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The conjunction ف is omitted, which is a minor word change according to the definition. The definition explicitly includes conjunctions as minor words, and this involves the removal of a single conjunction while the rest of the word remains unchanged.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. فبحق ➞ بحق</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -1917,7 +2095,14 @@
           <rdg n="1" wit="CSA J67 S118 S120 S122 S128 S137 S138 S139 S71+">انكم</rdg>
           <rdg n="2" wit="J30">انتم</rdg>
           <note>
-            <listRelation type="transcriptional"/>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The change involves replacing the pronoun انكم with انتم. Both are pronouns, which fall under the category of minor words according to the definition. This is similar to other examples where pronouns are changed, such as "له → معه" in the examples provided.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. انكم ➞ انتم</desc>
+              </relation>
+            </listRelation>
           </note>
         </app>
         <span>تلاميذي</span>
@@ -1933,6 +2118,18 @@
                 <desc>The form of the verb is changed and the conjunction is changed from و to ف.</desc>
               </relation>
               <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The change involves replacing the conjunction ف with و, which is a change to a single minor word (specifically, a conjunction). This is similar to other examples in the Single_Minor_Word_Change category where conjunctions are changed, such as "فقال → وقال" and "فلم يمسكه → ولم يمسكه".</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. فتعرفون ➞ وتعرفون</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>This is a Single_Minor_Word_Change because it involves changes to the form of a single verb (from تعرفون to اعرفون) while maintaining the same root (عرف). The conjunction remains as ف. This matches the example "وتعرفون → فاعرفون" provided in the Single_Minor_Word_Change category.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. فتعرفون ➞ فاعرفون</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -1980,6 +2177,30 @@
               <relation active="1" passive="4" ana="#Single_Minor_Word_Change">
                 <desc>A pronominal suffix is added.</desc>
               </relation>
+              <relation active="1" passive="2" ana="#Orthography" resp="#rdgai">
+                <desc>The change involves the omission of the final alif in the plural verb اجابوا, which is a purely orthographic variation that doesn't affect the meaning or grammatical function of the word. This is similar to examples like "تكونوا احرار → تكونو احرار" where the alif for the plural verb is omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Orthography" resp="#rdgai">
+                <desc>c.f. اجابوا ➞ اجابو</desc>
+              </relation>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>This is because the only change is the addition of a pronominal suffix (ه) to the verb اجابو. Adding or changing pronominal suffixes is explicitly listed as a Single_Minor_Word_Change in the definitions, and there is a similar example in the provided list: "اجابوا → اجابوه".</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. اجابو ➞ اجابوه</desc>
+              </relation>
+              <relation active="2" passive="4" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>This is because a pronominal suffix ه is added to the verb اجابوا, which falls under the category of minor word changes as it involves adding a pronoun suffix to a single word. This is similar to the example "اجابوا → اجابوه" provided in the Single_Minor_Word_Change category.</desc>
+              </relation>
+              <relation active="4" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. اجابو ➞ اجابواه</desc>
+              </relation>
+              <relation active="3" passive="4" ana="#Orthography" resp="#rdgai">
+                <desc>This is an orthographic variant because it only involves the spelling of the same word, with an additional alif added after the و. This type of change with the addition or removal of an alif in a plural verb is specifically mentioned in the definition of orthographic changes and does not affect the meaning or grammatical function of the word.</desc>
+              </relation>
+              <relation active="4" passive="3" ana="#Orthography" resp="#rdgai">
+                <desc>c.f. اجابوه ➞ اجابواه</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -1993,12 +2214,35 @@
               <relation active="2" passive="3" ana="#Multiple_Word_Changes">
                 <desc>The major word اليهود is added and the conjunction is changed from و to ف.</desc>
               </relation>
-              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change #Single_Major_Word_Change" resp="#rdgai">
+                <desc>c.f. فقالوا ➞ اليهود فقالوا</desc>
+              </relation>
               <relation active="3" passive="4" ana="#Multiple_Word_Changes">
                 <desc>The major word اليهود is added and the form of the verb is changed.</desc>
               </relation>
               <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
               <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>This is a change of one conjunction (ف) to another conjunction (و), which falls under the definition of Single_Minor_Word_Change since it involves only one minor word change (specifically a conjunction). This is similar to other examples provided such as "فقال → وقال" and "فلم يمسكه → ولم يمسكه" where a ف conjunction is changed to و.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. فقالوا ➞ وقالوا</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>The major word اليهود is added while فقالوا remains unchanged. Since this involves the addition of a single major word (a noun), and no other changes occur, this falls under Single_Major_Word_Change according to the definition and examples provided.</desc>
+              </relation>
+              <relation active="1" passive="4" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>The verb فقالوا is changed to قايلين, which involves a change in the root of the word (from قال to an active participle). While there is also the removal of the conjunction ف, according to the examples and definitions, when a single word undergoes a root change, it should be categorized as a Single_Major_Word_Change, even if there are minor changes like the removal of a conjunction.</desc>
+              </relation>
+              <relation active="4" passive="1" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>c.f. فقالوا ➞ قايلين</desc>
+              </relation>
+              <relation active="2" passive="4" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>The verb وقالوا is changed to قايلين, which involves a change in the root word from قال to an active participle. While there is also the loss of the conjunction و, this is still considered a Single_Major_Word_Change because the main change is to the root of the word itself, similar to examples like "يعتقكم → يعرفكم" where the root of the verb changes.</desc>
+              </relation>
+              <relation active="4" passive="2" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>c.f. وقالوا ➞ قايلين</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -2029,6 +2273,12 @@
                 <desc>The major word ذريه is changed to بنو.</desc>
               </relation>
               <relation active="3" passive="1" ana="#Single_Major_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>This is a change of one word to another with a different root. Both words mean "offspring/descendants" but they are different major words (nouns with different roots). This is similar to the example where نسل is changed to بنو, which is classified as a Single_Major_Word_Change.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>c.f. ذريه ➞ نسل</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -2072,6 +2322,12 @@
                 <desc>The preposition ل is added to احد and an alif is added.</desc>
               </relation>
               <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="3" ana="#Orthography" resp="#rdgai">
+                <desc>This is an orthographic change because it involves adding an alif of nasb (alif al-tanwin) to احد, which is a purely orthographic modification that doesn't affect the meaning or grammatical function of the word. This is similar to other examples provided like "ليس ادين احد → ليس ادين احدا" and "احد → احدا".</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Orthography" resp="#rdgai">
+                <desc>c.f. لاحد ➞ لاحدا</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -2079,7 +2335,14 @@
           <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S137 S138 S139 S71+"/>
           <rdg n="2" wit="S128">غيره</rdg>
           <note>
-            <listRelation type="transcriptional"/>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>The word غيره is a major word (not a conjunction, pronoun, demonstrative pronoun, pronominal suffix, definite article, preposition, interrogative particle, or other particle). Since this is a single word being added where there was previously no text (OMIT), and it is a major word, this falls under the Single_Major_Word_Change category. This is similar to examples like "OMIT → باثامكم" and "OMIT → للدهر" where a single major word is added.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>c.f. OMIT ➞ غيره</desc>
+              </relation>
+            </listRelation>
           </note>
         </app>
         <span>فكيف</span>
@@ -2097,6 +2360,12 @@
                 <desc>The number of تقول is changed to تقولوا and the pronoun انت is added.</desc>
               </relation>
               <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The change involves modifying the form of the verb from تقول to تقولوا. This is a change in the verb form without changing the root of the word, which according to the definitions falls under Single_Minor_Word_Change. Similar examples provided include تقدروا → تقدرون and تكونوا → تكونون where the verb form is changed.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. تقول ➞ تقولوا</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -2122,6 +2391,36 @@
               <relation active="4" passive="1" ana="#Single_Major_Word_Change"/>
               <relation active="1" passive="4" ana="#Single_Major_Word_Change">
                 <desc>The major word تكونوا is omitted.</desc>
+              </relation>
+              <relation active="1" passive="2" ana="#Orthography" resp="#rdgai">
+                <desc>The change involves the omission of an alif at the end of a plural verb (تكونوا → تكونو). This is explicitly mentioned in the definition of orthographic changes as an example of changes that do not affect meaning. Similar examples are provided such as "تكونوا احرار → تكونو احرار" where the alif for the plural verb is omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Orthography" resp="#rdgai">
+                <desc>c.f. تكونوا ➞ تكونو</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>The change involves a single verb where the root is different (ك-و-ن versus ص-ي-ر). Since this changes the root of the word, it is considered a major word change rather than a minor modification to verb form. This is similar to examples like يعتقكم → يعرفكم where the root of the verb changes.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>c.f. تكونوا ➞ تصيروا</desc>
+              </relation>
+              <relation active="2" passive="3" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>The change involves a single verb where the root is different (ك-و-ن versus ص-ي-ر). Since this changes the root of the word, it qualifies as a major word change rather than a minor change to verb form. This is similar to examples like يعتقكم → يعرفكم where the root of the verb changes.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>c.f. تكونو ➞ تصيروا</desc>
+              </relation>
+              <relation active="2" passive="4" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>The verb تكونو is a major word (not a conjunction, pronoun, article, preposition, or particle) that is being omitted. This matches examples like "تكونوا → OMIT" in the Single_Major_Word_Change category. Since only one major word is affected, and no other changes are involved, this falls under Single_Major_Word_Change rather than Multiple_Word_Changes.</desc>
+              </relation>
+              <relation active="4" passive="2" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>c.f. تكونو ➞ OMIT</desc>
+              </relation>
+              <relation active="3" passive="4" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>The verb تصيروا is a major word (not a conjunction, pronoun, article, preposition, or particle) that is being omitted. This is similar to examples like "تكونوا → OMIT" and "تقدروا → OMIT" where a single major word is omitted.</desc>
+              </relation>
+              <relation active="4" passive="3" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>c.f. تصيروا ➞ OMIT</desc>
               </relation>
             </listRelation>
           </note>
@@ -2165,6 +2464,42 @@
               <relation active="2" passive="6" ana="#Multiple_Word_Changes">
                 <desc>Multiple minor changes occur. The spelling of ايسوع is changed to يسوع and the conjunction ف is changed to و and the preposition (with suffix) لهم is omitted.</desc>
               </relation>
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>This is because multiple changes occur: the word اجاب is omitted (which is a major word), and there is an orthographic change to يسوع becoming ايسوع. Even though one of the changes is merely orthographic, since there are changes to multiple words (the omission of اجاب and the spelling change to يسوع/ايسوع), this must be classified as Multiple_Word_Changes according to the definitions provided.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. اجاب يسوع فقال ➞ فقال ايسوع</desc>
+              </relation>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>This is because multiple words are affected in the change: the word اجاب is omitted, لهم is omitted, and the word order is changed. Even though some of these changes might be considered minor individually, when taken together they constitute changes across multiple words, which fits the definition of Multiple_Word_Changes.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. اجاب ايسوع فقال لهم ➞ فقال ايسوع</desc>
+              </relation>
+              <relation active="2" passive="4" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>Two changes occur in this variation: (1) the spelling of ايسوع is changed to يسوع, and (2) the conjunction ف is changed to و. Even though both changes are relatively minor (one orthographic and one minor word change), because they affect multiple words, this must be classified as Multiple_Word_Changes according to the definition provided.</desc>
+              </relation>
+              <relation active="4" passive="2" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. اجاب ايسوع فقال لهم ➞ اجاب يسوع وقال لهم</desc>
+              </relation>
+              <relation active="3" passive="4" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>This falls under Multiple_Word_Changes because there are several changes occurring across multiple words: the verb فقال is replaced with اجاب, the conjunction و is added, and the preposition with suffix لهم is added. This matches similar examples provided like "فقال → اجاب يسوع وقال" and "اجاب يسوع فقال → اجاب يسوع وقال لهم" which were also classified as Multiple_Word_Changes.</desc>
+              </relation>
+              <relation active="4" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. فقال ايسوع ➞ اجاب يسوع وقال لهم</desc>
+              </relation>
+              <relation active="4" passive="6" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The change involves the omission of a single minor word لهم, which is a preposition with a pronominal suffix. This matches the definition of Single_Minor_Word_Change which includes changes to prepositions and pronominal suffixes. This is similar to other examples in this category where prepositions with suffixes are added or removed, such as "اجاب يسوع فقال → اجاب يسوع فقال لهم".</desc>
+              </relation>
+              <relation active="6" passive="4" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. اجاب يسوع وقال لهم ➞ اجاب يسوع وقال</desc>
+              </relation>
+              <relation active="5" passive="6" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>Two changes occur: the conjunction ف is changed to و and the preposition (with suffix) لهم is omitted. Since there are changes to more than one word, this falls under Multiple_Word_Changes, similar to the example "اجاب يسوع فقال → اجاب يسوع وقال لهم".</desc>
+              </relation>
+              <relation active="6" passive="5" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. اجاب يسوع فقال لهم ➞ اجاب يسوع وقال</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -2174,14 +2509,28 @@
           <rdg n="3" wit="S139">الحق الحق اقول</rdg>
           <rdg n="4" wit="S71+">امين امين اقل لكم</rdg>
           <note>
-            <listRelation type="transcriptional"/>
+            <listRelation type="transcriptional">
+              <relation active="3" passive="4" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>This is Multiple_Word_Changes because there are changes to more than one word: الحق is changed to امين (twice), اقول is changed to اقل, and لكم is added. Even though some of these changes might be considered minor in isolation, when multiple words are changed it must be classified as Multiple_Word_Changes according to the definition.</desc>
+              </relation>
+              <relation active="4" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. الحق الحق اقول ➞ امين امين اقل لكم</desc>
+              </relation>
+            </listRelation>
           </note>
         </app>
         <app xml:id="Jn8_34-3">
           <rdg n="1" wit="CSA J30 S118 S120 S122 S128 S137 S138 S139 S71+">ان</rdg>
           <rdg n="2" wit="J67"/>
           <note>
-            <listRelation type="transcriptional"/>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The word ان is a minor word (particle) that is being omitted. This matches the example "ان → OMIT" in the Single_Minor_Word_Change category. According to the definition, changes involving particles are considered minor word changes, and since only one word is affected, this falls under Single_Minor_Word_Change.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. ان ➞ OMIT</desc>
+              </relation>
+            </listRelation>
           </note>
         </app>
         <app xml:id="Jn8_34-4">
@@ -2194,6 +2543,12 @@
                 <desc>The minor word كل is added.</desc>
               </relation>
               <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The word كل is a minor word (similar to a particle) that is being omitted, while من remains. Since this involves the omission of a single minor word, it falls under the Single_Minor_Word_Change category.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. كلمن ➞ من</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -2205,7 +2560,14 @@
           <rdg n="3" wit="S118">فانهُ عبدًا</rdg>
           <rdg n="4" wit="S137">فانه عبدا</rdg>
           <note>
-            <listRelation type="transcriptional"/>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The change involves replacing فانه with فهو, which is a change in pronouns (both are minor words). Although there are two components to فانه (the conjunction ف and the pronoun انه), changing it to فهو still only affects a single word unit, and pronouns are explicitly listed as minor words in the category definition. This is similar to other examples in the Single_Minor_Word_Change category where pronouns are changed.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. فانه عبد ➞ فهو عبد</desc>
+              </relation>
+            </listRelation>
           </note>
         </app>
         <app xml:id="Jn8_34-6">
@@ -2254,6 +2616,12 @@
                 <desc>The conjunction ف is changed to و.</desc>
               </relation>
               <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The justification is that this involves adding a single conjunction (ف) at the start of the phrase. Conjunctions are explicitly listed as minor words in the category definition, and there is a similar example provided: "اما انتم فتفعلون → واما انتم فتفعلون" where a conjunction (و) is added at the start.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. اما الابن ➞ فاما الابن</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -2269,7 +2637,14 @@
           <rdg n="1" wit="CSA J67 S139">فان</rdg>
           <rdg n="2" wit="J30 S118 S120 S122 S128 S137 S138 S71+">وان</rdg>
           <note>
-            <listRelation type="transcriptional"/>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>This is a change of one conjunction (ف) to another conjunction (و), which falls under the definition of Single_Minor_Word_Change since conjunctions are explicitly listed as minor words in the category description. This is similar to other examples provided where conjunctions are changed, such as "فقال → وقال" and "فلم يمسكه → ولم يمسكه".</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. فان ➞ وان</desc>
+              </relation>
+            </listRelation>
           </note>
         </app>
         <span>اعتقكم</span>
@@ -2307,6 +2682,30 @@
               <relation active="5" passive="1" ana="#Orthography"/>
               <relation active="5" passive="2" ana="#Orthography"/>
               <relation active="4" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>The two words are transposed (their order is switched), which affects multiple words in the reading. This is similar to the example "احرار تكونوا → تكونون احرار" which was classified as Multiple_Word_Changes because it involved changes to multiple words.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. تكونوا احرار ➞ احرار تكونوا</desc>
+              </relation>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>This is because there are two changes occurring: (1) the words are transposed (changing position), and (2) the form of the verb is changed from تكونو to تكونوا. Even though the change to the verb form could be considered minor on its own, when combined with the transposition of word order, it constitutes changes to multiple words. This matches the example given: "احرار تكونوا → تكونون احرار [The two words are transposed and the form of the verb تكونوا is changed to تكونون.]"</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. تكونو احرار ➞ احرار تكونوا</desc>
+              </relation>
+              <relation active="3" passive="5" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>This variation involves two changes: (1) the words are transposed (احرار تكونوا becomes تكونوا احرار) and (2) an alif of nasb is added to احرار making it احرارا. Even though the second change is orthographic in nature, because there are changes to multiple words (the transposition), this must be classified as Multiple_Word_Changes according to the definitions provided.</desc>
+              </relation>
+              <relation active="5" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. احرار تكونوا ➞ تكونوا احرارا</desc>
+              </relation>
+              <relation active="4" passive="5" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>Two changes occur: the form of the verb is changed from تكونون to تكونوا (a minor word change) and an alif of nasb is added to احرار (an orthographic change). Since there are changes to multiple words, even though they are minor changes, this falls under Multiple_Word_Changes according to the definition.</desc>
+              </relation>
+              <relation active="5" passive="4" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. تكونون احرار ➞ تكونوا احرارا</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -2346,6 +2745,18 @@
                 <desc>The preposition من is added.</desc>
               </relation>
               <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The change involves removing the preposition من and adding the preposition ب. Since both من and ب are prepositions (minor words), and the changes affect a single word unit (even though there are two minor changes), this falls under Single_Minor_Word_Change according to the definition which allows multiple minor changes to a single word.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. انكم من ➞ بانكم</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The change involves adding the preposition ب to the beginning of انكم. According to the category definitions, the addition of a preposition is considered a Single_Minor_Word_Change since prepositions are explicitly listed as minor words, and only one word is being modified.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. انكم من ➞ بانكم من</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -2354,7 +2765,14 @@
           <rdg n="1" wit="CSA S118 S120 S122 S128 S137 S71+">ابرهيم</rdg>
           <rdg n="2" wit="J30 J67 S138 S139">ابراهيم</rdg>
           <note>
-            <listRelation type="transcriptional"/>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Orthography" resp="#rdgai">
+                <desc>This is an orthographic change because it only involves adding an alif to standardize the spelling of 'Abraham' from ابرهيم to ابراهيم. This type of spelling variation is explicitly mentioned in the examples provided (e.g. "ابرهيم → ابراهيم [An alif is added to the spelling of ابرهيم.]") and does not affect the meaning or grammatical function of the word.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Orthography" resp="#rdgai">
+                <desc>c.f. ابرهيم ➞ ابراهيم</desc>
+              </relation>
+            </listRelation>
           </note>
         </app>
         <span>ولكنكم</span>
@@ -2362,7 +2780,14 @@
           <rdg n="1" wit="CSA J67 S118 S120 S122 S128 S137 S138 S139 S71+">تريدون</rdg>
           <rdg n="2" wit="J30">تريدوا</rdg>
           <note>
-            <listRelation type="transcriptional"/>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The change from تريدون to تريدوا is a modification to the form of the verb, changing from the indicative to the subjunctive mood. Since this is a change to the form of a single verb without changing its root, it falls under Single_Minor_Word_Change according to the definition which includes "changes to verb form" and similar examples like تقدروا → تقدرون and تاتوا → تاتون.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. تريدون ➞ تريدوا</desc>
+              </relation>
+            </listRelation>
           </note>
         </app>
         <app xml:id="Jn8_37-6">
@@ -2382,6 +2807,18 @@
                 <desc>Multiple words are added.</desc>
               </relation>
               <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>This is because multiple words (كلمتى, ليس, تتسع, فيكم) are being omitted. According to the definition, if more than one word is omitted, it falls into the Multiple_Word_Changes category. This is similar to examples like "تسمعون اقوالى → OMIT" and "ان شهاده رجلين فانها → OMIT" where multiple words are omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. كلمتى   ليس تتسع فيكم ➞ OMIT</desc>
+              </relation>
+              <relation active="2" passive="4" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>This is because multiple words (كلمتى ليس تثبت فيكم) are being added where there was previously no text (OMIT). When more than one word is added or omitted, it falls into the Multiple_Word_Changes category according to the definition and examples provided.</desc>
+              </relation>
+              <relation active="4" passive="2" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. OMIT ➞ كلمتى   ليس تثبت فيكم</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -2395,6 +2832,18 @@
             <listRelation type="transcriptional">
               <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
               <relation active="1" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>This is because there are several changes: (1) و is added at the start, (2) فانكم is omitted, (3) تريدون is changed to تحاولون (different root), (4) قتلى is changed to تقتلوني, and (5) انسان is changed to انسانا (orthographic). Since there are changes to multiple words, including both minor and major changes, this falls under Multiple_Word_Changes.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. الان فانكم تريدون قتلى انسان ➞ والان  تحاولون تقتلوني انسانا</desc>
+              </relation>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>This is a Multiple_Word_Changes because multiple words are added/changed between the readings. The first reading has just one word (انا) while the second reading contains several words (والان تحاولون تقتلوني انسانا). This involves the addition of multiple words, which according to the definition must be classified as Multiple_Word_Changes even if the changes are minor. This is similar to examples like "OMIT → فاما انا فلست من هذا العالم" where multiple words are added.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. انا ➞ والان  تحاولون تقتلوني انسانا</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -2417,7 +2866,14 @@
           <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S137 S138 S139 S71+">فاما</rdg>
           <rdg n="2" wit="S128">فلم</rdg>
           <note>
-            <listRelation type="transcriptional"/>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The change involves a single word where one minor word (فاما) is changed to another minor word (فلم). Both are particles with the conjunction ف, where اما is changed to لم. Since these are both particles and only one word is affected, this fits the definition of Single_Minor_Word_Change.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. فاما ➞ فلم</desc>
+              </relation>
+            </listRelation>
           </note>
         </app>
         <app xml:id="Jn8_40-4">
@@ -2434,6 +2890,12 @@
                 <desc>The spelling of ابرهيم is changed to ابراهيم and the minor word فاما is added.</desc>
               </relation>
               <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The word فاما is a minor word (a combination of the conjunction ف and the particle اما) that is omitted in the second reading, while the major word ابرهيم remains unchanged. Since this involves the omission of a single minor word, it falls under the Single_Minor_Word_Change category.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. ابرهيم فاما ➞ ابرهيم</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -2441,14 +2903,28 @@
           <rdg n="1" wit="CSA">ابرهيم</rdg>
           <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139 S71+"/>
           <note>
-            <listRelation type="transcriptional"/>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>The word ابرهيم is a major word (a proper noun) that is being omitted. This fits the definition of Single_Major_Word_Change since it involves the omission of exactly one major word. This is similar to other examples in the Single_Major_Word_Change category where a single major word is omitted, such as "كثيرين → OMIT" and "تكونوا → OMIT".</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>c.f. ابرهيم ➞ OMIT</desc>
+              </relation>
+            </listRelation>
           </note>
         </app>
         <app xml:id="Jn8_40-6">
           <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S138 S139 S71+">فلم</rdg>
           <rdg n="2" wit="S137">قلم</rdg>
           <note>
-            <listRelation type="transcriptional"/>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>The change involves substituting a single word where the root of the word is different. While it may look like a minor orthographic change (ف to ق), this actually changes the word from فلم (meaning "and not") to قلم (meaning "pen" or as a verb "to trim/cut"), which represents a change in the root word. According to the definitions, when the root of a word changes, it is considered a major word change.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>c.f. فلم ➞ قلم</desc>
+              </relation>
+            </listRelation>
           </note>
         </app>
         <span>يفعل</span>
@@ -2511,6 +2987,42 @@
               </relation>
               <relation active="5" passive="2" ana="#Multiple_Word_Changes"/>
               <relation active="5" passive="4" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>Two changes occur: the form of ابوكم is changed to ابيكم and the major word ابراهيم is added. Since there are changes to multiple words, this falls under Multiple_Word_Changes according to the definition.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. فعال ابوكم ➞ فعال ابيكم ابراهيم</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>This is because two words (فعال and ابوكم) are being omitted. According to the definition, if more than one word is added or omitted, then it falls in the Multiple_Word_Changes category, even if the changes are minor.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. فعال ابوكم ➞ OMIT</desc>
+              </relation>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>This is because three words (فعال ابيكم ابراهيم) are being omitted. According to the definition, if more than one word is added or omitted, then it falls in the Multiple_Word_Changes category.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. فعال ابيكم ابراهيم ➞ OMIT</desc>
+              </relation>
+              <relation active="2" passive="4" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>The change involves replacing one major word (ابراهيم) with another major word (ابليس). Since only one major word is changed and the rest of the phrase remains identical, this falls under Single_Major_Word_Change. This is similar to other examples in this category where one major word is substituted for another, such as "بيت الكنز → بيت القربان" where one noun is replaced with another.</desc>
+              </relation>
+              <relation active="4" passive="2" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>c.f. فعال ابيكم ابراهيم ➞ فعال ابيكم ابليس</desc>
+              </relation>
+              <relation active="3" passive="4" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>Multiple words (فعال ابيكم ابليس) are added where there was previously no text. Since this involves the addition of more than one word, it must be classified as Multiple_Word_Changes according to the definition.</desc>
+              </relation>
+              <relation active="4" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. OMIT ➞ فعال ابيكم ابليس</desc>
+              </relation>
+              <relation active="3" passive="5" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>This is because multiple words (فعال ابوكم الشيطان) are added where there was previously no text. When more than one word is added or omitted, it falls under the Multiple_Word_Changes category according to the definition and similar examples provided (such as "OMIT → قال الرب لليهود الذين اتوا اليه" and "OMIT → فاما انا فلست من هذا العالم").</desc>
+              </relation>
+              <relation active="5" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. OMIT ➞ فعال ابوكم الشيطان</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -2546,6 +3058,24 @@
               </relation>
               <relation active="4" passive="2" ana="#Single_Minor_Word_Change #Multiple_Word_Changes"/>
               <relation active="4" passive="3" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Orthography" resp="#rdgai">
+                <desc>The change involves adding an alif of nasb to اب, making it ابا. This is purely an orthographic change that doesn't affect the meaning or grammatical function of the word, similar to other examples provided where an alif of nasb is added (like احد → احدا).</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Orthography" resp="#rdgai">
+                <desc>c.f. لنا اب واحد ➞ لنا ابا واحد</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Orthography" resp="#rdgai">
+                <desc>The change involves adding diacritical marks (tanwin) to indicate the accusative case (nasb) on both اب and واحد, making them ابًا and واحدًا. This is purely an orthographic change as it does not affect the meaning or grammatical function of the words, but only their written representation. This is similar to other examples provided where the addition of accusative markers (alif of nasb) is classified as orthographic, such as "احد → احدا" and "تكونوا احرار → تكونوا احرارا".</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Orthography" resp="#rdgai">
+                <desc>c.f. لنا اب واحد ➞ لنا ابًا واحدًا</desc>
+              </relation>
+              <relation active="2" passive="3" ana="#Orthography" resp="#rdgai">
+                <desc>This is an orthographic change because it only involves the addition of diacritical marks (tanwin) to indicate the accusative case. The words and their meanings remain the same, only the way they are written is different. This is similar to the example "فليس ادين احدا → فليس ادين احدًا" where diacritics are added.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Orthography" resp="#rdgai">
+                <desc>c.f. لنا ابا واحد ➞ لنا ابًا واحدًا</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -2574,6 +3104,42 @@
               <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
               <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
               <relation active="5" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>The change involves both the addition of the pronoun هو and a change in the spelling of اللاه to الاله. Even though one change is the addition of a minor word (the pronoun هو) and the other is orthographic (the spelling of اللاه to الاله), because there are changes to multiple words, this must be classified as Multiple_Word_Changes according to the definitions provided.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. اللاه ➞ هو الاله</desc>
+              </relation>
+              <relation active="2" passive="4" ana="#Orthography" resp="#rdgai">
+                <desc>This is an orthographic variant involving different spellings of the same word meaning "the God". It's similar to other examples of orthographic variants like الاله → اللاه and الااله → اللاه. The change only affects the spelling without changing the meaning or grammatical function of the word.</desc>
+              </relation>
+              <relation active="4" passive="2" ana="#Orthography" resp="#rdgai">
+                <desc>c.f. الاله ➞ الااله</desc>
+              </relation>
+              <relation active="2" passive="5" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The change involves the removal of the definite article ال, turning الاله (the god) into الله (Allah/God). Since this involves a change to the definite article, which is classified as a minor word, and affects only one word, this falls under Single_Minor_Word_Change. This is similar to the example provided where "اللاه → الله" is classified as Single_Minor_Word_Change because it involves the removal of the article.</desc>
+              </relation>
+              <relation active="5" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. الاله ➞ الله</desc>
+              </relation>
+              <relation active="3" passive="4" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>This variation involves both the omission of the pronoun هو and a change in the spelling of الاله to الااله. Even though the spelling change to الاله would be orthographic on its own, when combined with the omission of the pronoun هو, it becomes a change affecting multiple words.</desc>
+              </relation>
+              <relation active="4" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. هو الاله ➞ الااله</desc>
+              </relation>
+              <relation active="3" passive="5" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>This change involves the omission of the pronoun هو and changing الاله to الله. Since two words are affected (the pronoun هو is removed and الاله is changed to الله), this falls under Multiple_Word_Changes according to the definition that states "Changes across more than one word" and "if multiple words are changed, then it falls in this category."</desc>
+              </relation>
+              <relation active="5" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. هو الاله ➞ الله</desc>
+              </relation>
+              <relation active="4" passive="5" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>This is a change involving the definite article, where الااله (with the article) is changed to الله (the divine name). According to the category definitions, changes involving articles are considered minor word changes, and this matches similar examples provided like "اللاه → الله" where the article is removed to form the divine name.</desc>
+              </relation>
+              <relation active="5" passive="4" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. الااله ➞ الله</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -2600,7 +3166,14 @@
           <rdg n="1" wit="CSA S71+">ولم</rdg>
           <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139"/>
           <note>
-            <listRelation type="transcriptional"/>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The justification is that this involves the omission of a single minor word. The word ولم consists of two particles: و (conjunction) and لم (negative particle). Both of these are considered minor words according to the definition, and since they are connected as a single unit, removing them counts as a single minor word change.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. ولم ➞ OMIT</desc>
+              </relation>
+            </listRelation>
           </note>
         </app>
         <app xml:id="Jn8_42-5">
@@ -2615,7 +3188,14 @@
           <rdg n="1" wit="CSA S71+">من قبل</rdg>
           <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139"/>
           <note>
-            <listRelation type="transcriptional"/>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>This is because two words (من and قبل) are being omitted. According to the definition, if more than one word is added or omitted, then it falls into the Multiple_Word_Changes category, even if the words are minor words like the preposition من.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. من قبل ➞ OMIT</desc>
+              </relation>
+            </listRelation>
           </note>
         </app>
         <app xml:id="Jn8_42-7">
@@ -2659,6 +3239,12 @@
               <relation active="2" passive="3" ana="#Single_Minor_Word_Change"/>
               <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
               <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>This is a change of one minor word (a particle) to another minor word (a particle). Both ليس and لم are negative particles, and this represents a substitution of a single minor word, similar to other examples of particle changes in the Single_Minor_Word_Change category.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. ليس ➞ لم</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -2678,7 +3264,14 @@
           <rdg n="1" wit="CSA J67 S118 S120 S122 S128 S137 S138 S139 S71+"/>
           <rdg n="2" wit="J30">وتعرفوا</rdg>
           <note>
-            <listRelation type="transcriptional"/>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The justification is that this is a single word being added that consists of a conjunction و plus a verb form تعرفوا. Since this involves only changes to a conjunction (which is a minor word) and a verb form, and affects only a single word position, it qualifies as a Single_Minor_Word_Change according to the definition provided.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. OMIT ➞ وتعرفوا</desc>
+              </relation>
+            </listRelation>
           </note>
         </app>
         <app xml:id="Jn8_43-5">
@@ -2690,6 +3283,18 @@
               <desc>The minor word عندما was added.</desc>
             </relation>
             <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+            <relation active="1" passive="2" ana="#Multiple_Word_Changes" resp="#rdgai">
+              <desc>The change involves the omission of لانكم while also having an orthographic change to كلامى. Since there are changes to more than one word (even though one is just orthographic), this falls under Multiple_Word_Changes according to the definition.</desc>
+            </relation>
+            <relation active="2" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
+              <desc>c.f. كلامى لانكم ➞ كلامي</desc>
+            </relation>
+            <relation active="1" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+              <desc>This is because there are changes to two words: the major word لانكم is changed to عندما, and there is an orthographic change to كلامى/كلامي. When there are changes to more than one word (even if one is just orthographic), it falls into the Multiple_Word_Changes category according to the definition and examples provided.</desc>
+            </relation>
+            <relation active="3" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
+              <desc>c.f. كلامى لانكم ➞ كلامي عندما</desc>
+            </relation>
           </listRelation>
         </app>
         <app xml:id="Jn8_43-6">
@@ -2700,6 +3305,18 @@
             <listRelation type="transcriptional">
               <relation active="1" passive="3" ana="#Single_Minor_Word_Change"/>
               <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The word ليس is a minor word (a particle of negation) that is being omitted. This matches examples like "ان → OMIT" where other minor words are omitted. Since only one minor word is affected, it belongs in this category rather than Multiple_Word_Changes.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. ليس ➞ OMIT</desc>
+              </relation>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The word لا is a negative particle, which falls under the category of minor words as defined in the guidelines. The change involves adding a single minor word where there was none (OMIT), making this a Single_Minor_Word_Change.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. OMIT ➞ لا</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -2722,6 +3339,24 @@
                 <desc>The verb is omitted.</desc>
               </relation>
               <relation active="4" passive="2" ana="#Single_Major_Word_Change"/>
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>This involves changes to two words: the verb تقدرون changes form to تقدروا and the particle ان is omitted. Even though both changes could individually be considered minor changes (a change in verb form and omission of a particle), when multiple words are affected, it must be categorized as Multiple_Word_Changes according to the definition provided.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. تقدرون ان ➞ تقدروا</desc>
+              </relation>
+              <relation active="1" passive="4" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>This is because two words are being omitted: تقدرون (a major word) and ان (a minor word). When multiple words are changed, added, or omitted - even if one or both are minor words - it falls under Multiple_Word_Changes according to the definitions provided. This is similar to examples like "تسمعون اقوالى → OMIT" where two words are omitted.</desc>
+              </relation>
+              <relation active="4" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. تقدرون ان ➞ OMIT</desc>
+              </relation>
+              <relation active="3" passive="4" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>The verb تقدرون is a major word (not a conjunction, pronoun, article, preposition, or particle) that is being omitted. This matches examples like "تقدروا → OMIT" in the Single_Major_Word_Change category. Since only one word is affected, and it's a major word being omitted, this falls under Single_Major_Word_Change rather than Multiple_Word_Changes.</desc>
+              </relation>
+              <relation active="4" passive="3" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>c.f. تقدرون ➞ OMIT</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -2757,6 +3392,30 @@
                 <desc>The number of اقوالى is changed to قولي.</desc>
               </relation>
               <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>The form of the verb is changed from تسمعوا to تسمعون (a minor change) and there is an orthographic change to كلامى/كلامي. Since there are changes to multiple words (even though one is minor and one is orthographic), this falls under Multiple_Word_Changes according to the definition.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. تسمعوا كلامى ➞ تسمعون كلامي</desc>
+              </relation>
+              <relation active="2" passive="3" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>The major word اقوالى is changed to كلامي, which involves a different root word. While both words are related to speech/words, they use different roots. This matches examples like "تسمعون كلامي → تسمعون قولي" in the Single_Major_Word_Change category where one major word is changed to another.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Single_Major_Word_Change" resp="#rdgai">
+                <desc>c.f. تسمعون اقوالى ➞ تسمعون كلامي</desc>
+              </relation>
+              <relation active="3" passive="4" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>The change involves the omission of two words (تسمعون and كلامي), and according to the category definitions, when more than one word is omitted, it falls under Multiple_Word_Changes. This is similar to the example "تسمعون اقوالى → OMIT" provided in the Multiple_Word_Changes category.</desc>
+              </relation>
+              <relation active="4" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. تسمعون كلامي ➞ OMIT</desc>
+              </relation>
+              <relation active="4" passive="5" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>This is because two words are being added where there was previously nothing (OMIT). Even though تسمعون and قولي are related to the same concepts as in other variants, the fact that multiple words are being added means this must be classified as Multiple_Word_Changes according to the definition.</desc>
+              </relation>
+              <relation active="5" passive="4" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. OMIT ➞ تسمعون قولي</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -2785,7 +3444,14 @@
         <app xml:id="Jn8_44-4">
           <rdg n="1" wit="CSA J30 J67 S120 S122 S128 S138 S139 S71+">ذلك الذي هو</rdg>
           <rdg n="2" wit="S118 S137"/>
-          <listRelation type="transcriptional"/>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="2" ana="#Multiple_Word_Changes" resp="#rdgai">
+              <desc>This is because three words are being omitted: ذلك (a demonstrative pronoun), الذي (a relative pronoun), and هو (a personal pronoun). Even though all three are minor words, when multiple words are changed (even if they are all minor words), it falls under the Multiple_Word_Changes category according to the definition provided.</desc>
+            </relation>
+            <relation active="2" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
+              <desc>c.f. ذلك الذي هو ➞ OMIT</desc>
+            </relation>
+          </listRelation>
         </app>
         <app xml:id="Jn8_44-5">
           <rdg n="1" wit="CSA">من اول قاتل الانسان هو</rdg>
@@ -2798,6 +3464,24 @@
               <desc>Multiple words are omitted.</desc>
             </relation>
             <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
+            <relation active="1" passive="4" ana="#Multiple_Word_Changes" resp="#rdgai">
+              <desc>This is because multiple words (من اول قاتل الانسان هو) are being omitted. When more than one word is omitted, it falls under Multiple_Word_Changes according to the definition and examples provided. This is similar to examples like "من الاول قاتل الانسان . → OMIT" and "تسمعون اقوالى → OMIT" where multiple words are omitted.</desc>
+            </relation>
+            <relation active="4" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
+              <desc>c.f. من اول قاتل الانسان هو ➞ OMIT</desc>
+            </relation>
+            <relation active="2" passive="4" ana="#Multiple_Word_Changes" resp="#rdgai">
+              <desc>This is because multiple words (من الاول قاتل الانسا) are being omitted. When more than one word is omitted, it falls under Multiple_Word_Changes according to the definition and examples provided. This is similar to examples like "من الاول قاتل الانسان . → OMIT" and "تسمعون اقوالى → OMIT" where multiple words are omitted.</desc>
+            </relation>
+            <relation active="4" passive="2" ana="#Multiple_Word_Changes" resp="#rdgai">
+              <desc>c.f. من الاول قاتل الانسا⧙ ➞ OMIT</desc>
+            </relation>
+            <relation active="4" passive="5" ana="#Multiple_Word_Changes" resp="#rdgai">
+              <desc>This is because multiple words (من اول قاتل الناس) are being added where there was previously no text. When more than one word is added or omitted, it falls under the Multiple_Word_Changes category according to the definition and examples provided.</desc>
+            </relation>
+            <relation active="5" passive="4" ana="#Multiple_Word_Changes" resp="#rdgai">
+              <desc>c.f. OMIT ➞ من اول قاتل الناس</desc>
+            </relation>
           </listRelation>
         </app>
         <app xml:id="Jn8_44-6">
@@ -2814,6 +3498,12 @@
                 <desc>The conjunction moves from one word to another and the word الحق is added.</desc>
               </relation>
               <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>The change involves the transposition of two words and a change in conjunctions (و moves from the start of وهو to between هو and في), affecting multiple words in the reading. Even though these are minor words, when multiple words are changed it falls into the Multiple_Word_Changes category according to the definition.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. وهو فى ➞ هو وفى</desc>
+              </relation>
             </listRelation>
           </note>
         </app>
@@ -2845,7 +3535,14 @@
         <app xml:id="Jn8_45-2">
           <rdg n="1" wit="CSA J30 S118 S120 S122 S128 S137 S138 S139 S71+">اقول الحق</rdg>
           <rdg n="2" wit="J67">صادق</rdg>
-          <listRelation type="transcriptional"/>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="2" ana="#Multiple_Word_Changes" resp="#rdgai">
+              <desc>This is because two words (اقول and الحق) are changed to a single word (صادق). Even though the meaning is similar, this involves changes to multiple words, which by definition falls into the Multiple_Word_Changes category.</desc>
+            </relation>
+            <relation active="2" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
+              <desc>c.f. اقول الحق ➞ صادق</desc>
+            </relation>
+          </listRelation>
         </app>
         <app xml:id="Jn8_45-3">
           <rdg n="1" wit="CSA J30 S118 S120 S122 S128 S137 S138 S139 S71+">وليس</rdg>
@@ -2915,7 +3612,14 @@
         <app xml:id="Jn8_48-4">
           <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S139 S71+">له</rdg>
           <rdg n="2" wit="S138"/>
-          <listRelation type="transcriptional"/>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+              <desc>The word له is a preposition (ل) with a pronominal suffix (ه), which falls under the definition of minor words. The change involves the omission of a single minor word, similar to examples like "امنوا به من → امنوا من" where a preposition with suffix is omitted.</desc>
+            </relation>
+            <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+              <desc>c.f. له ➞ OMIT</desc>
+            </relation>
+          </listRelation>
         </app>
         <app xml:id="Jn8_48-5">
           <rdg n="1" wit="CSA J67 S71+">اليس نعما</rdg>
@@ -2932,7 +3636,20 @@
           <rdg n="1" wit="CSA S118 S120 S137 S139 S71+">نقول</rdg>
           <rdg n="2" wit="J30 S122 S128 S138">ما نقول</rdg>
           <rdg n="3" wit="J67"/>
-          <listRelation type="transcriptional"/>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="3" ana="#Single_Major_Word_Change" resp="#rdgai">
+              <desc>The verb نقول is a major word (not a conjunction, pronoun, article, preposition, or particle) that is being omitted. This is similar to examples like "تقظون → OMIT" and "اشهد → OMIT" where a single major word is omitted.</desc>
+            </relation>
+            <relation active="3" passive="1" ana="#Single_Major_Word_Change" resp="#rdgai">
+              <desc>c.f. نقول ➞ OMIT</desc>
+            </relation>
+            <relation active="2" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+              <desc>This is because two words (ما and نقول) are being omitted. According to the definition, if more than one word is added or omitted, then it falls into the Multiple_Word_Changes category, regardless of whether the words are major or minor.</desc>
+            </relation>
+            <relation active="3" passive="2" ana="#Multiple_Word_Changes" resp="#rdgai">
+              <desc>c.f. ما نقول ➞ OMIT</desc>
+            </relation>
+          </listRelation>
         </app>
         <span>ان</span>
         <span>فيك</span>
@@ -2949,6 +3666,12 @@
               <desc>One major word is added.</desc>
             </relation>
             <relation active="3" passive="2" ana="#Single_Major_Word_Change"/>
+            <relation active="1" passive="3" ana="#Single_Minor_Word_Change" resp="#rdgai">
+              <desc>The change involves adding the definite article ال to شيطان. According to the category definitions, changes involving the addition or removal of a definite article are classified as Single_Minor_Word_Change since the definite article is considered a minor word element.</desc>
+            </relation>
+            <relation active="3" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+              <desc>c.f. شيطان ➞ الشيطان</desc>
+            </relation>
           </listRelation>
         </app>
         <app xml:id="Jn8_48-9">
@@ -2956,7 +3679,14 @@
           <rdg n="2" wit="J30 S120 S122 S128 S138">فانت سامري</rdg>
           <rdg n="3" wit="J67 S118 S137 S139">وانت سامري</rdg>
           <note>
-            <listRelation type="transcriptional"/>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The conjunction ف is changed to و, which is a change to a single minor word (conjunction). This is similar to other examples where conjunctions are changed, such as "فقال → وقال" and "فلم يمسكه → ولم يمسكه" which are both classified as Single_Minor_Word_Change.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. فانت سامري ➞ وانت سامري</desc>
+              </relation>
+            </listRelation>
           </note>
         </app>
       </ab>
@@ -2972,6 +3702,12 @@
               <desc>Multiple words are added.</desc>
             </relation>
             <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
+            <relation active="3" passive="5" ana="#Multiple_Word_Changes" resp="#rdgai">
+              <desc>Multiple words are added: the verb اجاب and the noun ايسوع. Even though ايسوع is just spelled differently from يسوع, the addition of two words makes this a Multiple_Word_Changes case, similar to the example "فقال → اجاب يسوع وقال" provided in the Multiple_Word_Changes examples.</desc>
+            </relation>
+            <relation active="5" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+              <desc>c.f. فقال ➞ اجاب ايسوع فقال</desc>
+            </relation>
           </listRelation>
         </app>
         <app xml:id="Jn8_49-2">
@@ -3002,6 +3738,42 @@
               <relation active="2" passive="3" ana="#Multiple_Word_Changes"/>
               <relation active="1" passive="3" ana="#Multiple_Word_Changes">
                 <desc>The conjunction ف is added at the start and the major word شيطان is omitted.</desc>
+              </relation>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The change involves replacing the minor word اما with the minor word ان. This is a change to a single minor word (a particle), while the orthographic change of في to فى can be ignored according to the rules about final ي/ى. This matches examples like "ان → OMIT" which show that ان is considered a minor word.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. اما شيطان فليس في ➞ ان شيطان ليس فى</desc>
+              </relation>
+              <relation active="1" passive="4" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The only difference between these readings is the addition of the definite article ال to شيطان. Since this is a change involving just the definite article, which is classified as a minor word, and it affects only one word, this falls under the Single_Minor_Word_Change category.</desc>
+              </relation>
+              <relation active="4" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. اما شيطان فليس في ➞ اما الشيطان فليس فيᐥᐥ</desc>
+              </relation>
+              <relation active="1" passive="5" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The preposition في is omitted, which counts as a minor word change since prepositions are considered minor words according to the definition. Since only one minor word is affected, this falls under Single_Minor_Word_Change rather than Multiple_Word_Changes.</desc>
+              </relation>
+              <relation active="5" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. اما شيطان فليس في ➞ اما شيطان فليس</desc>
+              </relation>
+              <relation active="2" passive="5" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>This is because there are changes to more than one word: ان is changed to اما, and the preposition في is omitted. Even though these are minor words, when multiple words are changed it falls into the Multiple_Word_Changes category according to the definition.</desc>
+              </relation>
+              <relation active="5" passive="2" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. ان شيطان ليس فى ➞ اما شيطان فليس</desc>
+              </relation>
+              <relation active="3" passive="4" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>The conjunction ف is removed from the start, and the pronoun انا is replaced with the major word الشيطان. Since there are changes to multiple words (even though one is minor and one is major), this falls under Multiple_Word_Changes according to the definition.</desc>
+              </relation>
+              <relation active="4" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. فاما انا فليس في ➞ اما الشيطان فليس فيᐥᐥ</desc>
+              </relation>
+              <relation active="4" passive="5" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>Two changes occur: the definite article ال is removed from الشيطان (a minor word change) and the preposition في is omitted (another minor word change). Since there are changes to multiple words (even though they are both minor changes), this falls under Multiple_Word_Changes according to the definition.</desc>
+              </relation>
+              <relation active="5" passive="4" ana="#Multiple_Word_Changes" resp="#rdgai">
+                <desc>c.f. اما الشيطان فليس فيᐥᐥ ➞ اما شيطان فليس</desc>
               </relation>
             </listRelation>
           </note>
@@ -3040,6 +3812,18 @@
               <desc>The major word التمس is omitted.</desc>
             </relation>
             <relation active="3" passive="1" ana="#Single_Major_Word_Change"/>
+            <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#rdgai">
+              <desc>This is a change in the root of the verb from ل-م-س to ط-ل-ب, making it a change to a single major word. While both words are verbs meaning "to seek," they have different roots, and according to the definition, when the root of a word changes, it qualifies as a major word change. This is similar to examples like يعتقكم → يعرفكم or نتعبد → تبعد where the root of the verb changes.</desc>
+            </relation>
+            <relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#rdgai">
+              <desc>c.f. التمس ➞ اطلب</desc>
+            </relation>
+            <relation active="2" passive="3" ana="#Single_Major_Word_Change" resp="#rdgai">
+              <desc>The verb اطلب is a major word (not a conjunction, pronoun, article, preposition, or particle) and it is being omitted. This is similar to examples like "تقظون → OMIT" and "اشهد → OMIT" where a single major word is omitted.</desc>
+            </relation>
+            <relation active="3" passive="2" ana="#Single_Major_Word_Change" resp="#rdgai">
+              <desc>c.f. اطلب ➞ OMIT</desc>
+            </relation>
           </listRelation>
         </app>
         <span>مجدي</span>
@@ -3053,6 +3837,18 @@
               <desc>The preposition هو was added.</desc>
             </relation>
             <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+            <relation active="1" passive="2" ana="#Multiple_Word_Changes" resp="#rdgai">
+              <desc>The change involves the omission of the pronoun هو and a change in the spelling of الذي to الذى. Even though the spelling change would be orthographic on its own, the omission of هو (a minor word) means that multiple words are affected, which puts this in the Multiple_Word_Changes category according to the definition.</desc>
+            </relation>
+            <relation active="2" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
+              <desc>c.f. هو الذي ➞ الذى</desc>
+            </relation>
+            <relation active="1" passive="3" ana="#Multiple_Word_Changes" resp="#rdgai">
+              <desc>The change involves the transposition of two words (هو and الذي), which affects their order but maintains the same words. According to the definitions, even when changes are minor, if multiple words are affected (as in this case with the transposition of two words), it falls under the Multiple_Word_Changes category.</desc>
+            </relation>
+            <relation active="3" passive="1" ana="#Multiple_Word_Changes" resp="#rdgai">
+              <desc>c.f. هو الذي ➞ الذي هو</desc>
+            </relation>
           </listRelation>
         </app>
         <span>يطلب</span>
@@ -3072,7 +3868,14 @@
           <rdg n="1" wit="CSA J30 S118 S120 S122 S128 S137 S139 S71+">ان</rdg>
           <rdg n="2" wit="J67 S138"/>
           <note>
-            <listRelation type="transcriptional"/>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>The word ان is a minor word (a particle) that is being omitted. This matches examples like "ان → OMIT" in the Single_Minor_Word_Change category. According to the definition, changes involving particles are considered minor word changes, and since only one word is affected, this falls under Single_Minor_Word_Change.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change" resp="#rdgai">
+                <desc>c.f. ان ➞ OMIT</desc>
+              </relation>
+            </listRelation>
           </note>
         </app>
         <span>من</span>
@@ -3090,7 +3893,14 @@
         <app xml:id="Jn8_51-6">
           <rdg n="1" wit="CSA S71+">الى الابد</rdg>
           <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139">الى الدهر</rdg>
-          <listRelation type="transcriptional"/>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="2" ana="#Single_Major_Word_Change" resp="#rdgai">
+              <desc>The word الابد is changed to الدهر, which represents a change in the root word while maintaining the same basic meaning of 'forever/eternity'. Since this involves changing one major word (noun) to a different root word, and no other words are affected, this falls under Single_Major_Word_Change. The preposition الى remains unchanged.</desc>
+            </relation>
+            <relation active="2" passive="1" ana="#Single_Major_Word_Change" resp="#rdgai">
+              <desc>c.f. الى الابد ➞ الى الدهر</desc>
+            </relation>
+          </listRelation>
         </app>
       </ab>
     </body>

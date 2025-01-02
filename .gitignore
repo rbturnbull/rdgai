@@ -169,7 +169,6 @@ cython_debug/
 tests/test-data/arb.original.xml
 John*
 jn*
-*.html
 
 
 apparatus-wip-app-only-import.xml
@@ -186,3 +185,5 @@ x.xml
 xx.xml
 ~$*.xlsx
 validate.sh
+*.slurm
+llama.py

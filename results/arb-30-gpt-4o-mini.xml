@@ -1,0 +1,3445 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+  <teiHeader>
+    <fileDesc>
+      <titleStmt>
+        <title>arb - Jn</title>
+      </titleStmt>
+      <publicationStmt>
+        <authority xml:id="RBT"/>
+        <date>2024</date>
+        <availability>
+          <p>This is an open access work licensed under a Creative Commons Attribution 4.0 International license.</p>
+        </availability>
+      </publicationStmt>
+      <sourceDesc>
+            </sourceDesc>
+    </fileDesc>
+  </teiHeader>
+  <text xml:lang="ara">
+    <interpGrp type="transcriptional">
+      <interp xml:id="Orthography">Changes in spelling or orthography. This includes any alterations to how words are written without affecting their meaning, such as standardizing spelling or correcting errors. Also includes adding or removing an alif as a marker of the accusative or at the end of a plural verb. Changes to the diacritics for a final ي or ى can be ignored. If the change affects the meaning or grammatical function of the word (such as the form of a verb), then it is more significant than an orthographic change and should not be in this category.</interp>
+      <interp xml:id="Single_Minor_Word_Change">An addition, omission or substitution to a single minor word or part of a word. A minor word means a conjunction, pronoun, demonstrative pronoun (e.g. ذلك), pronominal suffix, definite article, preposition, interrogative particle (such as 'ما') or other particle (such as 'قد'). This includes the expansion or contraction of a word and changes to verb form, such as modifications in verb tense, form, or voice, including changes to person or number and transformations between participle and verb. If the root word is the same but the number changes, then it falls in this category. It can still be in this category if the change affects the meaning substantially, so long as it is only affecting the part of speech described here or it does not change the root of the word. If there are changes to multiple words between readings (even if they are minor), then it should not be in this category but it is under 'Multiple_Word_Changes'. If there are multiple minor changes to a single word, then it can still be a Single_Minor_Word_Change.</interp>
+      <interp xml:id="Single_Major_Word_Change">An addition, omission or substitution to a single word that is more significant than a conjunction, pronoun, pronominal suffix, definite article, preposition, or particle (such as 'قد'). It is only a major word change if the root of the word is different. If a word is changed to a different form of the same root, then it is a Single_Minor_Word_Change. If the two readings are identical except for a difference in a single major word, then it is in this category (even if the readings otherwise contain multiple words).</interp>
+      <interp xml:id="Multiple_Word_Changes">Changes across more than one word. Words can be major or minor. Even if the changes are minor, if multiple words are changed, then it falls in this category. If more than one word is added or omitted, then it is in this category.</interp>
+    </interpGrp>
+    <body>
+      <ab n="Jn8:12">
+        <app xml:id="Jn8_12-1">
+          <rdg n="1" wit="CSA S71+"/>
+          <rdg n="2" wit="J30 S118 S120 S122 S128 S137 S138">قال الرب  للذين اتوا اليه من اليهود</rdg>
+          <rdg n="3" wit="J67">قال الرب  للذين اتو اليه من اليهود</rdg>
+          <rdg n="4" wit="S139">قال الرب لليهود الذين اتوا اليه</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="4" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="4" ana="#Multiple_Word_Changes">
+                <desc>Several words are added.</desc>
+              </relation>
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+                <desc>Several words are added.</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes">
+                <desc>Several words are added.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="4" ana="#Multiple_Word_Changes">
+                <desc>More than one word is changed because by transposing اليهود it also affects the ل preposition.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="2" ana="#Orthography"/>
+              <relation active="2" passive="3" ana="#Orthography">
+                <desc>The only change is the removal of the alif in اتوا which is merely an orthographic change.</desc>
+              </relation>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_12-2">
+          <rdg n="1" wit="CSA">فكلمهم ايضا يسوع</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139"/>
+          <rdg n="3" wit="S71+">فصاح  يسوع باعلا</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+                <desc>Several words are removed.</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes">
+                <desc>Several words are added.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_12-3">
+          <rdg n="1" wit="CSA">وقال</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139"/>
+          <rdg n="3" wit="S71+">صوته وقال</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
+                <desc>A single major word is added.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+              <relation active="1" passive="3" ana="#Single_Major_Word_Change">
+                <desc>A single major word is added.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Major_Word_Change"/>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes">
+                <desc>Two words are added.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_12-4">
+          <rdg n="1" wit="CSA S71+">انا  نور</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139">انا هو نور</rdg>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+              <desc>The pronoun هو is added which is a minor word.</desc>
+            </relation>
+            <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+          </listRelation>
+        </app>
+        <app xml:id="Jn8_12-5">
+          <rdg n="1" wit="CSA">العالم الذى يلحقنى ليس</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139">العالم والذي يتبعني ليس</rdg>
+          <rdg n="3" wit="S71+">العالم من يتبعنى ليس</rdg>
+        </app>
+        <app xml:id="Jn8_12-6">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139">يمشي في الظلمه الي</rdg>
+          <rdg n="2" wit="S71+">يمشي فى الظلمه</rdg>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+              <desc>The preposition الي is added, which is a minor word.</desc>
+            </relation>
+            <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+          </listRelation>
+        </app>
+        <app xml:id="Jn8_12-7">
+          <rdg n="1" wit="CSA">الابد بل تكون معه</rdg>
+          <rdg n="2" wit="J30 J67 S122 S128 S138">الدهر بل تكون له</rdg>
+          <rdg n="3" wit="S118 S137">الدهر بل يكون له</rdg>
+          <rdg n="4" wit="S120 S139">الدهر بل تكون معه</rdg>
+          <rdg n="5" wit="S71+">للدهر بل تكون له</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="4" passive="1" ana="#Single_Major_Word_Change"/>
+              <relation active="1" passive="4" ana="#Single_Major_Word_Change">
+                <desc>The single word الابد is changed to الدهر.</desc>
+              </relation>
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+                <desc>The word الابد is changed to الدهر and معه is changed to له.</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes">
+                <desc>The word الابد is changed to الدهر, the form of تكون is changed to يكون and معه is changed to له.</desc>
+              </relation>
+              <relation active="1" passive="5" ana="#Multiple_Word_Changes">
+                <desc>The word الابد is changed to للدهر and معه is changed to له.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The form of the verb تكون is changed to يكون.</desc>
+              </relation>
+              <relation active="2" passive="4" ana="#Single_Minor_Word_Change">
+                <desc>The preposition (with pronominal suffix) معه is changed to له.</desc>
+              </relation>
+              <relation active="2" passive="5" ana="#Single_Minor_Word_Change">
+                <desc>The preposition ل is added to الدهر.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="4" ana="#Multiple_Word_Changes">
+                <desc>Changes occur to two words. يكون is changed to تكون and له is changed to مع. These are minor changes to single words but taken together, they are a multiple word changes.</desc>
+              </relation>
+              <relation active="3" passive="5" ana="#Multiple_Word_Changes">
+                <desc>Changes occur to two words. الدهر is changed to للدهر and يكون is changed to تكون. These are minor changes to single words but taken together, they are a multiple word changes.</desc>
+              </relation>
+              <relation active="4" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="5" ana="#Multiple_Word_Changes">
+                <desc>Changes occur to two words. الدهر is changed to للدهر and معه is changed to له. These are minor changes to single words but taken together, they are a multiple word changes.</desc>
+              </relation>
+              <relation active="5" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="5" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="5" passive="4" ana="#Multiple_Word_Changes"/>
+              <relation active="5" passive="3" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_12-8">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139">الحياه</rdg>
+          <rdg n="2" wit="S71+">نور الحياه</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
+                <desc>The word نور is added.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+      </ab>
+      <ab n="Jn8:13">
+        <app xml:id="Jn8_13-1">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S128 S137 S138 S139 S71+"/>
+          <rdg n="2" wit="S122">الي</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The preposition الي is added, which is a minor word.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>فقالوا</span>
+        <span>له الاحبار</span>
+        <app xml:id="Jn8_13-2">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S137 S138 S139 S71+">انت تشهد</rdg>
+          <rdg n="2" wit="S122 S128">اتشهد</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+                <desc>The pronoun انت is added and an alif is added to تشهد.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>علي نفسك وشهادتك</span>
+        <app xml:id="Jn8_13-3">
+          <rdg n="1" wit="CSA J67 S118 S120 S122 S128 S137 S138 S139 S71+">ليس هى بحق</rdg>
+          <rdg n="2" wit="J30">ليس هى حق</rdg>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+              <desc>A ب preposition is add to حق.</desc>
+            </relation>
+            <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+          </listRelation>
+        </app>
+      </ab>
+      <ab n="Jn8:14">
+        <app xml:id="Jn8_14-1">
+          <rdg n="1" wit="CSA S120 S139">اجاب يسوع فقال لهم</rdg>
+          <rdg n="2" wit="J30 S138">اجاب ايسوع وقال لهم</rdg>
+          <rdg n="3" wit="J67">فقال لهم ايسوع</rdg>
+          <rdg n="4" wit="S118 S137 S71+">اجاب يسوع وقال لهم</rdg>
+          <rdg n="5" wit="S122 S128">اجاب ايسوع فقال لهم</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="4" passive="3" ana="#Single_Major_Word_Change"/>
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+                <desc>The orthographic change is made to يسوع making it ايسوع and the ف conjunction is changed to a و.</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="4" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction ف is changed to و.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="4" ana="#Orthography">
+                <desc>The spelling of ايسوع is changed to يسوع.</desc>
+              </relation>
+              <relation active="1" passive="5" ana="#Orthography">
+                <desc>The spelling of يسوع is changed to ايسوع.</desc>
+              </relation>
+              <relation active="2" passive="5" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction و is changed to ف.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="5" ana="#Multiple_Word_Changes">
+                <desc>The verb اجاب is added and the phrase فقال لهم is moved to the end.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="4" ana="#Multiple_Word_Changes">
+                <desc>The verb اجاب is added and the phrase فقال لهم is moved to the end. The conjunction ف is changed to a و.</desc>
+              </relation>
+              <relation active="4" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="4" passive="2" ana="#Orthography"/>
+              <relation active="4" passive="5" ana="#Multiple_Word_Changes">
+                <desc>Two changes occur. The spelling of يسوع is changed to ايسوع and the و conjunction is changed to a ف. By themselves, they would be an orthographic change and a single minor word change respectively but taken together, they are a multiple word change.</desc>
+              </relation>
+              <relation active="5" passive="1" ana="#Orthography"/>
+              <relation active="5" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="5" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="5" passive="4" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_14-2">
+          <rdg n="1" wit="CSA J30 S118 S120 S122 S128 S137 S138 S139">وان</rdg>
+          <rdg n="2" wit="J67 S71+">ان</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction و is added.</desc>
+              </relation>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_14-3">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139">انا شهدت علي نفسي</rdg>
+          <rdg n="2" wit="S71+">انا شهد على نفسى</rdg>
+        </app>
+        <app xml:id="Jn8_14-4">
+          <rdg n="1" wit="CSA J67 S118 S120 S122 S128 S137 S138 S139 S71+">فان شهادتي</rdg>
+          <rdg n="2" wit="J30">فان شهادت</rdg>
+        </app>
+        <app xml:id="Jn8_14-5">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S71+"/>
+          <rdg n="2" wit="S139">هي</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The preposition هي is added.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>حق لاني</span>
+        <span>اعرف</span>
+        <app xml:id="Jn8_14-6">
+          <rdg n="1" wit="CSA S120 S139 S71+">من اين انا والى اين انطلق فاما انتم</rdg>
+          <rdg n="2" wit="J30 J67 S118 S122 S128 S137 S138">من اين انا والي اين اذهب واما انتم</rdg>
+        </app>
+        <app xml:id="Jn8_14-7">
+          <rdg n="1" wit="CSA J67 S118 S120 S122 S128 S137 S138 S139 S71+">فليس تدرون من</rdg>
+          <rdg n="2" wit="J30">فليس تدروا من</rdg>
+        </app>
+        <app xml:id="Jn8_14-8">
+          <rdg n="1" wit="CSA S120">اين اتيت ولا الى اين انطلق</rdg>
+          <rdg n="2" wit="J30">اين انا  والي اين اذهب</rdg>
+          <rdg n="3" wit="J67 S118 S122 S137">اين اتيت ولا الي اين اذهب</rdg>
+          <rdg n="4" wit="S128">اتيت ولا الي اين اذهب</rdg>
+          <rdg n="5" wit="S138">اين اتيت والا  اين اذهب</rdg>
+          <rdg n="6" wit="S139">اين اتيت ولا  اين انطلق</rdg>
+          <rdg n="7" wit="S71+">اين جيت ولا  اين انطلق</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="7" passive="4" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="7" ana="#Multiple_Word_Changes">
+                <desc>Multiple words are changed.</desc>
+              </relation>
+            </listRelation>
+          </note>
+        </app>
+      </ab>
+      <ab n="Jn8:15">
+        <app xml:id="Jn8_15-1">
+          <rdg n="1" wit="CSA S118 S120 S128 S137 S139">انتم انما</rdg>
+          <rdg n="2" wit="J30 J67">وانتم انما</rdg>
+          <rdg n="3" wit="S122 S138">انتم ايضا</rdg>
+          <rdg n="4" wit="S71+">انتم</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="4" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="4" ana="#Multiple_Word_Changes">
+                <desc>Multiple words are changed. The conjunction و is added to انتم and the word انما is added.</desc>
+              </relation>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_15-2">
+          <rdg n="1" wit="CSA J67 S118 S120 S122 S128 S137 S139">تقضون</rdg>
+          <rdg n="2" wit="J30">تقظون</rdg>
+          <rdg n="3" wit="S138">ايما تقضون</rdg>
+          <rdg n="4" wit="S71+"/>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="4" ana="#Multiple_Word_Changes">
+                <desc>Two words are omitted.</desc>
+              </relation>
+              <relation active="2" passive="4" ana="#Single_Major_Word_Change">
+                <desc>The major word تقظون is omitted.</desc>
+              </relation>
+              <relation active="4" passive="2" ana="#Single_Major_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>مثل</span>
+        <app xml:id="Jn8_15-3">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139">الجسد</rdg>
+          <rdg n="2" wit="S71+">الجسد انتم</rdg>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+              <desc>The pronoun انتم is added.</desc>
+            </relation>
+            <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+          </listRelation>
+        </app>
+        <app xml:id="Jn8_15-4">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139"/>
+          <rdg n="2" wit="S71+">تقضوا</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
+                <desc>The major word تقضوا is added.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_15-5">
+          <rdg n="1" wit="CSA J30 J67 S120 S122 S128 S138 S139">اما انا</rdg>
+          <rdg n="2" wit="S118 S137">واما انا</rdg>
+          <rdg n="3" wit="S71+">وانا</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction و is added.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction اما is omitted, leaving only the single conjunction و.</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The word اما is changed to the conjunction و.</desc>
+              </relation>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_15-6">
+          <rdg n="1" wit="CSA S138">ليس ادين احد</rdg>
+          <rdg n="2" wit="J30 S120 S122 S128 S139">ليس ادين احدا</rdg>
+          <rdg n="3" wit="J67 S137">فليس ادين احدا</rdg>
+          <rdg n="4" wit="S118">فليس ادين احدًا</rdg>
+          <rdg n="5" wit="S71+">فليس ادين احد</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="5" ana="#Multiple_Word_Changes">
+                <desc>Two changes occur. The conjunction ف is added at the start and the orthographic change occurs by addings an alif of nasb to احد.</desc>
+              </relation>
+              <relation active="5" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="2" ana="#Orthography">
+                <desc>An alif of nasb is added to احد.</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes">
+                <desc>Two changes occur. The conjunction ف is added at the start and the orthographic change occurs by addings an alif of nasb to احد.</desc>
+              </relation>
+              <relation active="1" passive="4" ana="#Multiple_Word_Changes">
+                <desc>Two changes occur. The conjunction ف is added at the start and the orthographic change occurs by addings an alif of nasb to احد.</desc>
+              </relation>
+              <relation active="1" passive="5" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction ف is added at the start.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Orthography"/>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="4" ana="#Orthography">
+                <desc>Diacritics are added.</desc>
+              </relation>
+              <relation active="3" passive="5" ana="#Orthography">
+                <desc>An alif of nasb is added to احد.</desc>
+              </relation>
+              <relation active="5" passive="3" ana="#Orthography"/>
+              <relation active="5" passive="4" ana="#Orthography"/>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction ف is added at the start.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="4" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction ف is added at the start.</desc>
+              </relation>
+              <relation active="4" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="5" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="4" passive="5" ana="#Orthography">
+                <desc>An alif of nasb is omitted from احدًا.</desc>
+              </relation>
+              <relation active="4" passive="3" ana="#Orthography"/>
+              <relation active="4" passive="2" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+      </ab>
+      <ab n="Jn8:16">
+        <app xml:id="Jn8_16-1">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139">وان قضيت فان قضاي صدق</rdg>
+          <rdg n="2" wit="S71+">وان قضيت فان قضاي حق</rdg>
+        </app>
+        <app xml:id="Jn8_16-2">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139">لاني</rdg>
+          <rdg n="2" wit="S71+">هو لان</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+                <desc>Two changes occur. The preposition هو is added and the pronominal suffix is omitted from لاني.</desc>
+              </relation>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_16-3">
+          <rdg n="1" wit="CSA S118 S120 S122 S128 S137 S138 S139">لست وحدي</rdg>
+          <rdg n="2" wit="J30">ليست واحدى</rdg>
+          <rdg n="3" wit="J67">ليست وحدي</rdg>
+          <rdg n="4" wit="S71+">ليس وحدي</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="4" ana="#Single_Minor_Word_Change">
+                <desc>The form of لست is changed to ليس.</desc>
+              </relation>
+              <relation active="3" passive="4" ana="#Single_Minor_Word_Change">
+                <desc>The form of ليست is changed to ليس.</desc>
+              </relation>
+              <relation active="4" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="4" passive="3" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+                <desc>Changes occur to two words.</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The form of لست is changed to ليست.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="4" ana="#Single_Minor_Word_Change">
+                <desc>The form of ليست is changed to ليس.</desc>
+              </relation>
+              <relation active="4" passive="2" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_16-4">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139"/>
+          <rdg n="2" wit="S71+">انا</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The pronoun انا is added.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_16-5">
+          <rdg n="1" wit="CSA J30 S118 S120 S122 S128 S137 S139">ولكن</rdg>
+          <rdg n="2" wit="J67 S138">ولكني</rdg>
+          <rdg n="3" wit="S71+">لكنى</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>A pronominal suffix is added.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The و conjunction is omitted.</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>A و conjunction is omitted and pronominal suffix is added to a single word.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_16-6">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139">انا وابي</rdg>
+          <rdg n="2" wit="S71+">انا والاب</rdg>
+        </app>
+        <span>الذي ارسلني</span>
+      </ab>
+      <ab n="Jn8:17">
+        <span>وفى ناموسكم مكتوب</span>
+        <app xml:id="Jn8_17-1">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S137 S138 S139">ان شهاده رجلين فانها</rdg>
+          <rdg n="2" wit="S128"/>
+          <rdg n="3" wit="S71+">ان شهاده رجلين</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes">
+                <desc>Multiple words are added.</desc>
+              </relation>
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+                <desc>Multiple words are omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_17-2">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S137 S138 S139">حق</rdg>
+          <rdg n="2" wit="S128"/>
+          <rdg n="3" wit="S71+">حق هي</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
+                <desc>The major word حق is omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The pronoun هي is added.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes">
+                <desc>Two words are added.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+      </ab>
+      <ab n="Jn8:18">
+        <app xml:id="Jn8_18-1">
+          <rdg n="1" wit="CSA J30 J67 S120 S122 S138 S139 S71+">انا</rdg>
+          <rdg n="2" wit="S118 S137">وانا</rdg>
+          <rdg n="3" wit="S128"/>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction و is added.</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The pronoun انا is omitted.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The pronoun (with conjunction) وانا is omitted.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_18-2">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S137 S138 S139 S71+">اشهد</rdg>
+          <rdg n="2" wit="S128"/>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
+                <desc>The major word اشهد is omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_18-3">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S137 S138 S139 S71+">علي</rdg>
+          <rdg n="2" wit="S128"/>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The preposition علي is omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_18-4">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S137 S138 S139 S71+">نفسى</rdg>
+          <rdg n="2" wit="S128"/>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
+                <desc>The major word نفسى is omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>وابي</span>
+        <span>يشهد</span>
+        <app xml:id="Jn8_18-5">
+          <rdg n="1" wit="CSA J30 S118 S120 S122 S128 S137 S138 S139">على ذلك</rdg>
+          <rdg n="2" wit="J67">لي ذلك</rdg>
+          <rdg n="3" wit="S71+">لي وهو</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes">
+                <desc>The preposition على is changed to لي and ذلك is changed to وهو.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The preposition على is changed to لي.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The demonstrative pronoun ذلك is changed to وهو.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>الذي</span>
+        <span>ارسلني</span>
+      </ab>
+      <ab n="Jn8:19">
+        <span>فقالوا له اين ابوك</span>
+        <span>اجاب</span>
+        <app xml:id="Jn8_19-1">
+          <rdg n="1" wit="CSA S118 S120 S139 S71+">يسوع</rdg>
+          <rdg n="2" wit="J30 J67 S122 S128 S137 S138">ايسوع</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Orthography"/>
+              <relation active="2" passive="1" ana="#Orthography"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_19-2">
+          <rdg n="1" wit="CSA S120 S139">فقال لهم</rdg>
+          <rdg n="2" wit="J30 J67 S118 S122 S128 S138 S71+">وقال لهم</rdg>
+          <rdg n="3" wit="S137"/>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction ف is changed to و.</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes">
+                <desc>Two words are omitted.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes">
+                <desc>Two words are omitted.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_19-3">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139">لا لى تعرفون</rdg>
+          <rdg n="2" wit="S71+">لا لي تعرفوا</rdg>
+        </app>
+        <app xml:id="Jn8_19-4">
+          <rdg n="1" wit="CSA J30 J67 S120 S122 S128 S138 S139 S71+">ولا لابي</rdg>
+          <rdg n="2" wit="S118 S137">ولا لابى تعرفون</rdg>
+        </app>
+        <span>ولو</span>
+        <app xml:id="Jn8_19-5">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139">كنتم تعرفوني</rdg>
+          <rdg n="2" wit="S71+">كنتم تعرفونى اذن</rdg>
+        </app>
+        <span>لعرفتم</span>
+        <span>ابي</span>
+      </ab>
+      <ab n="Jn8:20">
+        <app xml:id="Jn8_20-1">
+          <rdg n="1" wit="CSA J30 J67 S120 S122 S128 S138 S139 S71+">هذا الكلام</rdg>
+          <rdg n="2" wit="S118 S137">بهذا الكلام</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The preposition ب is added to هذا.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_20-2">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139">كان يكلمهم</rdg>
+          <rdg n="2" wit="S71+">كلمهم</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+                <desc>The word كان is added and the tense of the verb is changed.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>فى</span>
+        <app xml:id="Jn8_20-3">
+          <rdg n="1" wit="CSA S71+">بيت الكنز</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139">بيت القربان</rdg>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="2" ana="#Single_Major_Word_Change">
+              <desc>The noun الكنز is changed to القربان.</desc>
+            </relation>
+            <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+          </listRelation>
+        </app>
+        <span>اذ</span>
+        <app xml:id="Jn8_20-4">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139">كان يعلم في</rdg>
+          <rdg n="2" wit="S71+">كان يعلمهم في</rdg>
+        </app>
+        <span>الهيكل</span>
+        <app xml:id="Jn8_20-5">
+          <rdg n="1" wit="CSA S120 S122 S128 S138 S139 S71+">فلم يمسكه</rdg>
+          <rdg n="2" wit="J30 J67 S118 S137">ولم يمسكه</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction ف is changed to و.</desc>
+              </relation>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_20-6">
+          <rdg n="1" wit="CSA J30 S118 S120 S122 S128 S138 S139 S71+">احد</rdg>
+          <rdg n="2" wit="J67 S137">احدا</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Orthography">
+                <desc>An alif of nasb is added to احد.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Orthography"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_20-7">
+          <rdg n="1" wit="CSA J30 S118 S120 S139 S71+">لان ساعته لم</rdg>
+          <rdg n="2" wit="J67 S122 S128">لان ساعه لم</rdg>
+          <rdg n="3" wit="S137">لان الساعه لم</rdg>
+          <rdg n="4" wit="S138">اذ كانت لم</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The definite article is added to ساعته and the pronominal suffix is removed.</desc>
+              </relation>
+              <relation active="1" passive="4" ana="#Multiple_Word_Changes">
+                <desc>Two words are changed.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>A pronominal suffix is added.</desc>
+              </relation>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The article ال is added.</desc>
+              </relation>
+              <relation active="2" passive="4" ana="#Multiple_Word_Changes">
+                <desc>Two words are changed.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="4" ana="#Multiple_Word_Changes">
+                <desc>Two words are changed.</desc>
+              </relation>
+              <relation active="4" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_20-8">
+          <rdg n="1" wit="CSA J30 S120 S128 S138 S139 S71+">تكن بلغت</rdg>
+          <rdg n="2" wit="J67">تكون اتت</rdg>
+          <rdg n="3" wit="S118 S137">تكون اقتربت</rdg>
+          <rdg n="4" wit="S122">تكن اتت</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes">
+                <desc>The form of تكن is changed to تكون and بلغت is changed to اقتربت.</desc>
+              </relation>
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+                <desc>Two words are changed.</desc>
+              </relation>
+              <relation active="1" passive="4" ana="#Single_Major_Word_Change">
+                <desc>The word بلغت is changed to اتت.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="3" ana="#Single_Major_Word_Change">
+                <desc>The verb اتت is changed to اقتربت.</desc>
+              </relation>
+              <relation active="2" passive="4" ana="#Single_Minor_Word_Change">
+                <desc>The form of تكون is changed to تكن.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="2" ana="#Single_Major_Word_Change"/>
+              <relation active="3" passive="4" ana="#Multiple_Word_Changes">
+                <desc>The form of تكون is changed to تكن and بلغت is changed to اقتربت.</desc>
+              </relation>
+              <relation active="4" passive="1" ana="#Single_Major_Word_Change"/>
+              <relation active="4" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="4" passive="3" ana="#Single_Minor_Word_Change"/>
+              <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+      </ab>
+      <ab n="Jn8:21">
+        <app xml:id="Jn8_21-1">
+          <rdg n="1" wit="CSA S71+">فقال       لهم</rdg>
+          <rdg n="2" wit="J67 S118 S122 S128 S137 S138 S139">قال الرب للذين اتوا اليه من اليهود</rdg>
+          <rdg n="3" wit="S120">قال الرب للذين اتو اليه من اليهود</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes">
+                <desc>Multiple wrds are added.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="3" ana="#Orthography">
+                <desc>The final alif in اتوا is omitted.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+                <desc>Multiple wrds are added.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Orthography"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_21-2">
+          <rdg n="1" wit="CSA S71+">ايضا يسوع انا</rdg>
+          <rdg n="2" wit="J67 S118 S120 S122 S128 S137 S138 S139">انا</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+                <desc>Two words are omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_21-3">
+          <rdg n="1" wit="CSA">انطلق فتلتمسونى</rdg>
+          <rdg n="2" wit="J67">اذهب فتطلبوني وفي</rdg>
+          <rdg n="3" wit="S118 S122 S128 S137 S138">اذهب وتطلبوني وفي</rdg>
+          <rdg n="4" wit="S120 S139">انطلق وتطلبوني وفى</rdg>
+          <rdg n="5" wit="S71+">انطلق وتطلبونى ولا</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="3" passive="5" ana="#Multiple_Word_Changes">
+                <desc>The verb انطلق is changed to اذهب and the final word وفي was changed to ولا</desc>
+              </relation>
+              <relation active="5" passive="3" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_21-4">
+          <rdg n="1" wit="CSA">وبخطاياكم</rdg>
+          <rdg n="2" wit="J67 S118 S120 S122 S128 S137 S138 S139">خطاياكم</rdg>
+          <rdg n="3" wit="S71+">تجدونى وباثمكم</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction و and the preposition ب are added to a single word.</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_21-5">
+          <rdg n="1" wit="CSA J67 S118 S120 S122 S128 S137 S138 S139">تموتون وحيث</rdg>
+          <rdg n="2" wit="S71+">تموتوا وحيث</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The form of تموتون is changed to تموتوا.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_21-6">
+          <rdg n="1" wit="CSA S120 S139">انطلق انا</rdg>
+          <rdg n="2" wit="J67 S118 S122 S128 S137 S138">اذهب انا</rdg>
+          <rdg n="3" wit="S71+">انطلق انا فانتم</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes">
+                <desc>The verb انطلق is changed to اذهب and the pronoun (with conjunction) فانتم is added.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
+                <desc>The verb انطلق is changed to اذهب.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The pronoun (with conjunction) فانتم is added.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_21-7">
+          <rdg n="1" wit="CSA S118 S120 S137 S139">ليس تقدرون تاتون</rdg>
+          <rdg n="2" wit="J67">ليس تقدرو تاتوا</rdg>
+          <rdg n="3" wit="S122 S128 S138">ليس تقدرون تاتوا</rdg>
+          <rdg n="4" wit="S71+">لا تقدرون تجون</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="4" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="4" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The form of تقدرو is changed to تقدرون.</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The form of تاتون is changed to تاتوا.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="4" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+      </ab>
+      <ab n="Jn8:22">
+        <app xml:id="Jn8_22-1">
+          <rdg n="1" wit="CSA J67 S118 S120 S122 S128 S137 S138 S139">فقالوا</rdg>
+          <rdg n="2" wit="S71+">فقال</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The form of the verb قالوا is changed to قال</desc>
+              </relation>
+            </listRelation>
+          </note>
+        </app>
+        <span>اليهود</span>
+        <span>لعله</span>
+        <span>يقتل نفسه</span>
+        <span>عندما</span>
+        <span>يقول</span>
+        <span>حيث</span>
+        <app xml:id="Jn8_22-2">
+          <rdg n="1" wit="CSA J67 S120 S122 S128 S138 S139 S71+"/>
+          <rdg n="2" wit="S118 S137">ما</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The minor word ما is added.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>اذهب</span>
+        <span>انا</span>
+        <span>ليس</span>
+        <span>تقدرون</span>
+        <app xml:id="Jn8_22-3">
+          <rdg n="1" wit="CSA">انتم تاتون</rdg>
+          <rdg n="2" wit="J67 S122 S128">ان تاتوا</rdg>
+          <rdg n="3" wit="S118">تاتون</rdg>
+          <rdg n="4" wit="S120 S137 S138 S139">ان تاتون</rdg>
+          <rdg n="5" wit="S71+">انتم تحون</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="5" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="5" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="3" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="4" ana="#Single_Minor_Word_Change">
+                <desc>The minor word ان is added.</desc>
+              </relation>
+              <relation active="5" passive="4" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="5" ana="#Multiple_Word_Changes"/>
+              <relation active="5" passive="1" ana="#Single_Major_Word_Change"/>
+              <relation active="5" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="4" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="5" ana="#Multiple_Word_Changes">
+                <desc>The pronoun انتم is added and the form of تاتوا is changed to تاتون.</desc>
+              </relation>
+              <relation active="2" passive="4" ana="#Single_Minor_Word_Change">
+                <desc>The form of تاتوا is changed to تاتون.</desc>
+              </relation>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes">
+                <desc>The word ان is omitted and the form of the تاتوا is changed to تاتون.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="5" ana="#Single_Major_Word_Change">
+                <desc>The verb تاتون is changed to تحون.</desc>
+              </relation>
+              <relation active="1" passive="4" ana="#Single_Minor_Word_Change">
+                <desc>The pronoun انتم is changed to ان.</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The pronoun انتم is omitted.</desc>
+              </relation>
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+                <desc>The pronoun انتم is changed to ان and the form of the verb تاتون is changed to تاتوا. Both are minor changes but taken together, they are a changes to multiple words.</desc>
+              </relation>
+            </listRelation>
+          </note>
+        </app>
+      </ab>
+      <ab n="Jn8:23">
+        <app xml:id="Jn8_23-1">
+          <rdg n="1" wit="CSA J30 S118 S120 S122 S128 S137 S138">وقال</rdg>
+          <rdg n="2" wit="J67 S71+">فقال</rdg>
+          <rdg n="3" wit="S139">قال</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction وis omitted.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction و is changed to ف.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>لهم</span>
+        <app xml:id="Jn8_23-2">
+          <rdg n="1" wit="CSA">ايضا انتم</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139 S71+">انتم</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The minor word ايضا is omitted.</desc>
+              </relation>
+            </listRelation>
+          </note>
+        </app>
+        <span>من اسفل انتم</span>
+        <span>وانا من فوق</span>
+        <app xml:id="Jn8_23-3">
+          <rdg n="1" wit="CSA J30 S120 S122 S128 S138 S139">انا انتم</rdg>
+          <rdg n="2" wit="J67">انا انكم</rdg>
+          <rdg n="3" wit="S118 S137">اما انتم</rdg>
+          <rdg n="4" wit="S71+">انتم</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="4" ana="#Single_Minor_Word_Change">
+                <desc>The minor word انا is omitted.</desc>
+              </relation>
+              <relation active="4" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="4" passive="3" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="4" ana="#Single_Minor_Word_Change">
+                <desc>The minor word اما is omitted.</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_23-4">
+          <rdg n="1" wit="CSA J30 J67 S120 S122 S128 S138 S139">من هذا العالم</rdg>
+          <rdg n="2" wit="S118 S137">فمن هذا العالم</rdg>
+          <rdg n="3" wit="S71+"/>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction ف is added.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes">
+                <desc>Multiple words are omitted.</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes">
+                <desc>Multiple words are omitted.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_23-5">
+          <rdg n="1" wit="CSA">فاما انا لست من هذا العالم</rdg>
+          <rdg n="2" wit="J30 S118 S122 S128 S137 S138 S139">فاما انا فليس من هذا العالم</rdg>
+          <rdg n="3" wit="J67"/>
+          <rdg n="4" wit="S120">فاما انا فلست من هذا العالم</rdg>
+          <rdg n="5" wit="S71+">من هذا العالم</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="5" ana="#Multiple_Word_Changes"/>
+              <relation active="5" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes">
+                <desc>Multiple words are omitted.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="5" ana="#Multiple_Word_Changes"/>
+              <relation active="5" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes">
+                <desc>Multiple words are omitted.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="4" ana="#Multiple_Word_Changes">
+                <desc>Multiple words are added.</desc>
+              </relation>
+              <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="5" ana="#Multiple_Word_Changes">
+                <desc>Multiple words are added.</desc>
+              </relation>
+              <relation active="5" passive="3" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+      </ab>
+      <ab n="Jn8:24">
+        <span>وقد قلت لكم انكم</span>
+        <app xml:id="Jn8_24-1">
+          <rdg n="1" wit="CSA J30 J67 S120 S122 S128 S137 S138 S139 S71+"/>
+          <rdg n="2" wit="S118">انتم</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>بخطاياكم تموتون</span>
+        <app xml:id="Jn8_24-2">
+          <rdg n="1" wit="CSA J30 S118 S120 S122 S128 S138 S139 S71+">وان</rdg>
+          <rdg n="2" wit="J67">ان</rdg>
+          <rdg n="3" wit="S137"/>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_24-3">
+          <rdg n="1" wit="CSA J67">لم تومنون باني</rdg>
+          <rdg n="2" wit="J30">لم تومنون بي</rdg>
+          <rdg n="3" wit="S118 S120 S122 S128 S138 S139 S71+">لم تومنوا بانى</rdg>
+          <rdg n="4" wit="S137">والم تومنوا بانى</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="3" passive="4" ana="#Single_Minor_Word_Change"/>
+              <relation active="4" passive="3" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>انا</span>
+        <app xml:id="Jn8_24-4">
+          <rdg n="1" wit="CSA J30 S118 S120 S122 S128 S137 S138 S139 S71+">هو فانكم تموتون</rdg>
+          <rdg n="2" wit="J67">هو</rdg>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+              <desc>Two words are omitted.</desc>
+            </relation>
+            <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+          </listRelation>
+        </app>
+        <app xml:id="Jn8_24-5">
+          <rdg n="1" wit="CSA J30 S118 S120 S122 S128 S137 S138 S139">بخطاياكم</rdg>
+          <rdg n="2" wit="J67"/>
+          <rdg n="3" wit="S71+">باثامكم</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="3" ana="#Single_Major_Word_Change"/>
+              <relation active="3" passive="1" ana="#Single_Major_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
+                <desc>The major word بخطاياكم is omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+              <relation active="2" passive="3" ana="#Single_Major_Word_Change">
+                <desc>The major word باثامكم is added.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Single_Major_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+      </ab>
+      <ab n="Jn8:25">
+        <span>فقالوا له انت من انت</span>
+        <app xml:id="Jn8_25-1">
+          <rdg n="1" wit="CSA J30 S118 S120 S122 S128 S137 S138 S139">فقال</rdg>
+          <rdg n="2" wit="J67 S71+">قال</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>لهم</span>
+        <app xml:id="Jn8_25-2">
+          <rdg n="1" wit="CSA S118 S120 S137 S139 S71+">يسوع</rdg>
+          <rdg n="2" wit="J30 J67 S122 S128 S138">ايسوع</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Orthography"/>
+              <relation active="2" passive="1" ana="#Orthography"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_25-3">
+          <rdg n="1" wit="CSA">البدوا</rdg>
+          <rdg n="2" wit="J30 J67 S120">انا هو البدوا</rdg>
+          <rdg n="3" wit="S118 S122 S128 S137 S138 S139">انا هو البدو</rdg>
+          <rdg n="4" wit="S71+"/>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="3" passive="4" ana="#Multiple_Word_Changes">
+                <desc>Multiple words are omitted.</desc>
+              </relation>
+              <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_25-4">
+          <rdg n="1" wit="CSA S120 S139 S71+">ان تكلمت</rdg>
+          <rdg n="2" wit="J30 J67 S118 S122 S128 S137 S138">وان تكلمت</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction و is added.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+      </ab>
+      <ab n="Jn8:26">
+        <app xml:id="Jn8_26-1">
+          <rdg n="1" wit="CSA J67 S118 S120 S128 S137 S138 S139 S71+">فان لى</rdg>
+          <rdg n="2" wit="J30">فانى</rdg>
+          <rdg n="3" wit="S122">فانى لي</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>A pronominal suffix is added.</desc>
+              </relation>
+            </listRelation>
+          </note>
+        </app>
+        <span>كثير</span>
+        <app xml:id="Jn8_26-2">
+          <rdg n="1" wit="CSA J67 S120 S122 S128 S138 S139">ان</rdg>
+          <rdg n="2" wit="J30 S118 S137 S71+"/>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The minor word ان is omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_26-3">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139">اتكلم عليكم</rdg>
+          <rdg n="2" wit="S71+">فيكم</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+                <desc>The word اتكلم is added and the preposition is changed to في.</desc>
+              </relation>
+            </listRelation>
+          </note>
+        </app>
+        <span>وادين</span>
+        <app xml:id="Jn8_26-4">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137">ولكن ذلك</rdg>
+          <rdg n="2" wit="S138">ولكني ذلك</rdg>
+          <rdg n="3" wit="S139 S71+">ولكن</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The demonstrative pronoun ذلك is omitted.</desc>
+              </relation>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>A pronominal suffix is added.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes">
+                <desc>A pronominal suffix is omitted and the demonstrative pronoun ذلك is omitted.</desc>
+              </relation>
+            </listRelation>
+          </note>
+        </app>
+        <span>الذي</span>
+        <app xml:id="Jn8_26-5">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139">ارسلني فانه</rdg>
+          <rdg n="2" wit="S71+">ارسلني</rdg>
+        </app>
+        <app xml:id="Jn8_26-6">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S71+">حق</rdg>
+          <rdg n="2" wit="S139"/>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
+                <desc>The major word حق is omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_26-7">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139"/>
+          <rdg n="2" wit="S71+">هو</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The pronoun هو is added which is a minor word.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_26-8">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139">والذى</rdg>
+          <rdg n="2" wit="S71+">وما قد</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change"/>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>سمعت</span>
+        <app xml:id="Jn8_26-9">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139">منه</rdg>
+          <rdg n="2" wit="S71+"/>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The preposition (with suffix) منه is omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_26-10">
+          <rdg n="1" wit="CSA J30 S118 S120 S122 S128 S137 S138 S139">انا اياه</rdg>
+          <rdg n="2" wit="J67">اياه</rdg>
+          <rdg n="3" wit="S71+">فهو</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The minor word انا is omitted.</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes">
+                <desc>Two words are changed.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The minor word اياه is changed to فهو</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_26-11">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139">اتكلم</rdg>
+          <rdg n="2" wit="S71+">يتكلم</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The form of اتكلم is changed to يتكلم.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>فى العالم</span>
+      </ab>
+      <ab n="Jn8:27">
+        <app xml:id="Jn8_27-1">
+          <rdg n="1" wit="CSA J67 S118 S120 S122 S128 S137 S138 S139 S71+">ولم يعلموا</rdg>
+          <rdg n="2" wit="J30">ولم يعلمون</rdg>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+              <desc>The form of يعلموا is changed to يعلمون.</desc>
+            </relation>
+            <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+          </listRelation>
+        </app>
+        <app xml:id="Jn8_27-2">
+          <rdg n="1" wit="CSA J30">ان</rdg>
+          <rdg n="2" wit="J67 S118 S120 S122 S128 S137 S138 S139 S71+">انه من</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+                <desc>A pronominal suffix is added to ان and the preposition من is added.</desc>
+              </relation>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_27-3">
+          <rdg n="1" wit="CSA">منجل ابوه</rdg>
+          <rdg n="2" wit="J30">منجل ابيه</rdg>
+          <rdg n="3" wit="J67 S118 S120 S122 S128 S137 S138 S139 S71+">اجل ابيه</rdg>
+          <note>
+            <listRelation type="transcriptional">
+                </listRelation>
+          </note>
+        </app>
+        <span>قال</span>
+      </ab>
+      <ab n="Jn8:28">
+        <app xml:id="Jn8_28-1">
+          <rdg n="1" wit="CSA S120 S138 S139 S71+">فقال</rdg>
+          <rdg n="2" wit="J30 J67 S118 S122 S128 S137">وقال</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction ف is changed to و.</desc>
+              </relation>
+            </listRelation>
+          </note>
+        </app>
+        <span>لهم</span>
+        <app xml:id="Jn8_28-2">
+          <rdg n="1" wit="CSA S120 S137 S139 S71+">يسوع</rdg>
+          <rdg n="2" wit="J30 J67 S118 S122 S128 S138">ايسوع</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Orthography"/>
+              <relation active="2" passive="1" ana="#Orthography"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>اذا</span>
+        <app xml:id="Jn8_28-3">
+          <rdg n="1" wit="CSA S71+">رفعتم بن البشر</rdg>
+          <rdg n="2" wit="J30 J67 S118">رفعتم ابن البشر</rdg>
+          <rdg n="3" wit="S120 S122 S128 S138">رفعتم ابن الانسان</rdg>
+          <rdg n="4" wit="S137 S139">رفعتم بن الانسان</rdg>
+        </app>
+        <span>عند</span>
+        <app xml:id="Jn8_28-4">
+          <rdg n="1" wit="CSA J67 S120 S122 S128 S138 S139">ذلك تعرفون</rdg>
+          <rdg n="2" wit="J30 S118 S137 S71+">ذلك تعرفوا</rdg>
+        </app>
+        <span>انى</span>
+        <span>انا</span>
+        <span>هو</span>
+        <app xml:id="Jn8_28-5">
+          <rdg n="1" wit="CSA S120 S139 S71+">ولست</rdg>
+          <rdg n="2" wit="J30 J67 S118 S122 S128 S137 S138">وليس</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The form of ولست is changed to وليس.</desc>
+              </relation>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_28-6">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S139 S71+">اعمل</rdg>
+          <rdg n="2" wit="S138"/>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change"/>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_28-7">
+          <rdg n="1" wit="CSA J67 S138">شي</rdg>
+          <rdg n="2" wit="J30 S118 S122 S128 S137 S139 S71+">شيا</rdg>
+          <rdg n="3" wit="S120">بشيا</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="1" ana="#Orthography"/>
+              <relation active="1" passive="2" ana="#Orthography">
+                <desc>The alif of nasb is added.</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The preposition ب is added and the alif of nasb is added to the single word شي.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The preposition ب is added.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>من</span>
+        <span>قبل</span>
+        <span>نفسى</span>
+        <span>ولكن</span>
+        <span>كما</span>
+        <span>علمنى</span>
+        <app xml:id="Jn8_28-8">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139">ابي</rdg>
+          <rdg n="2" wit="S71+">الاب</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The article ال is added and the pronominal suffix is omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>كذلك</span>
+        <span>اعمل</span>
+      </ab>
+      <ab n="Jn8:29">
+        <app xml:id="Jn8_29-1">
+          <rdg n="1" wit="CSA S120 S139 S71+">وابي</rdg>
+          <rdg n="2" wit="J30 J67 S118 S122 S128 S137 S138">وان</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
+                <desc>The major word وابي is changed to وان.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>الذي</span>
+        <span>ارسلني</span>
+        <span>فانه</span>
+        <app xml:id="Jn8_29-2">
+          <rdg n="1" wit="CSA">معى ولم</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139">معي وليس</rdg>
+          <rdg n="3" wit="S71+">معي لم</rdg>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+              <desc>The minor word لم is replaced with ليس.</desc>
+            </relation>
+            <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+          </listRelation>
+        </app>
+        <span>يتركني</span>
+        <app xml:id="Jn8_29-3">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139">ابي وحدي</rdg>
+          <rdg n="2" wit="S71+">اتي وحدى</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
+                <desc>The major word ابي is changed to اتي.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>لانى</span>
+        <span>اعمل</span>
+        <app xml:id="Jn8_29-4">
+          <rdg n="1" wit="CSA S120 S139 S71+">مسرته</rdg>
+          <rdg n="2" wit="J30 J67 S118 S122 S128 S137 S138">مشيته</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
+                <desc>The major word مسرته is changed to مشيته.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>في</span>
+        <span>كل حين</span>
+      </ab>
+      <ab n="Jn8:30">
+        <span>فلما</span>
+        <app xml:id="Jn8_30-1">
+          <rdg n="1" wit="CSA S71+">ان تكلم</rdg>
+          <rdg n="2" wit="J30 J67 S120 S122 S128 S138 S139">تكلم</rdg>
+          <rdg n="3" wit="S118 S137">تكلم يسوع</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The minor word ان is omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="3" ana="#Single_Major_Word_Change">
+                <desc>The major word يسوع is added.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Single_Major_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_30-2">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S139">بهذا</rdg>
+          <rdg n="2" wit="S138">هذا</rdg>
+          <rdg n="3" wit="S71+">بهذا كثيرين</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The preposition ب is omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="3" ana="#Single_Major_Word_Change">
+                <desc>The major word كثيرين is added.</desc>
+              </relation>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes">
+                <desc>The preposition ب is added and the major word كثيرين is added.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Major_Word_Change"/>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_30-3">
+          <rdg n="1" wit="CSA J67 S71+">امنوا به</rdg>
+          <rdg n="2" wit="J30 S120 S122 S128">امن</rdg>
+          <rdg n="3" wit="S118 S137 S138 S139">امن به</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The form of the verb امنوا is changed to امن.</desc>
+              </relation>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The preposition (with suffix) به is added.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_30-4">
+          <rdg n="1" wit="CSA J67">كثيرين</rdg>
+          <rdg n="2" wit="J30 S120 S122 S128 S138">كثير</rdg>
+          <rdg n="3" wit="S118 S137">كثير من اليهود</rdg>
+          <rdg n="4" wit="S139">خلق كثير</rdg>
+          <rdg n="5" wit="S71+"/>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The word كثيرين is changed to كثير, corresponding to a change in number.</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="4" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes">
+                <desc>Two words are added.</desc>
+              </relation>
+              <relation active="2" passive="4" ana="#Single_Major_Word_Change">
+                <desc>The major word خلق is added.</desc>
+              </relation>
+              <relation active="2" passive="5" ana="#Single_Major_Word_Change">
+                <desc>The major word كثير is omited.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="4" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="5" ana="#Multiple_Word_Changes">
+                <desc>Three words are omitted.</desc>
+              </relation>
+              <relation active="4" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="2" ana="#Single_Major_Word_Change"/>
+              <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="5" ana="#Multiple_Word_Changes">
+                <desc>Two words are omitted.</desc>
+              </relation>
+              <relation active="5" passive="1" ana="#Single_Major_Word_Change"/>
+              <relation active="5" passive="2" ana="#Single_Major_Word_Change"/>
+              <relation active="5" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="5" passive="4" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="5" ana="#Single_Major_Word_Change">
+                <desc>The major word كثيرين is omitted.</desc>
+              </relation>
+            </listRelation>
+          </note>
+        </app>
+      </ab>
+      <ab n="Jn8:31">
+        <app xml:id="Jn8_31-1">
+          <rdg n="1" wit="CSA S71+">فقال يسوع</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139">قال الرب</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+                <desc>The conjunction فis omitted and يسوع is changed to الرب.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>للذين</span>
+        <app xml:id="Jn8_31-2">
+          <rdg n="1" wit="CSA J67 S71+">امنوا به من</rdg>
+          <rdg n="2" wit="J30">اتوا اليه</rdg>
+          <rdg n="3" wit="S118 S137">اتوا اليه من</rdg>
+          <rdg n="4" wit="S120 S122 S128 S138 S139">امنوا  من</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="4" ana="#Single_Minor_Word_Change">
+                <desc>The preposition (with suffix) به is omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The preposition من is added.</desc>
+              </relation>
+              <relation active="2" passive="4" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="4" ana="#Multiple_Word_Changes">
+                <desc>Two words اتوا اليه are changed to امنوا.</desc>
+              </relation>
+              <relation active="4" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="4" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>اليهود</span>
+        <app xml:id="Jn8_31-3">
+          <rdg n="1" wit="CSA J30 J67 S120 S122 S128 S138 S139 S71+">ان</rdg>
+          <rdg n="2" wit="S118 S137">اذا</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The minor word ان is changed to اذا</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_31-4">
+          <rdg n="1" wit="CSA S118 S137">ثبتم</rdg>
+          <rdg n="2" wit="J30 J67 S120 S122 S128 S138 S139">انتم ثبتم</rdg>
+          <rdg n="3" wit="S71+">انتم حفظتم</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes">
+                <desc>The pronoun انتم is added and the major word ثبتم is changed to حفظتم.</desc>
+              </relation>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The pronoun انتم is added.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="3" ana="#Single_Major_Word_Change">
+                <desc>The major word ثبتم is changed to حفظتم.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="2" ana="#Single_Major_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_31-5">
+          <rdg n="1" wit="CSA J67 S118 S120 S128 S137 S139">في</rdg>
+          <rdg n="2" wit="J30 S122 S138 S71+"/>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The preposition في is omitted which is a minor word.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>كلامى</span>
+        <app xml:id="Jn8_31-6">
+          <rdg n="1" wit="CSA J30 S120 S122 S128 S138 S139 S71+">فبحق</rdg>
+          <rdg n="2" wit="J67">بحق</rdg>
+          <rdg n="3" wit="S118 S137">فحقا</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction ف is omitted.</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The preposition ب is omitted.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The preposition ب is omitted and the conjunction ف is added to a single word.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_31-7">
+          <rdg n="1" wit="CSA J67 S118 S120 S122 S128 S137 S138 S139 S71+">انكم</rdg>
+          <rdg n="2" wit="J30">انتم</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The minor word انكم is changed to انتم.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>تلاميذي</span>
+      </ab>
+      <ab n="Jn8:32">
+        <app xml:id="Jn8_32-1">
+          <rdg n="1" wit="CSA J30 J67 S120 S122 S128 S138 S139">فتعرفون</rdg>
+          <rdg n="2" wit="S118 S137">وتعرفون</rdg>
+          <rdg n="3" wit="S71+">فاعرفون</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction ف is changed to و.</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The form of the verb is changed.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The form of the verb is changed and the conjunction is changed from و to ف.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_32-2">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139">الحق والحق</rdg>
+          <rdg n="2" wit="S71+">الحق والحق هو</rdg>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+              <desc>The pronoun هو is added which is a minor word.</desc>
+            </relation>
+            <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+          </listRelation>
+        </app>
+        <app xml:id="Jn8_32-3">
+          <rdg n="1" wit="CSA S120 S71+">يعتقكم</rdg>
+          <rdg n="2" wit="J30 J67 S118 S122 S128 S137 S139">يعرفكم</rdg>
+          <rdg n="3" wit="S138">ايعرفكم</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="3" ana="#Single_Major_Word_Change">
+                <desc>The root of the verb is changed.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Major_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
+                <desc>The root of the verb is changed.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+      </ab>
+      <ab n="Jn8:33">
+        <app xml:id="Jn8_33-1">
+          <rdg n="1" wit="CSA J67 S120 S139">اجابوا</rdg>
+          <rdg n="2" wit="J30">اجابو</rdg>
+          <rdg n="3" wit="S118 S122 S128 S137 S71+">اجابوه</rdg>
+          <rdg n="4" wit="S138">اجابواه</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="4" ana="#Single_Minor_Word_Change">
+                <desc>A pronominal suffix is added.</desc>
+              </relation>
+              <relation active="4" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>A pronominal suffix is added.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>A pronominal suffix is added.</desc>
+              </relation>
+              <relation active="4" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="4" ana="#Single_Minor_Word_Change">
+                <desc>A pronominal suffix is added.</desc>
+              </relation>
+              <relation active="1" passive="2" ana="#Orthography">
+                <desc>A alif marking the plural verb is omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Orthography"/>
+              <relation active="3" passive="4" ana="#Orthography">
+                <desc>A alif marking the plural verb is added.</desc>
+              </relation>
+              <relation active="4" passive="3" ana="#Orthography"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_33-2">
+          <rdg n="1" wit="CSA J30 S120 S122 S128 S138">فقالوا</rdg>
+          <rdg n="2" wit="J67 S118 S137">وقالوا</rdg>
+          <rdg n="3" wit="S139">اليهود فقالوا</rdg>
+          <rdg n="4" wit="S71+">قايلين</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction ف is changed to و.</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Single_Major_Word_Change">
+                <desc>The major word اليهود is added.</desc>
+              </relation>
+              <relation active="1" passive="4" ana="#Single_Minor_Word_Change">
+                <desc>The form of the verb is changed.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes">
+                <desc>The major word اليهود is added and the conjunction is changed from و to ف.</desc>
+              </relation>
+              <relation active="2" passive="4" ana="#Single_Minor_Word_Change">
+                <desc>The form of the verb is changed.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="4" ana="#Multiple_Word_Changes">
+                <desc>The major word اليهود is added and the form of the verb is changed.</desc>
+              </relation>
+              <relation active="4" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="4" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_33-3">
+          <rdg n="1" wit="CSA J30 S118 S120 S122 S128 S137 S138 S139">له</rdg>
+          <rdg n="2" wit="J67 S71+"/>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The preposition (with suffix) له is added.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>نحن</span>
+        <app xml:id="Jn8_33-4">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138">ذريه</rdg>
+          <rdg n="2" wit="S139">نسل</rdg>
+          <rdg n="3" wit="S71+">بنو</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="3" ana="#Single_Major_Word_Change">
+                <desc>The major word نسل is changed to بنو.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Single_Major_Word_Change"/>
+              <relation active="1" passive="3" ana="#Single_Major_Word_Change">
+                <desc>The major word ذريه is changed to بنو.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Major_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
+                <desc>The major word ذريه is changed to نسل.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_33-5">
+          <rdg n="1" wit="CSA S118 S120 S122 S128 S137 S71+">ابرهيم</rdg>
+          <rdg n="2" wit="J30 J67 S138 S139">ابراهيم</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="1" ana="#Orthography"/>
+              <relation active="1" passive="2" ana="#Orthography">
+                <desc>An alif is added to the spelling of ابرهيم.</desc>
+              </relation>
+            </listRelation>
+          </note>
+        </app>
+        <span>ومنذ</span>
+        <span>قط لم</span>
+        <app xml:id="Jn8_33-6">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S139 S71+">نتعبد</rdg>
+          <rdg n="2" wit="S138">تبعد</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
+                <desc>The root of the verb is changed.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_33-7">
+          <rdg n="1" wit="CSA S118 S120 S122 S128 S137 S138 S139 S71+">لاحد</rdg>
+          <rdg n="2" wit="J30">احد</rdg>
+          <rdg n="3" wit="J67">لاحدا</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="3" ana="#Orthography">
+                <desc>An alif is added.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Orthography"/>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The preposition ل is omitted from لاحد.</desc>
+              </relation>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The preposition ل is added to احد and an alif is added.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_33-8">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S137 S138 S139 S71+"/>
+          <rdg n="2" wit="S128">غيره</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
+                <desc>The major word غيره is added.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>فكيف</span>
+        <app xml:id="Jn8_33-9">
+          <rdg n="1" wit="CSA J67 S118 S120 S137 S138 S71+">تقول</rdg>
+          <rdg n="2" wit="J30 S139">تقول انت</rdg>
+          <rdg n="3" wit="S122 S128">تقولوا</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The number of تقول is changed to تقولوا.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The pronoun انت is added.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes">
+                <desc>The number of تقول is changed to تقولوا and the pronoun انت is added.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_33-10">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139">بانكم</rdg>
+          <rdg n="2" wit="S71+"/>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The minor word بانكم is omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_33-11">
+          <rdg n="1" wit="CSA J67 S120 S138 S139 S71+">تكونوا</rdg>
+          <rdg n="2" wit="J30">تكونو</rdg>
+          <rdg n="3" wit="S118 S137">تصيروا</rdg>
+          <rdg n="4" wit="S122 S128"/>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="1" ana="#Orthography"/>
+              <relation active="1" passive="2" ana="#Orthography">
+                <desc>The alif for the plural verb is omitted.</desc>
+              </relation>
+              <relation active="2" passive="4" ana="#Single_Major_Word_Change">
+                <desc>The major word تكونو is omitted.</desc>
+              </relation>
+              <relation active="4" passive="2" ana="#Single_Major_Word_Change"/>
+              <relation active="4" passive="1" ana="#Single_Major_Word_Change"/>
+              <relation active="1" passive="4" ana="#Single_Major_Word_Change">
+                <desc>The major word تكونوا is omitted.</desc>
+              </relation>
+              <relation active="4" passive="3" ana="#Single_Major_Word_Change"/>
+              <relation active="3" passive="4" ana="#Single_Major_Word_Change">
+                <desc>The major word تصيروا is omitted.</desc>
+              </relation>
+              <relation active="2" passive="3" ana="#Single_Major_Word_Change">
+                <desc>The major word تكونو is changed to تصيروا.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Single_Major_Word_Change"/>
+              <relation active="1" passive="3" ana="#Single_Major_Word_Change">
+                <desc>The major word تكونوا is changed to تصيروا.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Major_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>احرار</span>
+      </ab>
+      <ab n="Jn8:34">
+        <app xml:id="Jn8_34-1">
+          <rdg n="1" wit="CSA">اجاب يسوع فقال</rdg>
+          <rdg n="2" wit="J30 S122 S128 S138">اجاب ايسوع فقال لهم</rdg>
+          <rdg n="3" wit="J67">فقال ايسوع</rdg>
+          <rdg n="4" wit="S118 S137 S139">اجاب يسوع وقال لهم</rdg>
+          <rdg n="5" wit="S120">اجاب يسوع فقال لهم</rdg>
+          <rdg n="6" wit="S71+">اجاب يسوع وقال</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="6" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="6" passive="4" ana="#Single_Minor_Word_Change"/>
+              <relation active="6" passive="5" ana="#Multiple_Word_Changes"/>
+              <relation active="6" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="6" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="5" passive="6" ana="#Multiple_Word_Changes">
+                <desc>Multiple minor changes occur. The conjunction ف is changed to و and the preposition (with suffix) لهم is omitted.</desc>
+              </relation>
+              <relation active="5" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="4" passive="6" ana="#Single_Minor_Word_Change">
+                <desc>The preposition (with suffix) لهم is omitted.</desc>
+              </relation>
+              <relation active="3" passive="5" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="4" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes">
+                <desc>Multiple changes occur. For example, the verb اجاب is omitted and the verb فقال is transposed.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change #Multiple_Word_Changes"/>
+              <relation active="3" passive="6" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="5" ana="#Orthography">
+                <desc>The spelling of ايسوع is changed to يسوع.</desc>
+              </relation>
+              <relation active="5" passive="2" ana="#Orthography"/>
+              <relation active="1" passive="4" ana="#Multiple_Word_Changes">
+                <desc>Two changes occur. The conjunction ف is changed to و and the preposition (with suffix) لهم is added.</desc>
+              </relation>
+              <relation active="4" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes">
+                <desc>The verb اجاب is omitted and the verb فقال is transposed.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+                <desc>Changes are made to multiple words. The spelling of يسوع is changed to ايسوع and the preposition (with suffix) لهم is added.</desc>
+              </relation>
+              <relation active="1" passive="5" ana="#Single_Minor_Word_Change">
+                <desc>The preposition (with suffix) لهم is added.</desc>
+              </relation>
+              <relation active="1" passive="6" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction ف is changed to و.</desc>
+              </relation>
+              <relation active="2" passive="4" ana="#Multiple_Word_Changes">
+                <desc>Multiple minor changes occur. The spelling of ايسوع is changed to يسوع and the conjunction ف is changed to و.</desc>
+              </relation>
+              <relation active="4" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="6" ana="#Multiple_Word_Changes">
+                <desc>Multiple minor changes occur. The spelling of ايسوع is changed to يسوع and the conjunction ف is changed to و and the preposition (with suffix) لهم is omitted.</desc>
+              </relation>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_34-2">
+          <rdg n="1" wit="CSA">امين امين اقول لكم</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138">الحق الحق اقول لكم</rdg>
+          <rdg n="3" wit="S139">الحق الحق اقول</rdg>
+          <rdg n="4" wit="S71+">امين امين اقل لكم</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="3" passive="4" ana="#Multiple_Word_Changes">
+                <desc>The word الحق is changed to امين and the preposition (with suffix) لكم is added.</desc>
+              </relation>
+              <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_34-3">
+          <rdg n="1" wit="CSA J30 S118 S120 S122 S128 S137 S138 S139 S71+">ان</rdg>
+          <rdg n="2" wit="J67"/>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The minor word ان is omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_34-4">
+          <rdg n="1" wit="CSA S118 S120 S122 S128 S137 S138 S71+">كل من</rdg>
+          <rdg n="2" wit="J30 J67">كلمن</rdg>
+          <rdg n="3" wit="S139">من</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The minor word كل is added.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The minor word كل is omitted.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>يعمل</span>
+        <span>الخطيه</span>
+        <app xml:id="Jn8_34-5">
+          <rdg n="1" wit="CSA J30 S120 S122 S128 S138 S139 S71+">فانه عبد</rdg>
+          <rdg n="2" wit="J67">فهو عبد</rdg>
+          <rdg n="3" wit="S118">فانهُ عبدًا</rdg>
+          <rdg n="4" wit="S137">فانه عبدا</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The minor word فانه is changed to فهو.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_34-6">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S128 S137 S139 S71+">للخطيه</rdg>
+          <rdg n="2" wit="S122 S138">الخطيه</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The preposition ل is added.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+      </ab>
+      <ab n="Jn8:35">
+        <app xml:id="Jn8_35-1">
+          <rdg n="1" wit="CSA">لان العبد لا يدوم الى الابد</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139">لان العبد لا يدوم الي الدهر</rdg>
+          <rdg n="3" wit="S71+">لان العبد لا يدوم</rdg>
+        </app>
+        <span>في البيت</span>
+        <app xml:id="Jn8_35-2">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139"/>
+          <rdg n="2" wit="S71+">للدهر</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
+                <desc>The major word للدهر is added.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_35-3">
+          <rdg n="1" wit="CSA">اما الابن</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S137 S138 S139">فاما الابن</rdg>
+          <rdg n="3" wit="S122 S128 S71+">واما الابن</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction ف is added.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction و is added.</desc>
+              </relation>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction ف is changed to و.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_35-4">
+          <rdg n="1" wit="CSA">فانه يدوم الى الابد فى البيت</rdg>
+          <rdg n="2" wit="J30 J67 S118 S122 S128 S137 S138">فانه يدوم الي الدهر</rdg>
+          <rdg n="3" wit="S120 S71+">فانه يدوم الى الابد</rdg>
+          <rdg n="4" wit="S139">فانه يدوم  ابدا</rdg>
+        </app>
+      </ab>
+      <ab n="Jn8:36">
+        <app xml:id="Jn8_36-1">
+          <rdg n="1" wit="CSA J67 S139">فان</rdg>
+          <rdg n="2" wit="J30 S118 S120 S122 S128 S137 S138 S71+">وان</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction و is changed to ف.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>اعتقكم</span>
+        <span>الابن</span>
+        <span>فانكم</span>
+        <app xml:id="Jn8_36-2">
+          <rdg n="1" wit="CSA S118 S122 S137">تكونوا احرار</rdg>
+          <rdg n="2" wit="J30">تكونو احرار</rdg>
+          <rdg n="3" wit="J67">احرار تكونوا</rdg>
+          <rdg n="4" wit="S120 S138 S139 S71+">تكونون احرار</rdg>
+          <rdg n="5" wit="S128">تكونوا احرارا</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Orthography">
+                <desc>The alif for the plural verb is omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Orthography"/>
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes">
+                <desc>The two words are transposed.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes">
+                <desc>The two words are transposed and the alif for the plural verb is added.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="4" ana="#Single_Minor_Word_Change">
+                <desc>The form of the verb تكونوا is changed to تكونون.</desc>
+              </relation>
+              <relation active="1" passive="5" ana="#Orthography">
+                <desc>The alif of nasb is added.</desc>
+              </relation>
+              <relation active="2" passive="4" ana="#Single_Minor_Word_Change">
+                <desc>The form of the verb تكونو is changed to تكونون.</desc>
+              </relation>
+              <relation active="2" passive="5" ana="#Orthography">
+                <desc>The alif of nasb is added.</desc>
+              </relation>
+              <relation active="3" passive="4" ana="#Multiple_Word_Changes">
+                <desc>The two words are transposed and the form of the verb تكونوا is changed to تكونون.</desc>
+              </relation>
+              <relation active="3" passive="5" ana="#Multiple_Word_Changes">
+                <desc>The two words are transposed and the alif of nasb is added.</desc>
+              </relation>
+              <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="5" passive="1" ana="#Orthography"/>
+              <relation active="5" passive="2" ana="#Orthography"/>
+              <relation active="5" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="5" ana="#Multiple_Word_Changes">
+                <desc>The form of the verb تكونون is changed to تكونوا and the alif of nasb is added.</desc>
+              </relation>
+              <relation active="5" passive="4" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="2" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+      </ab>
+      <ab n="Jn8:37">
+        <app xml:id="Jn8_37-1">
+          <rdg n="1" wit="CSA S71+">فقد</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139">قد</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction ف is omitted.</desc>
+              </relation>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_37-2">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S138 S139 S71+">علمت</rdg>
+          <rdg n="2" wit="S137">قلمت</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
+                <desc>The major word علمت is changed to قلمت</desc>
+              </relation>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_37-3">
+          <rdg n="1" wit="CSA J30 S139 S71+">انكم من</rdg>
+          <rdg n="2" wit="J67 S138">بانكم</rdg>
+          <rdg n="3" wit="S118 S120 S122 S128 S137">بانكم من</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+                <desc>The preposition ب is added and the word من is omitted.</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The preposition ب is added.</desc>
+              </relation>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The preposition من is added.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>ذريه</span>
+        <app xml:id="Jn8_37-4">
+          <rdg n="1" wit="CSA S118 S120 S122 S128 S137 S71+">ابرهيم</rdg>
+          <rdg n="2" wit="J30 J67 S138 S139">ابراهيم</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Orthography">
+                <desc>The spelling of ابرهيم is changed to ابراهيم.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Orthography"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>ولكنكم</span>
+        <app xml:id="Jn8_37-5">
+          <rdg n="1" wit="CSA J67 S118 S120 S122 S128 S137 S138 S139 S71+">تريدون</rdg>
+          <rdg n="2" wit="J30">تريدوا</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The form of the verb is changed from تريدون to تريدوا.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_37-6">
+          <rdg n="1" wit="CSA S139 S71+">قتلى لان</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138">قتلى</rdg>
+        </app>
+        <app xml:id="Jn8_37-7">
+          <rdg n="1" wit="CSA">كلمتى   ليس تتسع فيكم</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138"/>
+          <rdg n="3" wit="S139">المقول الذي لي لا يسع فيكم</rdg>
+          <rdg n="4" wit="S71+">كلمتى   ليس تثبت فيكم</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="3" passive="4" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+                <desc>Multiple words are omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes">
+                <desc>Multiple words are added.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="4" ana="#Multiple_Word_Changes">
+                <desc>Multiple words are added.</desc>
+              </relation>
+              <relation active="4" passive="2" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+      </ab>
+      <ab n="Jn8:40">
+        <app xml:id="Jn8_40-1">
+          <rdg n="1" wit="CSA S71+">الان فانكم تريدون قتلى انسان</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138">انا</rdg>
+          <rdg n="3" wit="S139">والان  تحاولون تقتلوني انسانا</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>كلمتكم</span>
+        <span>بالحق</span>
+        <span>الذي</span>
+        <span>سمعت</span>
+        <span>من</span>
+        <app xml:id="Jn8_40-2">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S71+">الاب</rdg>
+          <rdg n="2" wit="S139">الله</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change"/>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_40-3">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S137 S138 S139 S71+">فاما</rdg>
+          <rdg n="2" wit="S128">فلم</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The minor word فاما is changed to فلم.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_40-4">
+          <rdg n="1" wit="CSA">ابرهيم فاما</rdg>
+          <rdg n="2" wit="J30 J67 S138 S139">ابراهيم</rdg>
+          <rdg n="3" wit="S118 S120 S122 S128 S137 S71+">ابرهيم</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="3" passive="2" ana="#Orthography"/>
+              <relation active="2" passive="3" ana="#Orthography">
+                <desc>The spelling of ابراهيم is changed to ابرهيم.</desc>
+              </relation>
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+                <desc>The spelling of ابرهيم is changed to ابراهيم and the minor word فاما is added.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The minor word فاما is added.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_40-5">
+          <rdg n="1" wit="CSA">ابرهيم</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139 S71+"/>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
+                <desc>The major word ابرهيم is omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_40-6">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S138 S139 S71+">فلم</rdg>
+          <rdg n="2" wit="S137">قلم</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
+                <desc>The minor word فلم is changed to the major word قلم.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>يفعل</span>
+        <app xml:id="Jn8_40-7">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S139 S71+">هذا</rdg>
+          <rdg n="2" wit="S138">هذا واما</rdg>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+              <desc>The minor word واما is added.</desc>
+            </relation>
+            <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+          </listRelation>
+        </app>
+        <app xml:id="Jn8_40-8">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S139 S71+"/>
+          <rdg n="2" wit="S138">ابراهيم فلم يفعل هذا</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+                <desc>Multiple words are added.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+      </ab>
+      <ab n="Jn8:41">
+        <app xml:id="Jn8_41-1">
+          <rdg n="1" wit="CSA">اما انتم فتفعلون</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139 S71+">واما انتم فتفعلون</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction و is added.</desc>
+              </relation>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_41-2">
+          <rdg n="1" wit="CSA S120 S139">فعال ابوكم</rdg>
+          <rdg n="2" wit="J30 S122 S128 S138">فعال ابيكم ابراهيم</rdg>
+          <rdg n="3" wit="J67"/>
+          <rdg n="4" wit="S118 S137">فعال ابيكم ابليس</rdg>
+          <rdg n="5" wit="S71+">فعال ابوكم الشيطان</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+                <desc>Two words are changed: the form of ابوكم is changed to ابيكم and the major word ابراهيم is added.</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes">
+                <desc>Two words are omitted.</desc>
+              </relation>
+              <relation active="1" passive="4" ana="#Multiple_Word_Changes">
+                <desc>Two words are changed: the form of ابوكم is changed to ابيكم and the major word ابليس is added.</desc>
+              </relation>
+              <relation active="1" passive="5" ana="#Single_Major_Word_Change">
+                <desc>The major word الشيطان is added.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes">
+                <desc>Three words are omitted.</desc>
+              </relation>
+              <relation active="2" passive="4" ana="#Single_Major_Word_Change">
+                <desc>The major word ابراهيم is changed to ابليس.</desc>
+              </relation>
+              <relation active="2" passive="5" ana="#Multiple_Word_Changes">
+                <desc>Two words are changed: the form of ابيكم is changed to ابوكم and the major word ابراهيم is changed to الشيطان.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="4" ana="#Multiple_Word_Changes">
+                <desc>Three words are added.</desc>
+              </relation>
+              <relation active="4" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="2" ana="#Single_Major_Word_Change"/>
+              <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="5" ana="#Multiple_Word_Changes">
+                <desc>Two words are changed: the form of ابيكم is changed to ابوكم and the major word ابليس is changed to الشيطان.</desc>
+              </relation>
+              <relation active="5" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="5" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="5" passive="4" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="5" ana="#Multiple_Word_Changes">
+                <desc>Three words are added.</desc>
+              </relation>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_41-3">
+          <rdg n="1" wit="CSA S71+">قالوا له</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139">فقالوا له</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction ف is added.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>نحن لم نولد من زنا</span>
+        <app xml:id="Jn8_41-4">
+          <rdg n="1" wit="CSA S120 S122 S128 S138 S139 S71+">لنا اب واحد</rdg>
+          <rdg n="2" wit="J30 J67">لنا ابا واحد</rdg>
+          <rdg n="3" wit="S118">لنا ابًا واحدًا</rdg>
+          <rdg n="4" wit="S137">ولنا ابا واحدا</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="4" ana="#Multiple_Word_Changes">
+                <desc>A conjunction is added to the start and the alif of nasb is added.</desc>
+              </relation>
+              <relation active="4" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="4" ana="#Single_Minor_Word_Change">
+                <desc>A conjunction was added.</desc>
+              </relation>
+              <relation active="1" passive="2" ana="#Orthography">
+                <desc>The alif of nasb is added.</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Orthography">
+                <desc>The alif of nasb is added.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Orthography"/>
+              <relation active="2" passive="3" ana="#Orthography">
+                <desc>The alif of nasb is added.</desc>
+              </relation>
+              <relation active="2" passive="4" ana="#Multiple_Word_Changes">
+                <desc>A conjunction is added to the start and the alif of nasb is added.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Orthography"/>
+              <relation active="3" passive="2" ana="#Orthography"/>
+              <relation active="4" passive="2" ana="#Single_Minor_Word_Change #Multiple_Word_Changes"/>
+              <relation active="4" passive="3" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_41-5">
+          <rdg n="1" wit="CSA">اللاه</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S138 S139">الاله</rdg>
+          <rdg n="3" wit="S128">هو الاله</rdg>
+          <rdg n="4" wit="S137">الااله</rdg>
+          <rdg n="5" wit="S71+">الله</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="4" passive="2" ana="#Orthography"/>
+              <relation active="4" passive="1" ana="#Orthography"/>
+              <relation active="2" passive="4" ana="#Orthography">
+                <desc>Variant spellings for 'the God'.</desc>
+              </relation>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The preposition هو was added.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Orthography"/>
+              <relation active="1" passive="4" ana="#Orthography">
+                <desc>Variant spellings for 'the God'.</desc>
+              </relation>
+              <relation active="1" passive="2" ana="#Orthography">
+                <desc>Variant spellings for 'the God'.</desc>
+              </relation>
+              <relation active="1" passive="5" ana="#Single_Minor_Word_Change">
+                <desc>The article is removed turning it into just the divine name.</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes">
+                <desc>The preposition هو was added and the spelling for God was changed.</desc>
+              </relation>
+              <relation active="2" passive="5" ana="#Single_Minor_Word_Change">
+                <desc>The article is removed turning it into just the divine name.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="4" ana="#Multiple_Word_Changes">
+                <desc>The preposition هو was omitted and the spelling of الاله was changed.</desc>
+              </relation>
+              <relation active="3" passive="5" ana="#Multiple_Word_Changes">
+                <desc>The preposition هو was omitted and the article from 'الاله' was removed turning it into the divine name.</desc>
+              </relation>
+              <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="5" ana="#Single_Minor_Word_Change">
+                <desc>The article is removed turning it into just the divine name.</desc>
+              </relation>
+              <relation active="5" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="5" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="5" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="5" passive="4" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+      </ab>
+      <ab n="Jn8:42">
+        <app xml:id="Jn8_42-1">
+          <rdg n="1" wit="CSA S118 S120 S137 S139 S71+">فقال لهم يسوع</rdg>
+          <rdg n="2" wit="J30 J67 S122 S128 S138">فقال لهم ايسوع</rdg>
+        </app>
+        <span>لو</span>
+        <app xml:id="Jn8_42-2">
+          <rdg n="1" wit="CSA">كان اللاه ابوكم كنتم</rdg>
+          <rdg n="2" wit="J30">كان الله ابيكم لكنتم</rdg>
+          <rdg n="3" wit="J67 S118 S120 S122 S128 S137 S138 S139 S71+">كان الله ابوكم لكنتم</rdg>
+        </app>
+        <span>تحبونى</span>
+        <span>لانى</span>
+        <app xml:id="Jn8_42-3">
+          <rdg n="1" wit="CSA">من اللاه خرجت وجيت</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139">من الله خرجت واتيت</rdg>
+          <rdg n="3" wit="S71+">من الله خرجت وجيت</rdg>
+        </app>
+        <app xml:id="Jn8_42-4">
+          <rdg n="1" wit="CSA S71+">ولم</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139"/>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The minor word ولم was omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_42-5">
+          <rdg n="1" wit="CSA S71+">اتى</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139"/>
+          <note>
+            <listRelation type="transcriptional">
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_42-6">
+          <rdg n="1" wit="CSA S71+">من قبل</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139"/>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+                <desc>Two words are omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_42-7">
+          <rdg n="1" wit="CSA S71+">نفسى بل هو ارسلنى</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139"/>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+                <desc>Multiple words are omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+      </ab>
+      <ab n="Jn8:43">
+        <app xml:id="Jn8_43-1">
+          <rdg n="1" wit="CSA">ولماذا</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139">ولهذا</rdg>
+          <rdg n="3" wit="S71+">فلماذا</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The minor word ولماذا was changed to ولهذا.</desc>
+              </relation>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_43-2">
+          <rdg n="1" wit="CSA J30 S118 S120 S122 S128 S137 S138 S139">ليس</rdg>
+          <rdg n="2" wit="J67">لم</rdg>
+          <rdg n="3" wit="S71+">لا</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_43-3">
+          <rdg n="1" wit="CSA J67 S118 S120 S122 S128 S137 S138 S139 S71+">تعرفون</rdg>
+          <rdg n="2" wit="J30">تعرفونى</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>A pronominal suffix is added.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_43-4">
+          <rdg n="1" wit="CSA J67 S118 S120 S122 S128 S137 S138 S139 S71+"/>
+          <rdg n="2" wit="J30">وتعرفوا</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
+                <desc>The verb وتعرفوا was added.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_43-5">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S139">كلامى لانكم</rdg>
+          <rdg n="2" wit="S138">كلامي</rdg>
+          <rdg n="3" wit="S71+">كلامي عندما</rdg>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+              <desc>The minor word لانكم was omitted.</desc>
+            </relation>
+            <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
+              <desc>The minor word لانكم was changed to عندما.</desc>
+            </relation>
+            <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+            <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
+              <desc>The minor word عندما was added.</desc>
+            </relation>
+            <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+          </listRelation>
+        </app>
+        <app xml:id="Jn8_43-6">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S139">ليس</rdg>
+          <rdg n="2" wit="S138"/>
+          <rdg n="3" wit="S71+">لا</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_43-7">
+          <rdg n="1" wit="CSA">تقدرون ان</rdg>
+          <rdg n="2" wit="J30">تقدروا</rdg>
+          <rdg n="3" wit="J67 S118 S120 S122 S128 S137 S139 S71+">تقدرون</rdg>
+          <rdg n="4" wit="S138"/>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The form of the verb is changed.</desc>
+              </relation>
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+                <desc>The form of تقدرون was changed to تقدروا and the minor word ان was added.</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The minor word ان was added.</desc>
+              </relation>
+              <relation active="1" passive="4" ana="#Multiple_Word_Changes">
+                <desc>Two words omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="4" ana="#Single_Major_Word_Change">
+                <desc>The verb is omitted.</desc>
+              </relation>
+              <relation active="3" passive="4" ana="#Single_Major_Word_Change">
+                <desc>The verb is omitted.</desc>
+              </relation>
+              <relation active="4" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="2" ana="#Single_Major_Word_Change"/>
+              <relation active="4" passive="3" ana="#Single_Major_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_43-8">
+          <rdg n="1" wit="CSA">تسمعوا كلامى</rdg>
+          <rdg n="2" wit="J30 S118 S122 S128 S137">تسمعون اقوالى</rdg>
+          <rdg n="3" wit="J67 S120 S139">تسمعون كلامي</rdg>
+          <rdg n="4" wit="S138"/>
+          <rdg n="5" wit="S71+">تسمعون قولي</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="5" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="5" ana="#Multiple_Word_Changes">
+                <desc>The form of the verb is changed and the word كلامى is changed to قولي.</desc>
+              </relation>
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+                <desc>The form of the verb is changed and the word كلامى is changed to اقوالى.</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The form of the verb is changed.</desc>
+              </relation>
+              <relation active="1" passive="4" ana="#Multiple_Word_Changes">
+                <desc>Two words are omitted.</desc>
+              </relation>
+              <relation active="2" passive="4" ana="#Multiple_Word_Changes">
+                <desc>Two words omitted.</desc>
+              </relation>
+              <relation active="3" passive="4" ana="#Multiple_Word_Changes">
+                <desc>Two words omitted.</desc>
+              </relation>
+              <relation active="3" passive="5" ana="#Single_Major_Word_Change">
+                <desc>The major word كلامي is changed to قولي.</desc>
+              </relation>
+              <relation active="4" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="5" ana="#Multiple_Word_Changes">
+                <desc>Two words added.</desc>
+              </relation>
+              <relation active="5" passive="2" ana="#Single_Minor_Word_Change"/>
+              <relation active="5" passive="3" ana="#Single_Major_Word_Change"/>
+              <relation active="5" passive="4" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="2" ana="#Single_Major_Word_Change"/>
+              <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="2" passive="5" ana="#Single_Minor_Word_Change">
+                <desc>The number of اقوالى is changed to قولي.</desc>
+              </relation>
+              <relation active="2" passive="3" ana="#Single_Major_Word_Change">
+                <desc>The major word اقوالى is changed to كلامي.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+      </ab>
+      <ab n="Jn8:44">
+        <app xml:id="Jn8_44-1">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S137 S138 S139">انتم من ابوكم الشيطان</rdg>
+          <rdg n="2" wit="S122 S128 S71+">انتم من ابيكم الشيطان</rdg>
+        </app>
+        <app xml:id="Jn8_44-2">
+          <rdg n="1" wit="CSA S71+">انتم</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139"/>
+        </app>
+        <app xml:id="Jn8_44-3">
+          <rdg n="1" wit="CSA">ومسره ابوكم تشوا ان تفعلون</rdg>
+          <rdg n="2" wit="J30">ومسره ابيكم تشاوا ان تفعلوا</rdg>
+          <rdg n="3" wit="J67">ومسرة ابوكم تريدون  تفعلون</rdg>
+          <rdg n="4" wit="S118 S137">ومسرة ابوكم تشاووان  تفعلوا</rdg>
+          <rdg n="5" wit="S120">ومسره ابوكم تشاوان  تفعلوا</rdg>
+          <rdg n="6" wit="S122">ومسره ابيكم تشاوو ان تفعلوا</rdg>
+          <rdg n="7" wit="S128">ومسره ابيكم تشاووا ان تفعلوا</rdg>
+          <rdg n="8" wit="S138">ومسره ابيكم تشاووا  تفعلوا</rdg>
+          <rdg n="9" wit="S139">ومسره ابوكم تشاوون  تفعلوا</rdg>
+          <rdg n="10" wit="S71+">ومسره ابيكم تحبوا ان تفعلوا</rdg>
+        </app>
+        <app xml:id="Jn8_44-4">
+          <rdg n="1" wit="CSA J30 J67 S120 S122 S128 S138 S139 S71+">ذلك الذي هو</rdg>
+          <rdg n="2" wit="S118 S137"/>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+              <desc>Multiple words are omitted.</desc>
+            </relation>
+            <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+          </listRelation>
+        </app>
+        <app xml:id="Jn8_44-5">
+          <rdg n="1" wit="CSA">من اول قاتل الانسان هو</rdg>
+          <rdg n="2" wit="J30">من الاول قاتل الانسا⧙</rdg>
+          <rdg n="3" wit="J67 S120 S122 S128 S138 S139">من الاول قاتل الانسان .</rdg>
+          <rdg n="4" wit="S118 S137"/>
+          <rdg n="5" wit="S71+">من اول قاتل الناس</rdg>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="4" ana="#Multiple_Word_Changes">
+              <desc>Multiple words are omitted.</desc>
+            </relation>
+            <relation active="4" passive="1" ana="#Multiple_Word_Changes"/>
+            <relation active="2" passive="4" ana="#Multiple_Word_Changes">
+              <desc>Multiple words are omitted.</desc>
+            </relation>
+            <relation active="4" passive="2" ana="#Multiple_Word_Changes"/>
+            <relation active="3" passive="4" ana="#Multiple_Word_Changes">
+              <desc>Multiple words are omitted.</desc>
+            </relation>
+            <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
+            <relation active="4" passive="5" ana="#Multiple_Word_Changes">
+              <desc>Multiple words are added.</desc>
+            </relation>
+            <relation active="5" passive="4" ana="#Multiple_Word_Changes"/>
+          </listRelation>
+        </app>
+        <app xml:id="Jn8_44-6">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138">وهو فى</rdg>
+          <rdg n="2" wit="S139">وهو في الحق</rdg>
+          <rdg n="3" wit="S71+">هو وفى</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Major_Word_Change">
+                <desc>The major word الحق is added.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes">
+                <desc>The conjunction moves from one word to another and the word الحق is added.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes">
+                <desc>The conjunction moves from one word to another.</desc>
+              </relation>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_44-7">
+          <rdg n="1" wit="CSA S120">الحق لم يثبت لان الحق ليس هو فيه واذا تكلم فانه يتكلم الكذب ومن ذاته لانه كذاب هو وابوه</rdg>
+          <rdg n="2" wit="J30">الحق لا يثبت لان الحق ليس هو فيه فاذا تكلم فانه يتكلم الكذب ومن ذاته فانه كذاب هو وابوه</rdg>
+          <rdg n="3" wit="J67">الحق لم يثبت لان الحق ليس هو فيه فاذا تكلم فانه يتكلم بالكذب ومن ذاته فانه كذاب هو وابوه</rdg>
+          <rdg n="4" wit="S118 S137">الحق لم يثبت لان الحق ليس هو فيه واذا تكلم فانه يتكلم الكذب من ذاته لانه كذاب هو وابوه</rdg>
+          <rdg n="5" wit="S122 S128">الحق لم يثبت لان الحق ليس هو فيه واذا تكلم فانه يتكلم بالكذب ومن ذاته فانه كذاب هو وابوه</rdg>
+          <rdg n="6" wit="S138">الحق لم يثبت لان الحق ليس هو فيه فاذا تكلم فانه يتكلم الكذب ومن ذاته فانه كذاب هو وابوه</rdg>
+          <rdg n="7" wit="S139">لم يثبت لان الحق لم يثبت لان الحق ليس هو فيه واذا تكلم فانه يتكلم الكذب ومن ذاته لانه كذاب هو وابوه</rdg>
+          <rdg n="8" wit="S71+">الحق لم يتبت لان الحق ليس هو فيه واذا تكلم فانه يتكلم الكذب ومن ذاته لانه كذاب هو وابوه</rdg>
+        </app>
+      </ab>
+      <ab n="Jn8:45">
+        <app xml:id="Jn8_45-1">
+          <rdg n="1" wit="CSA J30 J67 S120 S122 S128 S138 S139">فاما</rdg>
+          <rdg n="2" wit="S118 S137 S71+">واما</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction ف is changed to و.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>انا فاني</span>
+        <app xml:id="Jn8_45-2">
+          <rdg n="1" wit="CSA J30 S118 S120 S122 S128 S137 S138 S139 S71+">اقول الحق</rdg>
+          <rdg n="2" wit="J67">صادق</rdg>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="2" ana="#Multiple_Word_Changes"/>
+            <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+          </listRelation>
+        </app>
+        <app xml:id="Jn8_45-3">
+          <rdg n="1" wit="CSA J30 S118 S120 S122 S128 S137 S138 S139 S71+">وليس</rdg>
+          <rdg n="2" wit="J67">لاي شي لم</rdg>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="2" ana="#Multiple_Word_Changes"/>
+            <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+          </listRelation>
+        </app>
+        <app xml:id="Jn8_45-4">
+          <rdg n="1" wit="CSA J30 J67 S120 S122 S128 S137 S138 S139 S71+">تصدقوني</rdg>
+          <rdg n="2" wit="S118">تسدقونى</rdg>
+        </app>
+      </ab>
+      <ab n="Jn8:47">
+        <app xml:id="Jn8_47-1">
+          <rdg n="1" wit="CSA">ان من كان من اللاه</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139">ان من هو من الله</rdg>
+          <rdg n="3" wit="S71+">ان من كان من الله</rdg>
+        </app>
+        <app xml:id="Jn8_47-2">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S71+">فانه يسمع كلام</rdg>
+          <rdg n="2" wit="S139">فانه يسمع ⧙⧙⧙⧙</rdg>
+        </app>
+        <app xml:id="Jn8_47-3">
+          <rdg n="1" wit="CSA">اللاه  منجل ذلك ليس</rdg>
+          <rdg n="2" wit="J30">الله ومنجل  ذلك ليس</rdg>
+          <rdg n="3" wit="J67 S118 S120 S122 S128 S137 S139 S71+">الله من اجل ذلك ليس</rdg>
+          <rdg n="4" wit="S138">الله من اجل ذلك ᐥ</rdg>
+        </app>
+        <app xml:id="Jn8_47-4">
+          <rdg n="1" wit="CSA S71+">تسمعون لي</rdg>
+          <rdg n="2" wit="J30 S118 S120 S137 S138 S139">تسمعونى</rdg>
+          <rdg n="3" wit="J67 S122 S128">تسمعون</rdg>
+        </app>
+        <app xml:id="Jn8_47-5">
+          <rdg n="1" wit="CSA J30 J67 S120 S139 S71+">لانكم ليس</rdg>
+          <rdg n="2" wit="S118 S122 S128 S137 S138">لانكم لستم</rdg>
+        </app>
+        <app xml:id="Jn8_47-6">
+          <rdg n="1" wit="CSA">من اللاه</rdg>
+          <rdg n="2" wit="J30 S118 S120 S122 S128 S137 S138 S139 S71+">من الله</rdg>
+          <rdg n="3" wit="J67">انتم من الله</rdg>
+        </app>
+      </ab>
+      <ab n="Jn8:48">
+        <app xml:id="Jn8_48-1">
+          <rdg n="1" wit="CSA S71+">اجابوا</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139">اجابوه</rdg>
+        </app>
+        <app xml:id="Jn8_48-2">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S137 S138 S139 S71+">اليهود</rdg>
+          <rdg n="2" wit="S122 S128">لليهود</rdg>
+        </app>
+        <app xml:id="Jn8_48-3">
+          <rdg n="1" wit="CSA">فقالوا</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139 S71+">وقالوا</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction ف is changed to و.</desc>
+              </relation>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_48-4">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S139 S71+">له</rdg>
+          <rdg n="2" wit="S138"/>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+              <desc>The preposition (with suffix) له is omitted.</desc>
+            </relation>
+            <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+          </listRelation>
+        </app>
+        <app xml:id="Jn8_48-5">
+          <rdg n="1" wit="CSA J67 S71+">اليس نعما</rdg>
+          <rdg n="2" wit="J30 S120 S122 S128 S138 S139">ليس نعما</rdg>
+          <rdg n="3" wit="S118 S137">اليس حق</rdg>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="3" ana="#Single_Major_Word_Change">
+              <desc>The word نعما was changed to حق.</desc>
+            </relation>
+            <relation active="3" passive="1" ana="#Single_Major_Word_Change"/>
+          </listRelation>
+        </app>
+        <app xml:id="Jn8_48-6">
+          <rdg n="1" wit="CSA S118 S120 S137 S139 S71+">نقول</rdg>
+          <rdg n="2" wit="J30 S122 S128 S138">ما نقول</rdg>
+          <rdg n="3" wit="J67"/>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="3" ana="#Single_Major_Word_Change">
+              <desc>One major word is omitted.</desc>
+            </relation>
+            <relation active="3" passive="1" ana="#Single_Major_Word_Change"/>
+            <relation active="2" passive="3" ana="#Multiple_Word_Changes">
+              <desc>Two words are omitted.</desc>
+            </relation>
+            <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+          </listRelation>
+        </app>
+        <span>ان</span>
+        <span>فيك</span>
+        <app xml:id="Jn8_48-7">
+          <rdg n="1" wit="CSA J30 S118 S122 S128 S137 S138 S139"/>
+          <rdg n="2" wit="J67 S120 S71+">شيطان</rdg>
+        </app>
+        <app xml:id="Jn8_48-8">
+          <rdg n="1" wit="CSA J30 S118 S122 S128 S137 S139">شيطان</rdg>
+          <rdg n="2" wit="J67 S120 S71+"/>
+          <rdg n="3" wit="S138">الشيطان</rdg>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="3" ana="#Single_Minor_Word_Change">
+              <desc>The article is added to شيطان.</desc>
+            </relation>
+            <relation active="3" passive="1" ana="#Single_Minor_Word_Change"/>
+            <relation active="2" passive="3" ana="#Single_Major_Word_Change">
+              <desc>One major word is added.</desc>
+            </relation>
+            <relation active="3" passive="2" ana="#Single_Major_Word_Change"/>
+          </listRelation>
+        </app>
+        <app xml:id="Jn8_48-9">
+          <rdg n="1" wit="CSA S71+">وانك سامرى</rdg>
+          <rdg n="2" wit="J30 S120 S122 S128 S138">فانت سامري</rdg>
+          <rdg n="3" wit="J67 S118 S137 S139">وانت سامري</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
+                <desc>The conjunction ف is changed to و.</desc>
+              </relation>
+              <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+      </ab>
+      <ab n="Jn8:49">
+        <app xml:id="Jn8_49-1">
+          <rdg n="1" wit="CSA S120 S139">اجاب يسوع فقال</rdg>
+          <rdg n="2" wit="J30 S138">اجاب ايسوع وقال</rdg>
+          <rdg n="3" wit="J67">فقال</rdg>
+          <rdg n="4" wit="S118 S137 S71+">اجاب يسوع وقال</rdg>
+          <rdg n="5" wit="S122 S128">اجاب ايسوع فقال</rdg>
+          <listRelation type="transcriptional">
+            <relation active="3" passive="4" ana="#Multiple_Word_Changes">
+              <desc>Multiple words are added.</desc>
+            </relation>
+            <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
+            <relation active="3" passive="5" ana="#Multiple_Word_Changes">
+              <desc>Multiple words are added.</desc>
+            </relation>
+            <relation active="5" passive="3" ana="#Multiple_Word_Changes"/>
+          </listRelation>
+        </app>
+        <app xml:id="Jn8_49-2">
+          <rdg n="1" wit="CSA S71+"/>
+          <rdg n="2" wit="J30 S118 S120 S122 S128 S137 S138 S139">لهم</rdg>
+          <rdg n="3" wit="J67">لهم ايسوع ⦿</rdg>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+              <desc>The preposition (with suffix) لهم is added.</desc>
+            </relation>
+            <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+          </listRelation>
+        </app>
+        <app xml:id="Jn8_49-3">
+          <rdg n="1" wit="CSA S118 S120 S122 S128 S137 S139">اما شيطان فليس في</rdg>
+          <rdg n="2" wit="J30">ان شيطان ليس فى</rdg>
+          <rdg n="3" wit="J67">فاما انا فليس في</rdg>
+          <rdg n="4" wit="S138">اما الشيطان فليس فيᐥᐥ</rdg>
+          <rdg n="5" wit="S71+">اما شيطان فليس</rdg>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="5" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="5" passive="4" ana="#Multiple_Word_Changes"/>
+              <relation active="5" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="5" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="4" passive="5" ana="#Multiple_Word_Changes">
+                <desc>The article is omitted from الشيطان and the preposition في is omitted.</desc>
+              </relation>
+              <relation active="4" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="4" passive="1" ana="#Single_Minor_Word_Change"/>
+              <relation active="3" passive="5" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="4" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="2" ana="#Multiple_Word_Changes"/>
+              <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="5" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="4" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="3" ana="#Multiple_Word_Changes"/>
+              <relation active="2" passive="1" ana="#Multiple_Word_Changes"/>
+              <relation active="1" passive="5" ana="#Single_Minor_Word_Change">
+                <desc>The preposition في is omitted which is a minor word.</desc>
+              </relation>
+              <relation active="1" passive="4" ana="#Single_Minor_Word_Change">
+                <desc>The article is added to شيطان.</desc>
+              </relation>
+              <relation active="1" passive="3" ana="#Multiple_Word_Changes">
+                <desc>The conjunction ف is added at the start and the major word شيطان is omitted.</desc>
+              </relation>
+              <relation active="1" passive="2" ana="#Multiple_Word_Changes">
+                <desc>The minor word اما is changed to ان and the conjunction ف is omitted from ليس.</desc>
+              </relation>
+            </listRelation>
+          </note>
+        </app>
+        <app xml:id="Jn8_49-4">
+          <rdg n="1" wit="CSA J30 S118 S120 S122 S128 S137 S138 S139 S71+"/>
+          <rdg n="2" wit="J67">شيطان</rdg>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="2" ana="#Single_Major_Word_Change">
+              <desc>The major word شيطان is added.</desc>
+            </relation>
+            <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+          </listRelation>
+        </app>
+        <app xml:id="Jn8_49-5">
+          <rdg n="1" wit="CSA J67 S118 S120 S122 S128 S137 S138 S139">ولكني اكرم ابي وانتم تهينوني</rdg>
+          <rdg n="2" wit="J30 S71+">ولكن اكرم ابى وانتم تهينونى</rdg>
+        </app>
+      </ab>
+      <ab n="Jn8:50">
+        <span>اما</span>
+        <app xml:id="Jn8_50-1">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S137 S138 S139 S71+">انا</rdg>
+          <rdg n="2" wit="S128"/>
+        </app>
+        <app xml:id="Jn8_50-2">
+          <rdg n="1" wit="CSA">فلست</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139 S71+">فليس</rdg>
+        </app>
+        <app xml:id="Jn8_50-3">
+          <rdg n="1" wit="CSA S71+">التمس</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S139">اطلب</rdg>
+          <rdg n="3" wit="S138"/>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="2" ana="#Single_Major_Word_Change">
+              <desc>The major word التمس was changed to اطلب.</desc>
+            </relation>
+            <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+            <relation active="1" passive="3" ana="#Single_Major_Word_Change">
+              <desc>The major word التمس is omitted.</desc>
+            </relation>
+            <relation active="3" passive="1" ana="#Single_Major_Word_Change"/>
+            <relation active="2" passive="3" ana="#Single_Major_Word_Change">
+              <desc>The major word اطلب is omitted.</desc>
+            </relation>
+            <relation active="3" passive="2" ana="#Single_Major_Word_Change"/>
+          </listRelation>
+        </app>
+        <span>مجدي</span>
+        <span>اخر</span>
+        <app xml:id="Jn8_50-4">
+          <rdg n="1" wit="CSA J30 J67 S120 S122 S128 S138 S139 S71+">هو الذي</rdg>
+          <rdg n="2" wit="S118">الذى</rdg>
+          <rdg n="3" wit="S137">الذي هو</rdg>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="3" ana="#Multiple_Word_Changes">
+              <desc>The two words are transposed.</desc>
+            </relation>
+            <relation active="3" passive="1" ana="#Multiple_Word_Changes"/>
+            <relation active="2" passive="3" ana="#Single_Minor_Word_Change">
+              <desc>The preposition هو was added.</desc>
+            </relation>
+            <relation active="3" passive="2" ana="#Single_Minor_Word_Change"/>
+            <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+              <desc>The pronoun هو is added which is a minor word.</desc>
+            </relation>
+            <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+          </listRelation>
+        </app>
+        <span>يطلب</span>
+        <span>ويقضي</span>
+      </ab>
+      <ab n="Jn8:51">
+        <app xml:id="Jn8_51-1">
+          <rdg n="1" wit="CSA S71+">امين امين</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139">الحق الحق</rdg>
+        </app>
+        <app xml:id="Jn8_51-2">
+          <rdg n="1" wit="CSA J30 J67 S118 S120 S122 S128 S137 S138 S139">اقول</rdg>
+          <rdg n="2" wit="S71+">اقل</rdg>
+        </app>
+        <span>لكم</span>
+        <app xml:id="Jn8_51-3">
+          <rdg n="1" wit="CSA J30 S118 S120 S122 S128 S137 S139 S71+">ان</rdg>
+          <rdg n="2" wit="J67 S138"/>
+          <note>
+            <listRelation type="transcriptional">
+              <relation active="1" passive="2" ana="#Single_Minor_Word_Change">
+                <desc>The minor word ان is omitted.</desc>
+              </relation>
+              <relation active="2" passive="1" ana="#Single_Minor_Word_Change"/>
+            </listRelation>
+          </note>
+        </app>
+        <span>من</span>
+        <app xml:id="Jn8_51-4">
+          <rdg n="1" wit="CSA J67 S118 S120 S122 S128 S137 S138 S139 S71+">يحفظ</rdg>
+          <rdg n="2" wit="J30">يحفض</rdg>
+        </app>
+        <span>كلامي</span>
+        <span>لا</span>
+        <app xml:id="Jn8_51-5">
+          <rdg n="1" wit="CSA">يعاين</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139 S71+">يري</rdg>
+        </app>
+        <span>الموت</span>
+        <app xml:id="Jn8_51-6">
+          <rdg n="1" wit="CSA S71+">الى الابد</rdg>
+          <rdg n="2" wit="J30 J67 S118 S120 S122 S128 S137 S138 S139">الى الدهر</rdg>
+          <listRelation type="transcriptional">
+            <relation active="1" passive="2" ana="#Single_Major_Word_Change">
+              <desc>The major word الابد is changed to الدهر.</desc>
+            </relation>
+            <relation active="2" passive="1" ana="#Single_Major_Word_Change"/>
+          </listRelation>
+        </app>
+      </ab>
+    </body>
+  </text>
+</TEI>
