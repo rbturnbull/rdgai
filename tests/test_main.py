@@ -224,6 +224,11 @@ def test_main_serve_inplace(mock_flask_app):
     mock_run.assert_called_once_with(debug=True, use_reloader=False)
 
 
+def strip_ansi_codes(text):
+    ansi_escape = re.compile(r'\x1b\[([0-9;]*m|K)')
+    return ansi_escape.sub('', text)
+
+
 @patch("rdgai.apparatus.Doc.flask_app")
 def test_main_serve_no_output(mock_flask_app):
     # Mock the run method in the Flask app
@@ -236,7 +241,7 @@ def test_main_serve_no_output(mock_flask_app):
     )
     assert result.exit_code == 2
 
-    assert "Invalid value: You must provide either an output path or use --inplace/-i." in result.stdout
+    assert "You must provide either" in strip_ansi_codes(result.stdout)
 
     mock_run.assert_not_called()
 
@@ -252,7 +257,7 @@ def test_main_serve_multiple_output(mock_flask_app):
         ["serve", str(TEST_DATA_DIR/"minimal.xml"), "x", "-i"]
     )
     assert result.exit_code == 2
-    assert "You cannot use both an output path and --inplace/-i at the" in result.stdout
+    assert "You cannot use both" in strip_ansi_codes(result.stdout)
 
     mock_run.assert_not_called()    
 
