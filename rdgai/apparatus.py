@@ -546,6 +546,8 @@ class Doc():
                 elif data['operation'] == 'add':
                     print('add', relation_type)
                     pair.add_type_with_inverse(relation_type)
+                else:
+                    raise ValueError(f"Unknown operation {data['operation']}")
                 
                 print('write', output)
                 self.write(output)
@@ -567,7 +569,10 @@ class Doc():
                 if data['operation'] == 'remove':
                     pair.remove_description()
                 elif data['operation'] == 'add':
-                    pair.add_description(data['description'])                
+                    pair.add_description(data['description'])   
+                else:
+                    raise ValueError(f"Unknown operation {data['operation']}")
+
                 print('write', output)
                 self.write(output)
                 return "Success", 200           

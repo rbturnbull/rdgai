@@ -15,6 +15,24 @@ def test_evaluate_docs_minimal(minimal_output, ground_truth, capsys):
     assert "accuracy 50" in out
 
 
+def test_evaluate_docs_minimal_missing_relations(minimal_output, ground_truth_missing_relations, capsys):
+    evaluate_docs(minimal_output, ground_truth_missing_relations)
+    out = capsys.readouterr().out
+    assert "No relations found in ground truth" in out
+
+
+def test_evaluate_docs_minimal_missing_app(minimal_output, ground_truth_missing_app, capsys):
+    evaluate_docs(minimal_output, ground_truth_missing_app)
+    out = capsys.readouterr().out
+    assert "No relations found in ground truth" in out
+
+
+def test_evaluate_docs_minimal_missing_manual(minimal_output, ground_truth_missing_manual, capsys):
+    evaluate_docs(minimal_output, ground_truth_missing_manual)
+    out = capsys.readouterr().out
+    assert "No relations found in ground truth" in out
+
+
 def test_evaluate_docs_report(minimal_output, ground_truth, capsys, tmp_path):
     report = tmp_path / "report.html"
     confusion_matrix = tmp_path / "confusion_matrix.csv"

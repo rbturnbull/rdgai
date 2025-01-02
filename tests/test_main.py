@@ -137,8 +137,10 @@ def test_main_import_classifications_xlsx(tmp_path):
 
     assert output.exists()
     output_text = output.read_text()
-    assert '<relation active="1" passive="2" ana="#category1" resp="#rdgai"/>' in output_text
-    assert '<relation active="1" passive="3" ana="#category3" resp="#ground_truth"/>' in output_text
+    assert '<relation active="1" passive="2" ana="#category1" resp="#rdgai">' in output_text
+    assert '<desc>description1</desc>' in output_text
+    assert '<relation active="1" passive="3" ana="#category3" resp="#ground_truth">' in output_text
+    assert '<desc>description2</desc>' in output_text
     assert '<relation active="2" passive="3" ana="#category2" resp="#ground_truth"/>' in output_text
 
 
