@@ -121,6 +121,10 @@ def evaluate_docs(
     print(len(predicted), len(gold))
     assert len(predicted) == len(gold), f"Predicted and gold lengths do not match: {len(predicted)} != {len(gold)}"
 
+    if len(gold) == 0:
+        print("No relations found in ground truth.")
+        return
+
     from sklearn.metrics import precision_score, recall_score, f1_score, classification_report, accuracy_score
     print(classification_report(gold, predicted))
 

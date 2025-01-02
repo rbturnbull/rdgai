@@ -80,6 +80,7 @@ def export_variants_to_excel(doc:Doc, output:Path):
 
 
 def import_classifications_from_dataframe(doc:Doc, variants_df:pd.DataFrame, output:Path, responsible:str|None=None):
+    variants_df.fillna('', inplace=True)
     apps_dict = {str(app): app for app in doc.apps}
     relation_types = doc.relation_types
     for _, row in variants_df.iterrows():

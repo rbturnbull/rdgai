@@ -204,8 +204,14 @@ class Pair():
     def add_description(self, description:str, relation:Element|None=None):
         if relation is None:
             relation_elements = self.relation_elements()
-            assert len(relation_elements) >= 1, f"No relation elements found for {self} at {self.app}"                
-            relation = relation_elements[0]
+
+            if len(relation_elements) == 0:
+                list_relation = find_element(self.app_element(), ".//listRelation[@type='transcriptional']")
+                if list_relation is None:
+                    list_relation = ET.SubElement(self.app_element(), "listRelation", attrib={"type":"transcriptional"})
+                relation = ET.SubElement(list_relation, "relation", attrib={"active":self.active.n, "passive":self.passive.n})
+            else:        
+                relation = relation_elements[0]
 
         description = description.strip()
         if description:
@@ -540,6 +546,8 @@ class Doc():
                 elif data['operation'] == 'add':
                     print('add', relation_type)
                     pair.add_type_with_inverse(relation_type)
+                else:
+                    raise ValueError(f"Unknown operation {data['operation']}")
                 
                 print('write', output)
                 self.write(output)
@@ -561,7 +569,10 @@ class Doc():
                 if data['operation'] == 'remove':
                     pair.remove_description()
                 elif data['operation'] == 'add':
-                    pair.add_description(data['description'])                
+                    pair.add_description(data['description'])   
+                else:
+                    raise ValueError(f"Unknown operation {data['operation']}")
+
                 print('write', output)
                 self.write(output)
                 return "Success", 200           
