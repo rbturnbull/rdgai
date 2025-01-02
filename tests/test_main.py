@@ -118,7 +118,7 @@ def test_main_export(tmp_path):
     assert output.exists()
 
     variants_df = pd.read_excel(output, sheet_name="Variants", engine="openpyxl")
-    assert (variants_df.columns == ['App ID', 'Context', 'Active Reading ID', 'Passive Reading ID', 'Active Reading Text', 'Passive Reading Text', 'Relation Type(s)']).all()
+    assert (variants_df.columns == ['App ID', 'Context', 'Active Reading ID', 'Passive Reading ID', 'Active Reading Text', 'Passive Reading Text', 'Description', 'Relation Type(s)']).all()
     assert len(variants_df) == 3
     assert variants_df.iloc[1]['Relation Type(s)'] == "category2"
 

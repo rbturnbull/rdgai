@@ -67,7 +67,7 @@ def html(
 def serve(
     doc:Path,
     output:Path=typer.Argument(None, help="The path to the output file."),
-    inplace: bool = typer.Option(False, "-i", help="Overwrite the input file."),
+    inplace: bool = typer.Option(False, "--inplace", "-i", help="Overwrite the input file."),
     debug:bool=True,
     use_reloader:bool=False,
     all_apps:bool=False,

@@ -180,6 +180,21 @@ class Pair():
         if responsible is not None:
             relation.set("resp", responsible)
 
+        self.add_description(description, relation)
+
+        return relation
+    
+    def remove_description(self):
+        for relation in self.relation_elements():
+            for desc in find_elements(relation, ".//desc"):
+                relation.remove(desc)
+                
+    def add_description(self, description:str, relation:Element|None=None):
+        if relation is None:
+            relation_elements = self.relation_elements()
+            assert len(relation_elements) >= 1, f"No relation elements found for {self} at {self.app}"                
+            relation = relation_elements[0]
+
         description = description.strip()
         if description:
             description_element = find_element(relation, ".//desc")
@@ -187,8 +202,6 @@ class Pair():
                 description_element = ET.SubElement(relation, "desc")
                 
             description_element.text = description
-
-        return relation
 
     def remove_type(self, relation_type:RelationType):
         if relation_type in self.types:
@@ -221,6 +234,12 @@ class Pair():
 
     def relation_type_names(self) -> set[str]:
         return set(type.name for type in self.types)
+    
+    def has_description(self) -> bool:
+        for relation in self.relation_elements():
+            if find_element(relation, ".//desc") is not None:
+                return True
+        return False
 
     def get_description(self) -> str:
         description = ""
@@ -510,6 +529,27 @@ class Doc():
                     print('add', relation_type)
                     pair.add_type_with_inverse(relation_type)
                 
+                print('write', output)
+                self.write(output)
+                return "Success", 200           
+            except Exception as e:  
+                print(str(e))
+                return str(e), 400
+
+            return "Failed", 400
+        
+        @app.route("/api/desc", methods=['POST'])
+        def desc():
+            data = request.get_json()
+                        
+            pair = mapper.obj(data['pair'])
+            assert isinstance(pair, Pair), f"Expected Pair, got {type(pair)}"
+
+            try:
+                if data['operation'] == 'remove':
+                    pair.remove_description()
+                elif data['operation'] == 'add':
+                    pair.add_description(data['description'])                
                 print('write', output)
                 self.write(output)
                 return "Success", 200           

@@ -18,8 +18,12 @@ def export_variants_to_excel(doc:Doc, output:Path):
     ws = wb.active
     ws.title = 'Variants'
 
-    headers = ['App ID', 'Context', 'Active Reading ID', 'Passive Reading ID',
-               'Active Reading Text', 'Passive Reading Text', 'Relation Type(s)']
+    headers = [
+        'App ID', 'Context', 
+        'Active Reading ID', 'Passive Reading ID',
+        'Active Reading Text', 'Passive Reading Text', 
+        'Description', 'Relation Type(s)',
+    ]
 
     for col_num, header in enumerate(headers, start=1):  # Start from column A (1)
         cell = ws.cell(row=1, column=col_num)
@@ -35,9 +39,10 @@ def export_variants_to_excel(doc:Doc, output:Path):
             ws[f'D{current_row}'] = pair.passive.n
             ws[f'E{current_row}'] = pair.active.text
             ws[f'F{current_row}'] = pair.passive.text
+            ws[f'G{current_row}'] = pair.get_description()
             
             for relation_type_index, relation_type in enumerate(pair.types):
-                column = ord('G') + relation_type_index
+                column = ord('H') + relation_type_index
                 ws[f'{chr(column)}{current_row}'] = str(relation_type)
             
             current_row += 1
@@ -46,9 +51,9 @@ def export_variants_to_excel(doc:Doc, output:Path):
     ws.add_data_validation(data_val)
 
     max_relation_types = max(10, max(len(pair.types) for app in doc.apps for pair in app.pairs))
-    end_column = chr(ord('G') + max_relation_types - 1)
+    end_column = chr(ord('H') + max_relation_types - 1)
 
-    data_val.add(f"G2:{end_column}{current_row}")
+    data_val.add(f"H2:{end_column}{current_row}")
 
     # Create new sheet with descriptions of categories and counts
     categories_worksheet = wb.create_sheet('Categories')
@@ -81,6 +86,7 @@ def import_classifications_from_dataframe(doc:Doc, variants_df:pd.DataFrame, out
         app_id = row['App ID']
         active_reading_id = row['Active Reading ID']
         passive_reading_id = row['Passive Reading ID']
+        description = row['Description'].strip() if 'Description' in row else None
         app = apps_dict[app_id]
 
         types = set(row[key] for key in row.keys() if (key.startswith('Relation Type') or key.startswith('Unnamed: ')) and row[key])
@@ -97,5 +103,12 @@ def import_classifications_from_dataframe(doc:Doc, variants_df:pd.DataFrame, out
                 # Remove relations
                 for type in pair.types - types:
                     pair.remove_type_with_inverse(type)
+
+                if description:
+                    pair.add_description(description)
+                elif description == "":
+                    # remove description if it is an empty string
+                    # don't do anything if description is 'None'
+                    pair.remove_description()
 
     doc.write(output)        
