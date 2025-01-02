@@ -204,3 +204,63 @@ def test_main_serve(mock_flask_app, tmp_path):
 
     # Check if the Flask app's `run` method was called with the correct arguments
     mock_run.assert_called_once_with(debug=True, use_reloader=False)
+
+
+@patch("rdgai.apparatus.Doc.flask_app")
+def test_main_serve_inplace(mock_flask_app):
+    # Mock the run method in the Flask app
+    mock_run = mock_flask_app.return_value.run
+
+    # Simulate calling the CLI command
+    result = runner.invoke(
+        app, 
+        ["serve", str(TEST_DATA_DIR/"minimal.xml"), "--inplace"]
+    )
+    assert result.exit_code == 0
+
+    # Check if the Flask app's `run` method was called with the correct arguments
+    mock_run.assert_called_once_with(debug=True, use_reloader=False)
+
+
+@patch("rdgai.apparatus.Doc.flask_app")
+def test_main_serve_no_output(mock_flask_app):
+    # Mock the run method in the Flask app
+    mock_run = mock_flask_app.return_value.run
+
+    # Simulate calling the CLI command
+    result = runner.invoke(
+        app, 
+        ["serve", str(TEST_DATA_DIR/"minimal.xml")]
+    )
+    assert result.exit_code == 2
+
+    assert "Invalid value: You must provide either an output path or use --inplace/-i." in result.stdout
+
+    mock_run.assert_not_called()
+
+
+@patch("rdgai.apparatus.Doc.flask_app")
+def test_main_serve_multiple_output(mock_flask_app):
+    # Mock the run method in the Flask app
+    mock_run = mock_flask_app.return_value.run
+
+    # Simulate calling the CLI command
+    result = runner.invoke(
+        app, 
+        ["serve", str(TEST_DATA_DIR/"minimal.xml"), "x", "-i"]
+    )
+    assert result.exit_code == 2
+    assert "You cannot use both an output path and --inplace/-i at the" in result.stdout
+
+    mock_run.assert_not_called()    
+
+
+def test_main_prompt_preamble():
+    result = runner.invoke(app, [
+        "prompt-preamble", str(TEST_DATA_DIR/"minimal_output.xml"), 
+    ])
+    assert result.exit_code == 0
+
+    out = result.stdout
+    assert out.startswith("I am analyzing textual variants in a document written in Arabic")
+    assert "category1: Description 1" in out

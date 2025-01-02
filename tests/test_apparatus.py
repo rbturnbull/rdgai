@@ -280,6 +280,29 @@ def test_doc_flask_app_add_remove(minimal_flask_test_client):
     assert '<relation active="1" passive="2" ana="#category1"/>' not in output_xml
 
 
+def test_doc_flask_app_add_remove_description(minimal_flask_test_client):
+    data = {
+        "description": "Justification",
+        "pair": "Reading 1 ➞ Reading 2",
+        "operation": "add"
+    }
+    response = minimal_flask_test_client.get("/")
+
+    response = minimal_flask_test_client.post("/api/desc", json=data)
+    assert response.status_code == 200
+    assert response.data == b"Success"
+    output_xml = minimal_flask_test_client.output.read_text()
+    assert '<relation active="1" passive="2">' in output_xml
+    assert '<desc>Justification</desc>' in output_xml
+
+    data['operation'] = 'remove'
+    response = minimal_flask_test_client.post("/api/desc", json=data)
+    assert response.status_code == 200
+    assert response.data == b"Success"
+    output_xml = minimal_flask_test_client.output.read_text()
+    assert '<desc>Justification</desc>' not in output_xml
+
+
 def test_doc_clean(messy, tmp_path):
     clean_path = tmp_path/"clean.xml"
     messy.clean(clean_path)
