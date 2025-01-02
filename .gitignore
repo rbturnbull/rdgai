@@ -1,7 +1,6 @@
 docs/_build/
 wandb/*
 wandb*/*
-outputs/*
 *.out
 
 
