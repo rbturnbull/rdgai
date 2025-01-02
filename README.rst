@@ -4,7 +4,10 @@ rdgai
 
 .. start-badges
 
-|testing badge| |coverage badge| |docs badge| |black badge|
+|pypi badge| |testing badge| |coverage badge| |docs badge| |black badge|
+
+.. |pypi badge| image:: https://img.shields.io/pypi/v/rdgai
+    :target: https://pypi.org/project/rdgai/
 
 .. |testing badge| image:: https://github.com/rbturnbull/rdgai/actions/workflows/testing.yml/badge.svg
     :target: https://github.com/rbturnbull/rdgai/actions
@@ -31,13 +34,21 @@ Install using pip:
 
 .. code-block:: bash
 
+    pip install rdgai
+
+Or install directly from the repository:
+
+.. code-block:: bash
+
     pip install git+https://github.com/rbturnbull/rdgai.git
 
 
 Usage
 ==================================
 
-See the options with the command:
+Documentation will be made available at https://rbturnbull.github.io/rdgai
+
+For now, see the options with the command:
 
 .. code-block:: bash
 
@@ -54,7 +65,7 @@ Credits
 Robert Turnbull
 For more information contact: <robert.turnbull@unimelb.edu.au>
 
-Created using torchapp (https://github.com/rbturnbull/torchapp).
+Citation details to come.
 
 .. end-credits
 
