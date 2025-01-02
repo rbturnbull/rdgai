@@ -100,14 +100,17 @@ def build_preamble(doc:Doc, examples:int=10) -> str:
         human_message += f"{category.str_with_description()}\n"
 
     human_message += "\n"
-    human_message += f"Here are examples of these categories (NB. the word 'OMIT' indicates the absence of text in this reading):\n"
+    human_message += f"Here are examples of these categories The word 'OMIT' indicates the absence of text in this reading. If there is a justification describing the choice of category then it is added in square brackets []:\n"
     for category in relation_categories:
         representative_category_exampes = category.representative_examples(examples)
         if len(representative_category_exampes) == 0:
             continue
         human_message += f"{category}:\n"        
         for pair in representative_category_exampes:
-            human_message += f"\te.g. {pair.reading_transition_str()}\n"
+            human_message += f"\te.g. {pair.reading_transition_str()}"
+            if pair.has_description():
+                human_message += f" [{pair.get_description()}]"
+            human_message += "\n"
 
     human_message += "\n"
     human_message += "I will give you a two variant readings. On the first line of your response, provide the correct category name for changing from the first reading to the second reading.\n"
@@ -164,7 +167,10 @@ def build_review_prompt(
         human_message += f" - {item.reading_transition_str} in `{item.text_in_context}` was correctly classified as {', '.join(item.predicted)} with this as the justification: {item.description}\n"
     human_message += "----\nHere are the incorrectly classified items:\n"
     for item in incorrect_items:
-        human_message += f" - {item.reading_transition_str} in `{item.text_in_context}` was incorrectly classified as {', '.join(item.predicted)} when it should have been {', '.join(item.ground_truth)}. This was the justification given: {item.description}\n"
+        human_message += f" - {item.reading_transition_str} in `{item.text_in_context}` was incorrectly classified as {', '.join(item.predicted)} when it should have been {', '.join(item.ground_truth)}. This was the justification given: {item.description}"
+        if item.ground_truth_description:
+            human_message += f" The justification for the ground truth {', '.join(item.ground_truth)} is: {item.ground_truth_description}"
+        human_message += "\n"
 
     human_message += "----\nPlease provide feedback on the prompt. Are the text be editing to improve the accuracy of the results? Are there examples in the test set where the ground truth label is incorrect?.\n"
 

@@ -75,26 +75,38 @@ class RelationType():
     
     @functools.lru_cache(maxsize=None)
     def representative_examples(self, k:int, random_state:int=42) -> list['Pair']:
-        import kmedoids
+        
+        def find_representative_examples(pairs_list:list[Pair], k:int, random_state:int=42):
+            import kmedoids
+            if len(pairs_list) <= k:
+                return pairs_list
+            distance_matrix = np.zeros((len(pairs_list), len(pairs_list)))
+            for index1, pair in enumerate(pairs_list):
+                for index2 in range(index1+1, len(pairs_list)):
+                    other_pair = pairs_list[index2]
+                    active_text_distance = Levenshtein.distance(pair.active.text, other_pair.active.text)
+                    passive_text_distance = Levenshtein.distance(pair.passive.text, other_pair.passive.text)
+                    distance = active_text_distance + passive_text_distance
+                    distance_matrix[index1, index2] = distance
+                    distance_matrix[index2, index1] = distance
 
-        pairs_list = self.pairs_sorted(exclude_rdgai=True)
+            result = kmedoids.fasterpam(distance_matrix, k, random_state=random_state, init="build")
 
-        if len(pairs_list) <= k:
-            return pairs_list
-        distance_matrix = np.zeros((len(pairs_list), len(pairs_list)))
-        for index1, pair in enumerate(pairs_list):
-            for index2 in range(index1+1, len(pairs_list)):
-                other_pair = pairs_list[index2]
-                active_text_distance = Levenshtein.distance(pair.active.text, other_pair.active.text)
-                passive_text_distance = Levenshtein.distance(pair.passive.text, other_pair.passive.text)
-                distance = active_text_distance + passive_text_distance
-                distance_matrix[index1, index2] = distance
-                distance_matrix[index2, index1] = distance
-
-        result = kmedoids.fasterpam(distance_matrix, k, random_state=random_state, init="build")
-
-        return [pairs_list[index] for index in result.medoids]
+            return [pairs_list[index] for index in result.medoids]
     
+        pairs_list = self.pairs_sorted(exclude_rdgai=True)
+        pairs_with_descriptions = [pair for pair in pairs_list if pair.has_description()]
+        representative_pairs = []
+        if pairs_with_descriptions:
+            representative_pairs = find_representative_examples(pairs_with_descriptions, k, random_state=random_state)
+        
+        if len(representative_pairs) < k:
+            pairs_without_descriptions = [pair for pair in pairs_list if not pair.has_description()]
+            additional_pairs = find_representative_examples(pairs_without_descriptions, k-len(representative_pairs), random_state=random_state)
+            representative_pairs.extend(additional_pairs)
+        
+        return representative_pairs
+
 
 @dataclass
 class Pair():

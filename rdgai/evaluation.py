@@ -19,6 +19,7 @@ class EvalItem:
     ground_truth:str
     predicted:str
     description:str = ""
+    ground_truth_description:str = ""
 
 
 def llm_review_results(
@@ -107,6 +108,7 @@ def evaluate_docs(
             ground_truth=ground_truth_types,
             predicted=predicted_types,
             description=description,
+            ground_truth_description=ground_truth_pair.get_description(),
         )
         if ground_truth_types == predicted_types:
             correct_items.append(eval_item)
