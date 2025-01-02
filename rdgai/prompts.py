@@ -140,7 +140,7 @@ def build_template(pair:Pair, examples:int=10) -> ChatPromptTemplate:
     human_message += f"Respond with one of these categories: {relation_categories_list}\n"
     human_message += f"On the second line, provide a justification for your decision."
 
-    ai_message = f"Certainly, the category for changing from {active_reading_text} to {passive_reading_text} is: "
+    ai_message = f"Certainly, the category for changing from {active_reading_text} to {passive_reading_text} is:"
 
     template = ChatPromptTemplate.from_messages(messages=[
         SystemMessage(system_message),
@@ -164,15 +164,19 @@ def build_review_prompt(
     human_message += f"Here is the prompt:\n```\n{prompt_preamble}```\n"
     human_message += "----\nHere are the correctly classified items:\n"
     for item in correct_items:
-        human_message += f" - {item.reading_transition_str} in `{item.text_in_context}` was correctly classified as {', '.join(item.predicted)} with this as the justification: {item.description}\n"
-    human_message += "----\nHere are the incorrectly classified items:\n"
-    for item in incorrect_items:
-        human_message += f" - {item.reading_transition_str} in `{item.text_in_context}` was incorrectly classified as {', '.join(item.predicted)} when it should have been {', '.join(item.ground_truth)}. This was the justification given: {item.description}"
+        human_message += f" - { item.app_id }: {item.reading_transition_str} in `{item.text_in_context}` was correctly classified as {', '.join(item.predicted)} with this as the justification: {item.description}"
         if item.ground_truth_description:
             human_message += f" The justification for the ground truth {', '.join(item.ground_truth)} is: {item.ground_truth_description}"
         human_message += "\n"
 
-    human_message += "----\nPlease provide feedback on the prompt. Are the text be editing to improve the accuracy of the results? Are there examples in the test set where the ground truth label is incorrect?.\n"
+    human_message += "----\nHere are the incorrectly classified items:\n"
+    for item in incorrect_items:
+        human_message += f" - { item.app_id }: {item.reading_transition_str} in `{item.text_in_context}` was incorrectly classified as {', '.join(item.predicted)} when it should have been {', '.join(item.ground_truth)}. This was the justification given: {item.description}"
+        if item.ground_truth_description:
+            human_message += f" The justification for the ground truth {', '.join(item.ground_truth)} is: {item.ground_truth_description}"
+        human_message += "\n"
+
+    human_message += "----\nPlease provide feedback on the prompt. Are the text be editing to improve the accuracy of the results? Are there examples in the test set where the ground truth label is incorrect? If so, then list all the problematic cases with their locations.\n"
 
     template = ChatPromptTemplate.from_messages(messages=[
         SystemMessage(system_message),

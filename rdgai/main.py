@@ -9,6 +9,7 @@ from .classification import classify as classify_fn
 from .evaluation import evaluate_docs
 from .classification import DEFAULT_MODEL_ID
 from .validation import validate as validate_fn
+from .prompts import build_preamble
 
 console = Console()
 error_console = Console(stderr=True, style="bold red")
@@ -169,3 +170,13 @@ def import_classifications(
         responsible = "#" + responsible
     
     import_classifications_from_dataframe(doc, variants_df, output, responsible=responsible)
+
+
+@app.command()
+def prompt_preamble(
+    doc:Path,
+    examples:int=10,
+):
+    doc = Doc(doc)
+    template = build_preamble(doc, examples)
+    print(template)

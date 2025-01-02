@@ -54,9 +54,9 @@ def test_main_validate(tmp_path):
 
     assert output.exists()
     output_text = output.read_text()
-    assert '<relation active="2" passive="4" ana="#Multiple_Word_Changes" resp="#rdgai">' in output_text
+    assert '<relation active="4" passive="5" ana="#Multiple_Word_Changes" resp="#rdgai">' in output_text
     assert '<desc>justification1</desc>' in output_text
-    assert '<desc>c.f. الدهر بل تكون له ➞ الدهر بل تكون معه</desc>' in output_text
+    assert '<desc>c.f. تسمعون كلامي ➞ OMIT</desc>' in output_text
 
     out = result.stdout
 
@@ -67,16 +67,19 @@ def test_main_validate(tmp_path):
 
     assert report.exists()
     report_text = report.read_text()
-    assert "Incorrect (10)" in report_text
-    assert "Correct (5)" in report_text
+    assert "Incorrect (14)" in report_text
+    assert "Correct (7)" in report_text
+    assert "Base Prompt" in report_text
+    assert "I am analyzing textual variants in a document written in Arabic." in report_text
+    assert "You are an expert prompt engineer with expertise in Arabic." in report_text
 
     assert confusion_matrix.exists()
     confusion_matrix_text = confusion_matrix.read_text()
-    assert ',Orthography,Single_Minor_Word_Change,Single_Major_Word_Change,Multiple_Word_Changes,Transposition' in confusion_matrix_text
-    assert 'Orthography,0,0,0,1,0' in confusion_matrix_text
-    assert 'Single_Minor_Word_Change,0,0,0,6,0' in confusion_matrix_text
-    assert 'Single_Major_Word_Change,0,0,0,3,0' in confusion_matrix_text
-    assert 'Multiple_Word_Changes,0,0,0,5,0' in confusion_matrix_text
+    assert ',Orthography,Single_Minor_Word_Change,Single_Major_Word_Change,Multiple_Word_Changes' in confusion_matrix_text
+    assert 'Orthography,0,0,0,1' in confusion_matrix_text
+    assert 'Single_Minor_Word_Change,0,0,0,9' in confusion_matrix_text
+    assert 'Single_Major_Word_Change,0,0,0,4' in confusion_matrix_text
+    assert 'Multiple_Word_Changes,0,0,0,7' in confusion_matrix_text
 
     assert confusion_matrix_plot.exists()
 

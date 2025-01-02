@@ -13,7 +13,7 @@ def test_doc_print_classified_pairs(arb, capsys):
 
 def test_doc_get_classified_pairs_arb(arb):
     result = arb.get_classified_pairs()
-    assert len(result) == 628
+    assert len(result) == 836
     for pair in result:
         assert isinstance(pair, Pair)
         assert len(pair.types) > 0
@@ -24,12 +24,12 @@ def test_relation_type_representative_examples(arb):
     relation_type = arb.relation_types['Orthography']
     examples = relation_type.representative_examples(k)
     assert len(examples) == k
-    assert str(examples[0]) == "ليس وحدي ➞ ليست وحدي"
+    assert str(examples[0]) == "اللاه ➞ الاله"
 
-    k = 20
-    relation_type = arb.relation_types['Transposition']
+    k = 200
+    relation_type = arb.relation_types['Single_Major_Word_Change']
     examples = relation_type.representative_examples(k)
-    assert len(examples) == 8
+    assert len(examples) == 125
 
 
 def test_doc_get_classified_pairs_minimal(minimal):
@@ -45,7 +45,7 @@ def test_doc_get_classified_pairs_minimal(no_interpgrp):
 
 def test_doc_get_unclassified_pairs_arb(arb):
     result = arb.get_unclassified_pairs()
-    assert len(result) == 706
+    assert len(result) == 498
     for pair in result:
         assert isinstance(pair, Pair)
         assert len(pair.types) == 0

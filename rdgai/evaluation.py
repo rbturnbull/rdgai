@@ -225,6 +225,8 @@ def evaluate_docs(
                         review_template=review_template,
                         review_result=review_result,
                     )
+                
+                print(f"Writing HTML report to {report}")
                 report.write_text(text)
 
 
