@@ -16,7 +16,7 @@
             </sourceDesc>
     </fileDesc>
   </teiHeader>
-  <text xml:lang="ara">
+  <text xml:lang="ar">
     <interpGrp type="transcriptional">
       <interp xml:id="Addition" corresp="#Omission">Add something</interp>
       <interp xml:id="Omission" corresp="#Addition">Omit something</interp>

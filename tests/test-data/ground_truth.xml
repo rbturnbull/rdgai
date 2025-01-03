@@ -16,7 +16,7 @@
             </sourceDesc>
     </fileDesc>
   </teiHeader>
-  <text xml:lang="ara">
+  <text xml:lang="ar">
     <interpGrp type="transcriptional">
       <interp xml:id="category1">Description 1</interp>
       <interp xml:id="category2">Description 2</interp>
