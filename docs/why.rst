@@ -23,3 +23,12 @@ LLMs are artificial intelligence systems trained to predict the next token in a 
 By leveraging their sophisticated representations of language, LLMs can be used for text classification tasks, including categorizing changes in textual readings.
 
 Rdgai is a tool that facilitates the use of LLMs for classifying transitions between variant readings in a Text Encoding Initiative (TEI) XML file containing a critical apparatus.
+
+Further information
+-----------------------------------
+
+See the following publications for more information about classifying textual variants:
+
+- Robert Turnbull, "Transmission History" Pages 156–204 in *Codex Sinaiticus Arabicus and Its Family: A Bayesian Approach*. Vol. 66. New Testament Tools, Studies and Documents. Brill, 2025. `https://doi.org/10.1163/9789004704619_007 <https://doi.org/10.1163/9789004704619_007>`_
+- Joey McCollum and Robert Turnbull. "teiphy: A Python Package for Converting TEI XML Collations to NEXUS and Other Formats." *Journal of Open Source Software* 7, no. 80 (2022): 4879. `https://doi.org/10.21105/joss.04879 <https://doi.org/10.21105/joss.04879>`_
+- Joey McCollum and Robert Turnbull. "Using Bayesian Phylogenetics to Infer Manuscript Transmission History." *Digital Scholarship in the Humanities* 39, no. 1 (2024): 258–79. `https://doi.org/10.1093/llc/fqad089 <https://doi.org/10.1093/llc/fqad089>`_
