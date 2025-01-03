@@ -28,6 +28,8 @@ Rdgai facilitates the use of LLMs for classifying transitions between variant re
 It enables users to define classification categories, manually annotate changes, and use an LLM to automate the classification process.
 The TEI XML can then be used for phylogenetic analysis of textual traditions using `teiphy <https://github.com/jjmccollum/teiphy>`_.
 
+Background information about the use of classifying variants in this way can be found on the `Why use Rdgai? <https://rbturnbull.github.io/rdgai/docs/why>`_ documentation.
+
 .. end-badges
 
 Documentation is available at `https://rbturnbull.github.io/rdgai`_.
@@ -63,15 +65,37 @@ See all the options with the command:
 Preparation
 ==================================
 
-Categories are defined in the TEI XML header under the `<interpGrp type="transcriptional">` element. Categories can be:
-- **Reciprocal:** A transition from A to B has an inverse category for B to A.
-- **Symmetrical:** A transition between A and B belongs to the same category regardless of direction.
+You first need to prepare a `TEI XML <https://teibyexample.org/exist/tutorials/>`_ file with a `critical apparatus <https://tei-c.org/release/doc/tei-p5-doc/en/html/TC.html>`_.
 
-Users can classify transitions via the Rdgai GUI by clicking buttons corresponding to each category for each variation unit.
+Define categories in the TEI XML header under ``<interpGrp type="transcriptional">``. For example:
 
-The variation units can be exported to Excel for collaborative editing and then imported back into TEI XML.
+.. code-block:: xml
 
-More information about preparing the TEI XML file can be found in the `documentation <https://rbturnbull.github.io/rdgai/docs/preparation>`_.
+    <interpGrp type="transcriptional">
+        <interp xml:id="Addition" corresp="#Omission">An addition of a word or words.</interp>
+        <interp xml:id="Omission" corresp="#Addition">An omission of a word or words.</interp>
+        <interp xml:id="Substituion">A substitution of a word or words.</interp>
+    </interpGrp>
+
+Then use the graphical user interface (GUI) to classify transitions via buttons or keyboard navigation in a browser-based GUI.
+
+.. code-block:: bash
+
+    rdgai gui apparatus.xml output.xml
+
+Or export classifications to Excel for collaborative editing:
+
+.. code-block:: bash
+
+    rdgai export apparatus.xml reading-pairs.xlsx
+
+Edit in Excel and re-import with:
+
+.. code-block:: bash
+
+    rdgai import-classifications apparatus.xml reading-pairs.xlsx output.xml
+
+More information about preparing the TEI XML file can be found in the `Preparation <https://rbturnbull.github.io/rdgai/docs/preparation>`_ documentation.
 
 Validation
 ==================================
@@ -80,24 +104,35 @@ The accuracy of Rdgai is dependent on the type of text, the categories and their
 The accuracy needs to be validated on each document used with Rdgai. 
 For this purpose, Rdgai comes with a validation tool which assigns a proportion of the manual annotations to be allowed for use in the prompt 
 and the remainder are used as ground truth annotations for evaluating the results from Rdgai. 
-It creates an HTML report  showing the accuracy, macro precision, recall and F1 scores, a confusion matrix and a complete list of all the correct and incorrect classifications, 
-showing the ground truth classification, the predicted category from Rdgai and the justification given. 
-The report includes the base prompt including the representative example for each category. 
-A textual version of the report is given to the LLM and it is asked to review the prompt with the category definitions and examples, 
-based on the correct and incorrect results. The LLM then gives suggestions for clarifying the definitions of the categories 
-and alerts the user to any inconsistencies in the ground truth annotations.
 
+To run the validation tool, use the following command:
 
-More information about validating the results of Rdgai for your TEI XML file can be found in the `validation documentation <https://rbturnbull.github.io/rdgai/docs/validation>`_.
+.. code-block:: bash
+
+    rdgai validate apparatus.xml output.xml --report output.html --proportion 0.5 --llm claude-3-5-sonnet-20241022 --examples 20
+
+The HTML report will show the accuracy, precision, recall, F1 scores, confusion matrix, and detailed classifications (correct/incorrect).
+The LLM then gives suggestions for clarifying the definitions of the categories and alerts the user to any inconsistencies in the ground truth annotations. 
+
+More information about validating the results of Rdgai for your TEI XML file can be found in the `Validation <https://rbturnbull.github.io/rdgai/docs/validation>`_ documentation.
 
 
 Classification
 ==================================
 
+After validating, you can classify the unclassified reading changes using the following command:
 
-Usage of the GUI for classifying transitions can be found in the `classification documentation <https://rbturnbull.github.io/rdgai/docs/classification>`_.
+.. code-block:: bash
 
+    rdgai classify apparatus.xml output.xml --llm claude-3-5-sonnet-20241022 --examples 20
 
+View the output TEI XML in the Rdgai GUI with:
+
+.. code-block:: bash
+
+    rdgai gui output.xml --inplace
+
+More information about making automated classifications using Rdgai can be found in the `Classification <https://rbturnbull.github.io/rdgai/docs/classification>`_ documentation.
 
 .. end-quickstart
 
@@ -110,7 +145,11 @@ Credits
 Robert Turnbull
 For more information contact: <robert.turnbull@unimelb.edu.au>
 
-Citation details to come.
+The article about Rdgai will be published in the near future. For now, please cite the repository and some of the following articles:
+
+- Robert Turnbull, "Transmission History" Pages 156–204 in *Codex Sinaiticus Arabicus and Its Family: A Bayesian Approach*. Vol. 66. New Testament Tools, Studies and Documents. Brill, 2025. `https://doi.org/10.1163/9789004704619_007 <https://doi.org/10.1163/9789004704619_007>`_
+- Joey McCollum and Robert Turnbull. "teiphy: A Python Package for Converting TEI XML Collations to NEXUS and Other Formats." *Journal of Open Source Software* 7, no. 80 (2022): 4879. `https://doi.org/10.21105/joss.04879 <https://doi.org/10.21105/joss.04879>`_
+- Joey McCollum and Robert Turnbull. "Using Bayesian Phylogenetics to Infer Manuscript Transmission History." *Digital Scholarship in the Humanities* 39, no. 1 (2024): 258–79. `https://doi.org/10.1093/llc/fqad089 <https://doi.org/10.1093/llc/fqad089>`_
 
 .. end-credits
 

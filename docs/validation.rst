@@ -7,10 +7,6 @@ The accuracy needs to be validated on each document used with Rdgai.
 For this purpose, Rdgai comes with a validation tool which assigns a proportion of the manual annotations to be allowed for use in the prompt 
 and the remainder are used as ground truth annotations for evaluating the results from Rdgai. 
 
-A textual version of the report is given to the LLM and it is asked to review the prompt with the category definitions and examples, 
-based on the correct and incorrect results. The LLM then gives suggestions for clarifying the definitions of the categories 
-and alerts the user to any inconsistencies in the ground truth annotations.
-
 Runnning the validation tool
 -----------------------------------
 

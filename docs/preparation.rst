@@ -3,13 +3,17 @@ Preparation
 =====================================
 
 This section describes how to prepare your TEI XML file for classification with Rdgai.
+This assumes that you have a TEI XML file with a list of variant readings in the apparatus using
+the `TEI Critical Apparatus <https://tei-c.org/release/doc/tei-p5-doc/en/html/SA.html>`_ guidelines.
+
+An example TEI XML file can be found in the Rdgai test data: https://github.com/rbturnbull/rdgai/blob/main/tests/test-data/arb.xml
 
 Language Specification
 -----------------------------------
 
 Make sure your TEI XML file ``<text>`` element includes the ``xml:lang`` attribute using `Best Current Practice (BCP) 47 <https://www.rfc-editor.org/info/bcp47>`_ code. 
 The list of codes is available at the `IANA Language Subtag Registry <https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry>`_ 
-or in the Rdgai repository.
+or in the `Rdgai repository <https://github.com/rbturnbull/rdgai/tree/main/rdgai/data/language-subtag-registry.yaml>`_.
 
 For example, for Arabic:
 

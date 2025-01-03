@@ -19,7 +19,6 @@ Welcome to rdgai's documentation!
    preparation
    validation
    classification
-   api
    cli
    credits
 
