@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "rdgai"
-version = "0.1.0"
-description = "Adding relation elements to classify readings in a TEI XML critical apparatus."
+version = "0.1.1"
+description = "Rdgai facilitates the use of LLMs for classifying transitions between variant readings in a Text Encoding Initiative (TEI) XML file containing a critical apparatus."
 authors = ["Robert Turnbull <robert.turnbull@unimelb.edu.au>"]
 license = "Apache-2.0"
 readme = "README.rst"
