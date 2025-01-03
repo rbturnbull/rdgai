@@ -10,13 +10,15 @@ Welcome to rdgai's documentation!
    :start-after: start-badges
    :end-before: end-badges
 
-Builds an index in a LaTeX document using LLMs.
-
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
    quickstart
+   why
+   preparation
+   validation
+   classification
    api
    cli
    credits
