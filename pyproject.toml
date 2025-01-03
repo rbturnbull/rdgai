@@ -9,6 +9,7 @@ repository = "https://github.com/rbturnbull/rdgai/"
 documentation = "https://rbturnbull.github.io/rdgai"
 homepage = "https://github.com/rbturnbull/rdgai/"
 keywords = ["command-line interface"]
+
 # For classifiers see https://pypi.org/classifiers/
 classifiers = [
     "License :: OSI Approved :: Apache Software License",

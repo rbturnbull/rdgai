@@ -32,7 +32,7 @@ Background information about the use of classifying variants in this way can be 
 
 .. end-badges
 
-Documentation is available at `https://rbturnbull.github.io/rdgai`_.
+Documentation is available at `https://rbturnbull.github.io/rdgai <https://rbturnbull.github.io/rdgai>`_.
 
 .. start-quickstart
 
