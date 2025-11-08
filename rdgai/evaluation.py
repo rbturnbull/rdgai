@@ -2,7 +2,7 @@ import numpy as np
 from pathlib import Path
 from dataclasses import dataclass
 from langchain_core.language_models.llms import LLM
-from langchain.schema.output_parser import StrOutputParser
+from langchain_core.output_parsers import StrOutputParser
 
 from .tei import find_elements
 from .apparatus import App, Doc, Pair

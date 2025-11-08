@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rdgai"
-version = "0.1.1"
+version = "0.1.2"
 description = "Rdgai facilitates the use of LLMs for classifying transitions between variant readings in a Text Encoding Initiative (TEI) XML file containing a critical apparatus."
 authors = ["Robert Turnbull <robert.turnbull@unimelb.edu.au>"]
 license = "Apache-2.0"
@@ -19,23 +19,23 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.12"
-typer = "^0.12.3"
+python = ">=3.10,<3.15"
+typer = ">=0.12.3"
 langchain = ">=0.2.1"
-rich = "^13.7.1"
-lxml = "^5.2.2"
-flask = "^3.0.3"
-scikit-learn = "^1.5.2"
-plotly = "^5.24.1"
-transformers = "^4.46.1"
-pandas = "^2.2.3"
-openpyxl = "^3.1.5"
-llmloader = ">=0.1.1"
-kmedoids = "^0.5.3.1"
-levenshtein = "^0.26.1"
+rich = ">=13.7.1"
+lxml = ">=5.2.2"
+flask = ">=3.0.3"
+scikit-learn = ">=1.5.2"
+plotly = ">=5.24.1"
+transformers = ">=4.46.1"
+pandas = ">=2.2.3"
+openpyxl = ">=3.1.5"
+llmloader = ">=0.1.6"
+kmedoids = ">=0.5.3.1"
+levenshtein = ">=0.26.1"
 
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest = ">=6.2.5"
 ipykernel = ">=6.6.1"
 coverage = ">=5.5"

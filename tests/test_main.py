@@ -240,8 +240,7 @@ def test_main_gui_no_output(mock_flask_app):
         ["gui", str(TEST_DATA_DIR/"minimal.xml")]
     )
     assert result.exit_code == 2
-
-    assert "You must provide either" in strip_ansi_codes(result.stdout)
+    assert "You must provide either" in strip_ansi_codes(result.stderr)
 
     mock_run.assert_not_called()
 
@@ -257,7 +256,7 @@ def test_main_gui_multiple_output(mock_flask_app):
         ["gui", str(TEST_DATA_DIR/"minimal.xml"), "x", "-i"]
     )
     assert result.exit_code == 2
-    assert "You cannot use both" in strip_ansi_codes(result.stdout)
+    assert "You cannot use both" in strip_ansi_codes(result.stderr)
 
     mock_run.assert_not_called()    
 

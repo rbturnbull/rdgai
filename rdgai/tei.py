@@ -43,6 +43,14 @@ def extract_text(node:Element, include_tail:bool=True) -> str:
         if lemma is None:
             lemma = find_element(node, ".//rdg")
         return extract_text(lemma) or ""
+    if tag == "ref":
+        root = node.getroottree().getroot()
+        target_id = node.attrib['target'].lstrip("#")
+        ns = {"tei": "http://www.tei-c.org/ns/1.0"}
+        target = root.xpath(f"//*[@xml:id='{target_id}']", namespaces=ns)
+
+        if target:
+            return extract_text(target[0])
 
 
     text = node.text or ""
@@ -53,8 +61,6 @@ def extract_text(node:Element, include_tail:bool=True) -> str:
         text += " " + node.tail
 
     return text.strip()
-
-
 
 
 def read_tei(path:Path) -> ElementTree:

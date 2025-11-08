@@ -1,5 +1,5 @@
 from pathlib import Path
-from langchain.schema.output_parser import StrOutputParser
+from langchain_core.output_parsers import StrOutputParser
 from langchain_core.language_models.llms import LLM
 import llmloader
 from rich.console import Console
