@@ -9,7 +9,7 @@ rdgai
 
 |pypi badge| |testing badge| |coverage badge| |docs badge| |black badge|
 
-.. |pypi badge| image:: https://img.shields.io/pypi/v/rdgai
+.. |pypi badge| image:: https://img.shields.io/pypi/v/rdgai?color=blue
     :target: https://pypi.org/project/rdgai/
 
 .. |testing badge| image:: https://github.com/rbturnbull/rdgai/actions/workflows/testing.yml/badge.svg
