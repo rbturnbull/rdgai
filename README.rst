@@ -23,7 +23,11 @@ rdgai
     
 .. |coverage badge| image:: https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/rbturnbull/1cf1aae1e72f85de97c7f79bb41f3d76/raw/coverage-badge.json
     :target: https://rbturnbull.github.io/rdgai/coverage/
-    
+
+.. |doi badge| image:: https://img.shields.io/badge/DOI-10.48550%2FarXiv.2511.13801-blue
+   :target: https://doi.org/10.48550/arXiv.2511.13801
+
+
 Rdgai facilitates the use of LLMs for classifying transitions between variant readings in a Text Encoding Initiative (TEI) XML file containing a critical apparatus. 
 It enables users to define classification categories, manually annotate changes, and use an LLM to automate the classification process.
 The TEI XML can then be used for phylogenetic analysis of textual traditions using `teiphy <https://github.com/jjmccollum/teiphy>`_.
@@ -143,9 +147,26 @@ Credits
 .. start-credits
 
 Robert Turnbull
+
 For more information contact: <robert.turnbull@unimelb.edu.au>
 
-The article about Rdgai will be published in the near future. For now, please cite the repository and some of the following articles:
+The article about Rdgai will be published in the near future. For now, please cite the preprint:
+
+    Turnbull, Robert. “Rdgai: Classifying Transcriptional Changes Using Large Language Models with a Test Case from an Arabic Gospel Tradition,” 2025. DOI: 10.48550/arXiv.2511.13801.
+
+.. code-block:: bibtex
+
+    @article{turnbull2025rdgaiclassifyingtranscriptionalchanges,
+        title = {{Rdgai: Classifying transcriptional changes using Large Language Models with a test case from an Arabic Gospel tradition}},
+        author = {Turnbull, Robert},
+        year = {2025},
+        eprint = {2511.13801},
+        archiveprefix = {arXiv},
+        doi = {10.48550/arXiv.2511.13801}
+    }
+
+
+You might like to cite some of the following articles:
 
 - Robert Turnbull, "Transmission History" Pages 156–204 in *Codex Sinaiticus Arabicus and Its Family: A Bayesian Approach*. Vol. 66. New Testament Tools, Studies and Documents. Brill, 2025. `https://doi.org/10.1163/9789004704619_007 <https://doi.org/10.1163/9789004704619_007>`_
 - Joey McCollum and Robert Turnbull. "teiphy: A Python Package for Converting TEI XML Collations to NEXUS and Other Formats." *Journal of Open Source Software* 7, no. 80 (2022): 4879. `https://doi.org/10.21105/joss.04879 <https://doi.org/10.21105/joss.04879>`_
