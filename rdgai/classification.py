@@ -22,6 +22,7 @@ def classify_pair(
     prompt_only:bool=False,
     examples:int=10,
     console:Console|None=None,
+    examples_doc:Doc|None=None,
 ):
     """
     Classifies relations for a pair of readings.
@@ -30,14 +31,15 @@ def classify_pair(
 
     console = console or Console()
 
-    template = build_template(pair, examples=examples)
+    template = build_template(pair, examples=examples, examples_doc=examples_doc)
     if verbose or prompt_only:
         template.pretty_print()
         if prompt_only:
             return
 
-    chain = template | llm.bind(stop=["----"]) | StrOutputParser() | CategoryParser(doc.relation_types.keys())
+    chain = template | llm | StrOutputParser() | CategoryParser(doc.relation_types.keys())
 
+    assert isinstance(output, Path), f"Expected Path, got {type(output)}"
     doc.write(output)
 
     category, description = chain.invoke({})
@@ -52,7 +54,12 @@ def classify_pair(
         return
     
     inverse_description = f"c.f. {pair.active} ➞ {pair.passive}"
-    pair.add_type_with_inverse(relation_type, responsible="#rdgai", description=description, inverse_description=inverse_description)
+    pair.add_type_with_inverse(
+        relation_type, 
+        responsible="#rdgai", 
+        description=description, 
+        inverse_description=inverse_description,
+    )
 
     doc.write(output)
     
@@ -68,6 +75,7 @@ def classify(
     prompt_only:bool=False,
     examples:int=10,
     console:Console|None=None,
+    examples_doc:Doc|None=None,
 ):
     """
     Classifies relations in TEI documents.
@@ -79,6 +87,16 @@ def classify(
     
     pairs = pairs or doc.get_unclassified_pairs(redundant=False)
     for pair in track(pairs):
-        classify_pair(doc, pair, llm, output, verbose=verbose, prompt_only=prompt_only, examples=examples, console=console)
+        classify_pair(
+            doc, 
+            pair, 
+            llm, 
+            output, 
+            verbose=verbose, 
+            prompt_only=prompt_only, 
+            examples=examples, 
+            console=console,
+            examples_doc=examples_doc,
+        )
         
         

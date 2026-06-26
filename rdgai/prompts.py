@@ -121,12 +121,12 @@ def build_preamble(doc:Doc, examples:int=10) -> str:
     return human_message
 
 
-def build_template(pair:Pair, examples:int=10) -> ChatPromptTemplate:
+def build_template(pair:Pair, examples:int=10, examples_doc:Doc|None=None) -> ChatPromptTemplate:
     app = pair.app
-    doc = app.doc
+    examples_doc = examples_doc or app.doc
 
-    system_message = build_system_message(doc)
-    human_message = build_preamble(doc, examples)    
+    system_message = build_system_message(examples_doc)
+    human_message = build_preamble(examples_doc, examples)    
 
     human_message += f"\nThe variation unit you need to classify is marked as {app.text_with_signs(pair.active.text)} in this text:\n"
     human_message += f"{app.text_in_context(pair.active.text)}\n"
@@ -135,7 +135,7 @@ def build_template(pair:Pair, examples:int=10) -> ChatPromptTemplate:
     passive_reading_text = app.text_with_signs(str(pair.passive))
     human_message += f"\nWhat category would best describe a change from {active_reading_text} to {passive_reading_text}?\n"
 
-    relation_categories = doc.relation_types.values()
+    relation_categories = examples_doc.relation_types.values()
     relation_categories_list = ", ".join(str(category) for category in relation_categories)
     human_message += f"Respond with one of these categories: {relation_categories_list}\n"
     human_message += f"On the second line, provide a justification for your decision."

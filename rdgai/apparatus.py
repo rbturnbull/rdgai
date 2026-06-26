@@ -335,11 +335,19 @@ class App():
 
         if not name:
             ab = self.ab()
-            for index, app in enumerate(find_elements(ab, ".//app")):
-                if app == self.element:
-                    name = make_nc_name(f"{self.ab_name()}-{index+1}")
-                    self.element.attrib['{http://www.w3.org/XML/1998/namespace}id'] = name
-                    break
+            if ab is not None:
+                for index, app in enumerate(find_elements(ab, ".//app")):
+                    if app == self.element:
+                        name = make_nc_name(f"{self.ab_name()}-{index+1}")
+                        self.element.attrib['{http://www.w3.org/XML/1998/namespace}id'] = name
+                        break
+            if not name:
+                root = self.element.getroottree().getroot()
+                for index, app in enumerate(find_elements(root, ".//app")):
+                    if app == self.element:
+                        name = make_nc_name(f"app-{index+1}")
+                        self.element.attrib['{http://www.w3.org/XML/1998/namespace}id'] = name
+                        break
         return str(name).replace(" ", "_").replace(":", "_")
 
     def ab(self) -> Element|None:
@@ -347,6 +355,8 @@ class App():
 
     def ab_name(self) -> str:
         ab = self.ab()
+        if ab is None:
+            return ""
         return ab.attrib.get("n", "")
     
     def text_before(self) -> str:
@@ -412,7 +422,7 @@ class Doc():
             self.apps.append(app)
 
     def get_interpgrp(self) -> Element:
-        text = find_element(self.tree, "text") 
+        text = find_element(self.tree, ".//text") 
         interp_group = find_element(text, ".//interpGrp[@type='transcriptional']") 
         if interp_group is None: 
             interp_group = ET.Element("interpGrp", attrib={"type":"transcriptional"}) 

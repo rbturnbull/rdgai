@@ -34,7 +34,10 @@ def extract_text(node:Element, include_tail:bool=True) -> str:
     if node is None:
         return ""
     
-    tag = re.sub(r"{.*}", "", node.tag)
+    if isinstance(node.tag, str):
+        tag = re.sub(r"{.*}", "", node.tag)
+    else:
+        return ""
 
     if tag in ["pc", "witDetail", "note"]:
         return ""
@@ -83,7 +86,9 @@ def find_element(doc:ElementTree|Element, xpath:str) -> Element|None:
     return element
 
 
-def find_elements(doc:ElementTree|Element, xpath:str) -> Element|None:
+def find_elements(doc:ElementTree|Element|None, xpath:str) -> list[Element]:
+    if doc is None:
+        return []
     if isinstance(doc, ElementTree):
         doc = doc.getroot()
     namespaces = doc.nsmap | {"xml": "http://www.w3.org/XML/1998/namespace"}

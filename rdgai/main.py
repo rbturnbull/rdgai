@@ -28,6 +28,11 @@ def get_output_path(doc:Path, output:Path, inplace:bool) -> Path:
     
     if inplace:
         output = doc
+
+    if isinstance(output, Doc):
+        output = output.path
+
+    assert isinstance(output, Path), f"Expected Path, got {type(output)}"
     
     return output
 
@@ -43,12 +48,14 @@ def classify(
     temperature:float=typer.Option(0.1, help="Temperature for sampling from the language model."),
     prompt_only:bool=typer.Option(False, help="Only print the prompt and not classify."),
     examples:int=typer.Option(10, help="Number of examples to include in the prompt."),
+    examples_doc:Path=typer.Option(None, help="The path to a TEI XML document to use for examples.")
 ):
     """
     Classifies relations in TEI documents.
     """
     doc = Doc(doc)
     output = get_output_path(doc, output, inplace)
+    examples_doc = Doc(examples_doc) if examples_doc and Path(examples_doc).exists() else None
 
     return classify_fn(
         doc=doc, 
@@ -60,6 +67,7 @@ def classify(
         prompt_only=prompt_only, 
         examples=examples, 
         console=console,
+        examples_doc=examples_doc,
     )
 
 
@@ -93,8 +101,8 @@ def gui(
     all_apps:bool=typer.Option(False, help="Whether or not to use all variation unit `app` elements. By default it shows only non-redundant pairs of readings."),
 ):
     """ Starts a Flask app to view and classify a TEI document. """
-    doc = Doc(doc)
     output = get_output_path(doc, output, inplace)
+    doc = Doc(doc)
     flask_app = doc.flask_app(output, all_apps=all_apps)
     flask_app.run(debug=debug, use_reloader=use_reloader)
 
@@ -153,8 +161,8 @@ def clean(
     inplace: bool = typer.Option(False, "--inplace", "-i", help="Overwrite the input file."),
 ):
     """ Cleans a TEI XML file for common errors. """
-    doc = Doc(doc)
     output = get_output_path(doc, output, inplace)
+    doc = Doc(doc)
     doc.clean(output=output)
 
 
