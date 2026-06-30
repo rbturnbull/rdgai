@@ -1,6 +1,6 @@
 import pytest
 from lxml import etree as ET
-from rdgai.tei import get_language_code, extract_text, get_reading_identifier
+from rdgai.tei import get_language_code, extract_text, find_elements, get_reading_identifier
 
 
 
@@ -75,8 +75,33 @@ def test_extract_text_app_no_lem_or_rdg():
     node = ET.Element("app")
     assert extract_text(node) == ""
 
+def test_extract_text_ref_uses_target_text():
+    root = ET.fromstring("""
+        <TEI xmlns="http://www.tei-c.org/ns/1.0">
+          <text>
+            <body>
+              <p>
+                <seg xml:id="target-reading">Resolved target text</seg>
+                <ref target="#target-reading">Reference label</ref>
+              </p>
+            </body>
+          </text>
+        </TEI>
+    """)
+    ref = root.find(".//{http://www.tei-c.org/ns/1.0}ref")
+
+    assert extract_text(ref) == "Resolved target text"
+
 def test_extract_text_none_node():
     assert extract_text(None) == ""
+
+def test_extract_text_comment_node():
+    node = ET.Comment("comment")
+    assert extract_text(node) == ""
+
+
+def test_find_elements_none_doc():
+    assert find_elements(None, ".//rdg") == []
 
 
 def test_get_reading_identifier_with_xml_id():

@@ -2,7 +2,7 @@ import re
 from typer.testing import CliRunner
 import pandas as pd
 from unittest.mock import patch
-from rdgai.main import app
+from rdgai.main import app, get_output_path
 
 from .test_classification import mock_llm
 from .test_validation import mock_llm as mock_llm_validation
@@ -259,6 +259,11 @@ def test_main_gui_multiple_output(mock_flask_app):
     assert "You cannot use both" in strip_ansi_codes(result.stderr)
 
     mock_run.assert_not_called()    
+
+
+def test_get_output_path_with_doc_output(minimal):
+    result = get_output_path(TEST_DATA_DIR/"minimal.xml", minimal, False)
+    assert result == minimal.path
 
 
 def test_main_prompt_preamble():

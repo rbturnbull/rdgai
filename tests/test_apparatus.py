@@ -72,6 +72,12 @@ def test_reading_witnesses_str(arb):
     assert arb.apps[0].readings[1].witnesses_str() == 'J30 S118 S120 S122 S128 S137 S138'
 
 
+def test_reading_text_in_context(app_names):
+    reading = app_names.apps[0].readings[1]
+    assert reading.text_in_context() == 'Word1 ⸂Reading 2⸃ Word2 Reading 1 Word3 Word4'
+    assert reading.text_in_context("Override") == 'Word1 ⸂Override⸃ Word2 Reading 1 Word3 Word4'
+
+
 def test_relationtype_repr(arb):
     for relation_type in arb.relation_types.values():
         assert str(relation_type) == repr(relation_type)
@@ -338,6 +344,5 @@ def test_doc_clean(messy, tmp_path):
     assert '<relation active="1" passive="3" ana="#category2"/>' in result
     assert '<relation active="2" passive="3" ana="#category3"/>' in result
     assert len(re.findall("<relation ", result)) == 3
-
 
 
