@@ -425,6 +425,7 @@ class Doc():
     tree: ElementTree = field(default=None)
     apps: list[App] = field(default_factory=list)
     relation_types: dict[str,RelationType] = field(default_factory=dict)
+    id_to_app: dict[str,App] = field(default_factory=dict)
     
     def __post_init__(self):
         self.tree = read_tei(self.path)
@@ -433,6 +434,8 @@ class Doc():
         for app_element in find_elements(self.tree, ".//app"):
             app = App(app_element, doc=self)
             self.apps.append(app)
+
+        self.id_to_app = {app.__str__(): app for app in self.apps}            
 
     def get_interpgrp(self) -> Element:
         text = find_element(self.tree, ".//text") 

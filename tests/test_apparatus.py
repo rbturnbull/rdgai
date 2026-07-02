@@ -67,6 +67,15 @@ def test_doc_repr(minimal):
     assert "minimal.xml" in repr(minimal)    
 
 
+def test_doc_id_to_app(app_names):
+    assert app_names.id_to_app == {
+        "app": app_names.apps[0],
+        "app2": app_names.apps[1],
+        "ab-3": app_names.apps[2],
+        "NoAB": app_names.apps[3],
+    }
+
+
 def test_reading_witnesses_str(arb):
     assert arb.apps[0].readings[0].witnesses_str() == 'CSA S71+'
     assert arb.apps[0].readings[1].witnesses_str() == 'J30 S118 S120 S122 S128 S137 S138'
@@ -348,4 +357,3 @@ def test_doc_clean(messy, tmp_path):
     assert '<relation active="1" passive="3" ana="#category2"/>' in result
     assert '<relation active="2" passive="3" ana="#category3"/>' in result
     assert len(re.findall("<relation ", result)) == 3
-
