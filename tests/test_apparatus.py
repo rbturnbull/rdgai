@@ -212,6 +212,10 @@ def test_app_text_in_context(app_names):
     assert app_names.apps[3].text_in_context() == '⸂Reading 1⸃'
 
 
+def test_app_entropy(arb):
+    assert arb.apps[0].entropy() == pytest.approx(1.4911148500551856)
+
+
 def test_doc_add_relation_type_existing(minimal):
     relation_type = list(minimal.relation_types.values())[0]
     assert len(relation_type.pairs) == 0
@@ -344,5 +348,4 @@ def test_doc_clean(messy, tmp_path):
     assert '<relation active="1" passive="3" ana="#category2"/>' in result
     assert '<relation active="2" passive="3" ana="#category3"/>' in result
     assert len(re.findall("<relation ", result)) == 3
-
 

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rdgai"
-version = "0.1.2"
+version = "0.1.3"
 description = "Rdgai facilitates the use of LLMs for classifying transitions between variant readings in a Text Encoding Initiative (TEI) XML file containing a critical apparatus."
 authors = ["Robert Turnbull <robert.turnbull@unimelb.edu.au>"]
 license = "Apache-2.0"

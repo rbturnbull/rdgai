@@ -1,3 +1,4 @@
+import math
 from typing import Optional
 from pathlib import Path
 from dataclasses import dataclass, field
@@ -34,6 +35,9 @@ class Reading():
 
     def __hash__(self):
         return hash(self.element)
+
+    def text_in_context(self, text="") -> str:
+        return self.app.text_in_context(text or self.text)
 
 
 @dataclass
@@ -390,6 +394,7 @@ class App():
     def text_after(self) -> str:
         ab = self.ab()
         if ab is None:
+            # TODO Search for <milestone> element after this and include the text until then (truncated at some reasonable point)
             return ""
         
         items = []
@@ -405,6 +410,14 @@ class App():
         text = " ".join(items)
         return text.strip()
 
+    def entropy(self) -> float:
+        counts = [len(reading.witnesses) for reading in self.readings if len(reading.witnesses) > 0]
+        total = sum(counts)
+        probabilities = [count / total for count in counts]
+        entropy = sum(-p * math.log2(p) for p in probabilities)
+
+        return entropy
+        
 
 @dataclass
 class Doc():
