@@ -76,6 +76,17 @@ def test_doc_id_to_app(app_names):
     }
 
 
+def test_doc_len(app_names):
+    assert len(app_names) == 4
+
+
+def test_doc_getitem(app_names):
+    assert app_names["app"] == app_names.apps[0]
+    assert app_names["app2"] == app_names.apps[1]
+    assert app_names["ab-3"] == app_names.apps[2]
+    assert app_names["NoAB"] == app_names.apps[3]
+
+
 def test_reading_witnesses_str(arb):
     assert arb.apps[0].readings[0].witnesses_str() == 'CSA S71+'
     assert arb.apps[0].readings[1].witnesses_str() == 'J30 S118 S120 S122 S128 S137 S138'

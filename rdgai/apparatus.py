@@ -435,7 +435,13 @@ class Doc():
             app = App(app_element, doc=self)
             self.apps.append(app)
 
-        self.id_to_app = {app.__str__(): app for app in self.apps}            
+        self.id_to_app = {app.__str__(): app for app in self.apps}        
+
+    def __getitem__(self, key):
+        return self.id_to_app[key]
+
+    def __len__(self):
+        return len(self.apps)
 
     def get_interpgrp(self) -> Element:
         text = find_element(self.tree, ".//text") 
