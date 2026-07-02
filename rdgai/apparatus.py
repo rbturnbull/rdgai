@@ -11,7 +11,7 @@ import Levenshtein
 import numpy as np
 
 # from .relations import Relation, get_reading_identifier
-from .tei import read_tei, find_elements, extract_text, find_parent, find_element, write_tei, make_nc_name, get_language, get_reading_identifier
+from .tei import read_tei, find_elements, extract_text, find_parent, find_element, write_tei, make_nc_name, get_language, get_reading_identifier, extract_text_siblings
 from .mapper import Mapper
 
 @dataclass
@@ -366,7 +366,7 @@ class App():
     def text_before(self) -> str:
         ab = self.ab()
         if ab is None:
-            return ""
+            return extract_text_siblings(self.element, "milestone", truncate=100, preceding=True)
         
         items = []
         for child in ab:
@@ -394,8 +394,7 @@ class App():
     def text_after(self) -> str:
         ab = self.ab()
         if ab is None:
-            # TODO Search for <milestone> element after this and include the text until then (truncated at some reasonable point)
-            return ""
+            return extract_text_siblings(self.element, "milestone", truncate=100)
         
         items = []
         reached_element = False

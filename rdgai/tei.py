@@ -30,7 +30,7 @@ def make_nc_name(string):
     return result
 
 
-def extract_text(node:Element, include_tail:bool=True) -> str:
+def extract_text(node:Element, include_tail:bool=True, sep:str=" ") -> str:
     if node is None:
         return ""
     
@@ -55,13 +55,15 @@ def extract_text(node:Element, include_tail:bool=True) -> str:
         if target:
             return extract_text(target[0])
 
+    if tag == "w":
+        sep = ""
 
     text = node.text or ""
     for child in node:
-        text += " " + extract_text(child)
+        text += sep + extract_text(child, sep=sep)
 
     if include_tail and node.tail:
-        text += " " + node.tail
+        text += sep + node.tail
 
     return text.strip()
 
@@ -152,3 +154,40 @@ def get_reading_identifier(reading:Element, check:bool=False, create_if_necessar
         assert identifier, f"Reading {reading} must have a name attribute 'xml:id' or 'n'."
     
     return identifier
+
+
+def extract_text_siblings(element:Element, until_tag:str, preceding:bool=False, truncate:int|None=None) -> str:
+    """
+    Extracts text from sibling elements of the given element until a sibling with the specified tag is encountered.
+    
+    Args:
+        element (Element): The starting XML element from which to extract text from its siblings.
+        until_tag (str): The tag name of the sibling element that will stop the extraction process.
+        preceding (bool): If True, extracts text from preceding siblings; if False, extracts from following siblings.
+        truncate (int|None): If specified, limits the number of words extracted to this value.
+        
+    Returns:
+        str: A string containing the concatenated text from the sibling elements, up to the specified limit if provided.
+    """
+    words = []
+    for sibling in element.itersiblings(preceding=preceding):
+        tag = sibling.tag
+        if isinstance(tag, str) and tag.rsplit("}", 1)[-1] == until_tag:
+            break
+
+        text = extract_text(sibling)
+        if text:
+            my_words = text.split()
+            if preceding:
+                # Reverse the order of words for preceding context because we are iterating backwards through the siblings.
+                my_words.reverse()
+                
+            words.extend(my_words)
+            if truncate and len(words) >= truncate:
+                words = words[:truncate]
+                break
+
+    if preceding:
+        words.reverse()
+
+    return " ".join(words)

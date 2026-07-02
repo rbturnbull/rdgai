@@ -1,6 +1,6 @@
 import re
 import pytest
-from rdgai.apparatus import Pair, RelationType
+from rdgai.apparatus import Doc, Pair, RelationType
 from lxml.etree import _Element as Element
 
 
@@ -229,7 +229,99 @@ def test_app_text_in_context(app_names):
     assert app_names.apps[0].text_in_context() == 'Word1 ⸂Reading 1⸃ Word2 Reading 1 Word3 Word4'
     assert app_names.apps[1].text_in_context() == 'Word1 Reading 1 Word2 ⸂Reading 1⸃ Word3 Word4'
     assert app_names.apps[2].text_in_context() == 'Word1 Reading 1 Word2 Reading 1 Word3 ⸆ Word4'
-    assert app_names.apps[3].text_in_context() == '⸂Reading 1⸃'
+    assert app_names.apps[3].text_in_context() == 'Word1 Reading 1 Word2 Reading 1 Word3 Word4 ⸂Reading 1⸃'
+
+
+def test_app_text_after_without_ab_stops_at_milestone(tmp_path):
+    path = tmp_path / "milestone.xml"
+    path.write_text("""
+<TEI>
+  <text>
+    <body>
+      <app n="NoAB">
+        <rdg n="1">Reading 1</rdg>
+      </app>
+      <w>Word1</w>
+      <w>Word2</w>
+      <milestone unit="verse"/>
+      <w>Word3</w>
+    </body>
+  </text>
+</TEI>
+""")
+
+    doc = Doc(path)
+
+    assert doc.apps[0].text_after() == "Word1 Word2"
+
+
+def test_app_text_before_without_ab_stops_at_milestone(tmp_path):
+    path = tmp_path / "milestone.xml"
+    path.write_text("""
+<TEI>
+  <text>
+    <body>
+      <w>Word1</w>
+      <milestone unit="verse"/>
+      <w>Word2</w>
+      <w>Word3</w>
+      <app n="NoAB">
+        <rdg n="1">Reading 1</rdg>
+      </app>
+    </body>
+  </text>
+</TEI>
+""")
+
+    doc = Doc(path)
+
+    assert doc.apps[0].text_before() == "Word2 Word3"
+
+
+def test_app_text_after_without_ab_truncates_to_100_words(tmp_path):
+    path = tmp_path / "long-context.xml"
+    words = "\n".join(f"<w>Word{i}</w>" for i in range(1, 106))
+    path.write_text(f"""
+<TEI>
+  <text>
+    <body>
+      <app n="NoAB">
+        <rdg n="1">Reading 1</rdg>
+      </app>
+      {words}
+      <milestone unit="verse"/>
+    </body>
+  </text>
+</TEI>
+""")
+
+    doc = Doc(path)
+    result = doc.apps[0].text_after()
+
+    assert result.split() == [f"Word{i}" for i in range(1, 101)]
+
+
+def test_app_text_before_without_ab_truncates_to_100_words(tmp_path):
+    path = tmp_path / "long-context.xml"
+    words = "\n".join(f"<w>Word{i}</w>" for i in range(1, 106))
+    path.write_text(f"""
+<TEI>
+  <text>
+    <body>
+      <milestone unit="verse"/>
+      {words}
+      <app n="NoAB">
+        <rdg n="1">Reading 1</rdg>
+      </app>
+    </body>
+  </text>
+</TEI>
+""")
+
+    doc = Doc(path)
+    result = doc.apps[0].text_before()
+
+    assert result.split() == [f"Word{i}" for i in range(6, 106)]
 
 
 def test_app_entropy(arb):

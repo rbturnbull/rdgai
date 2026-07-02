@@ -135,3 +135,9 @@ def test_get_reading_identifier_no_creation():
 def test_get_reading_identifier_with_both_attributes():
     reading = ET.Element("rdg", attrib={"{http://www.w3.org/XML/1998/namespace}id": "r1", "n": "r2"})
     assert get_reading_identifier(reading) == "r1"    
+
+
+def test_extract_text_within_single_word():
+    data = "<w><unclear>π</unclear>αυλος</w>"
+    element = ET.fromstring(data)
+    assert extract_text(element) == "παυλος"
