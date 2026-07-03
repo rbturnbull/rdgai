@@ -87,6 +87,19 @@ def test_doc_getitem(app_names):
     assert app_names["NoAB"] == app_names.apps[3]
 
 
+def test_app_getitem(minimal):
+    app = minimal.apps[0]
+
+    assert app["1"] == app.readings[0]
+    assert app["2"] == app.readings[1]
+    assert app["3"] == app.readings[2]
+
+
+def test_app_getitem_missing(minimal):
+    with pytest.raises(KeyError):
+        minimal.apps[0]["missing"]
+
+
 def test_reading_witnesses_str(arb):
     assert arb.apps[0].readings[0].witnesses_str() == 'CSA S71+'
     assert arb.apps[0].readings[1].witnesses_str() == 'J30 S118 S120 S122 S128 S137 S138'

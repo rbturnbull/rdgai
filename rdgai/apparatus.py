@@ -278,6 +278,7 @@ class App():
     readings: list[Reading] = field(default_factory=list)
     pairs: list[Pair] = field(default_factory=list)
     non_redundant_pairs: list[Pair] = field(default_factory=list)
+    id_to_reading: dict[str,Reading] = field(default_factory=dict)
 
     def __post_init__(self):
         for reading in find_elements(self.element, ".//rdg"):
@@ -320,6 +321,14 @@ class App():
                     relation_type.pairs.add(pair)
 
         assert len(self.pairs) == len(self.non_redundant_pairs) * 2
+
+        self.id_to_reading = {reading.n: reading for reading in self.readings}
+
+    def __getitem__(self, key):
+        return self.id_to_reading[key]
+
+    def __len__(self):
+        return len(self.readings)
 
     def get_classified_pairs(self, redundant:bool=True) -> list[Pair]:
         pairs = self.pairs if redundant else self.non_redundant_pairs
