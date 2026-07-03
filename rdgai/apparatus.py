@@ -36,8 +36,9 @@ class Reading():
     def __hash__(self):
         return hash(self.element)
 
-    def text_in_context(self, text="") -> str:
-        return self.app.text_in_context(text or self.text)
+    def text_in_context(self, text:str|None=None) -> str:
+        text = self.text if text is None else text
+        return self.app.text_in_context(text)
 
 
 @dataclass
@@ -388,14 +389,14 @@ class App():
         text = " ".join(items)
         return text.strip()
     
-    def text_in_context(self, text="") -> str:
+    def text_in_context(self, text:str|None=None) -> str:
         return f"{self.text_before()} {self.text_with_signs(text)} {self.text_after()}".strip()
 
     def text(self) -> str:
         return extract_text(self.element)
 
-    def text_with_signs(self, text="") -> str:
-        text = text or self.text()
+    def text_with_signs(self, text:str|None=None) -> str:
+        text = self.text() if text is None else text
         if not text:
             return "⸆"
         return f"⸂{text}⸃"
