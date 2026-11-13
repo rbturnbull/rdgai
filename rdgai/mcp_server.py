@@ -15,6 +15,7 @@ from .annotation import (
     AnnotationError,
     AnnotationStore,
     CategoryCounts,
+    DefinitionsChange,
     SampleFilter,
     SampleInfo,
     CategoryPairList,
@@ -128,6 +129,58 @@ def build_server(store:AnnotationStore) -> MCPServer:
         """
         with tool_errors():
             return store.sample_info()
+
+    if not store.read_only and not store.lock_definitions:
+        @server.tool(annotations=write)
+        def update_category(
+            name: Annotated[str, Field(description="The category to change.")],
+            description: Annotated[str | None, Field(description="The new definition text (omit to keep it).")] = None,
+            new_name: Annotated[str | None, Field(description="A new name (omit to keep it). Classifications using the category are updated.")] = None,
+        ) -> DefinitionsChange:
+            """
+            Changes a category's definition and/or renames it. Renaming also updates its inverse's link and
+            every classification that uses it. Only make changes the annotator has asked for.
+            """
+            with tool_errors():
+                return store.update_category(name, description=description, new_name=new_name)
+
+        @server.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, idempotentHint=False, openWorldHint=False))
+        def add_category(
+            name: Annotated[str, Field(description="Name of the new category (a valid xml:id, e.g. 'Harmonization').")],
+            description: Annotated[str, Field(description="The definition of the new category.")],
+            inverse_name: Annotated[str | None, Field(description="For a reciprocal pair (like Addition/Omission), the name of the new inverse category.")] = None,
+            inverse_description: Annotated[str, Field(description="The definition of the inverse category.")] = "",
+        ) -> DefinitionsChange:
+            """
+            Adds a category. Without inverse_name it is its own inverse (like Transposition); with inverse_name
+            a reciprocal pair is added. Only make changes the annotator has asked for.
+            """
+            with tool_errors():
+                return store.add_category(name, description, inverse_name=inverse_name, inverse_description=inverse_description)
+
+        @server.tool(annotations=write)
+        def remove_category(
+            name: Annotated[str, Field(description="The category to remove (its inverse is removed too).")],
+            reassign_to: Annotated[str | None, Field(description="Category to move existing classifications to; required if the category is in use.")] = None,
+        ) -> DefinitionsChange:
+            """
+            Removes a category and its inverse. If pairs are classified with them, reassign_to must give a
+            category with a matching inverse structure; their labels move to it with their provenance kept.
+            Only make changes the annotator has asked for.
+            """
+            with tool_errors():
+                return store.remove_category(name, reassign_to=reassign_to)
+
+        @server.tool(annotations=write)
+        def update_guidance(
+            guidance: Annotated[str, Field(description="The full new guidance text (e.g. the decision order). Replaces the old guidance.")],
+        ) -> DefinitionsChange:
+            """
+            Replaces the guidance kept in the XML comment before the category definitions (e.g. the decision
+            order). Read the current guidance with get_definitions first. Only make changes the annotator has asked for.
+            """
+            with tool_errors():
+                return store.update_guidance(guidance)
 
     if not store.read_only:
         @server.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, idempotentHint=True, openWorldHint=False))

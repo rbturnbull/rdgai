@@ -5,6 +5,9 @@ This is used by the MCP server (``rdgai.mcp_server``) and is independent of MCP 
 and reused directly. The TEI file is the state: every write is saved to disk straight away.
 """
 import os
+import re
+import json
+import hashlib
 import threading
 import tempfile
 from pathlib import Path
@@ -42,6 +45,14 @@ class ReadOnlyError(AnnotationError):
     pass
 
 
+class DefinitionsLockedError(AnnotationError):
+    pass
+
+
+NC_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_.\-]*$")
+XML_ID = "{http://www.w3.org/XML/1998/namespace}id"
+
+
 # ---------------------------------------------------------------------------
 # Result models (these become the structured output of the MCP tools)
 # ---------------------------------------------------------------------------
@@ -57,6 +68,13 @@ class Definitions(BaseModel):
     guidance: str = Field(description="Guidance given in the XML comment before the category definitions (e.g. a decision order).")
     direction_convention: str
     categories: list[Category]
+    definitions_hash: str = Field(description="SHA-256 of the guidance and the categories (name, description, inverse).")
+
+
+class DefinitionsChange(BaseModel):
+    message: str
+    relations_updated: int = Field(description="Number of <relation> elements whose category was renamed or reassigned.")
+    definitions: Definitions
 
 
 class Provenance(BaseModel):
@@ -205,6 +223,7 @@ class AnnotationStore:
         annotator: The xml:id of the human responsible for writes made through this store (e.g. 'RT').
         annotator_name: Optional full name, used when adding a <respStmt> for the annotator.
         read_only: If True, all writes raise ReadOnlyError.
+        lock_definitions: If True, the category definitions cannot be edited (classifications still can).
         ignore_types: Readings with these @type values are excluded from pairs (teiphy collapses them).
         sample_path: The sidecar YAML file holding the sample of units (default: <file>.sample.yaml).
         check_sample: Check on loading that an existing sample was drawn with the same ignore_types.
@@ -215,6 +234,7 @@ class AnnotationStore:
         annotator:str|None=None,
         annotator_name:str|None=None,
         read_only:bool=False,
+        lock_definitions:bool=False,
         ignore_types:tuple[str,...]|list[str]=DEFAULT_IGNORE_TYPES,
         sample_path:Path|str|None=None,
         check_sample:bool=True,
@@ -226,6 +246,7 @@ class AnnotationStore:
         self.annotator = annotator.lstrip("#") if annotator else None
         self.annotator_name = annotator_name
         self.read_only = read_only
+        self.lock_definitions = lock_definitions
         self.ignore_types = set(ignore_types)
         self.lock = threading.RLock()
         self.doc: Doc
@@ -374,11 +395,17 @@ class AnnotationStore:
                 Category(name=relation_type.name, description=relation_type.description, inverse=relation_type.get_inverse().name)
                 for relation_type in self.doc.relation_types.values()
             ]
+            guidance = self.doc.get_definitions_comment()
+            canonical = json.dumps(
+                dict(guidance=guidance, categories=[[c.name, c.description, c.inverse] for c in categories]),
+                ensure_ascii=False,
+            )
             return Definitions(
                 language=self.doc.language,
-                guidance=self.doc.get_definitions_comment(),
+                guidance=guidance,
                 direction_convention=DIRECTION_CONVENTION,
                 categories=categories,
+                definitions_hash=hashlib.sha256(canonical.encode("utf-8")).hexdigest(),
             )
 
     def list_units(
@@ -497,6 +524,192 @@ class AnnotationStore:
                     for pair in pairs[offset:offset+limit]
                 ],
             )
+
+    # -- editing the definitions ---------------------------------------------------------
+
+    def check_definitions_editable(self):
+        self.check_writable()
+        if self.lock_definitions:
+            raise DefinitionsLockedError("The category definitions are locked on this server.")
+
+    def check_new_category_name(self, name:str):
+        if not name or not NC_NAME.match(name):
+            raise AnnotationError(
+                f"'{name}' is not a valid category name: use letters, digits, '_', '-' or '.', starting with a letter or '_'."
+            )
+        if name in self.doc.relation_types:
+            raise AnnotationError(f"A category named '{name}' already exists.")
+        for element in self.doc.tree.getroot().iter():
+            if isinstance(element.tag, str) and element.attrib.get(XML_ID) == name:
+                raise AnnotationError(f"'{name}' is already used as an xml:id in the document.")
+
+    def transcriptional_relations(self) -> list:
+        relations = []
+        for list_relation in unique(find_elements(self.doc.tree, ".//listRelation[@type='transcriptional']")):
+            relations.extend(unique(find_elements(list_relation, ".//relation")))
+        return relations
+
+    def relations_using(self, names:set[str]) -> list:
+        pointers = {f"#{name}" for name in names}
+        return [
+            relation for relation in self.transcriptional_relations()
+            if pointers & set(relation.attrib.get("ana", "").split())
+        ]
+
+    def rename_in_relations(self, mapping:dict[str, str]) -> int:
+        """ Replaces category pointers in @ana (old name -> new name). Returns the number of relations changed. """
+        pointers = {f"#{old}": f"#{new}" for old, new in mapping.items()}
+        changed = 0
+        for relation in self.relations_using(set(mapping)):
+            tokens = []
+            for token in relation.attrib.get("ana", "").split():
+                token = pointers.get(token, token)
+                if token not in tokens:
+                    tokens.append(token)
+            relation.set("ana", " ".join(tokens))
+            changed += 1
+        return changed
+
+    @staticmethod
+    def set_interp_text(interp, text:str):
+        for child in list(interp):
+            interp.remove(child)
+        interp.text = text
+
+    def commit_definitions(self, message:str, relations_updated:int=0) -> DefinitionsChange:
+        """ Saves the file and reloads it so that categories and pairs are rebuilt from the TEI. """
+        self.save()
+        self.load()
+        return DefinitionsChange(message=message, relations_updated=relations_updated, definitions=self.definitions())
+
+    def update_category(self, name:str, description:str|None=None, new_name:str|None=None) -> DefinitionsChange:
+        """
+        Changes the description and/or the name of a category.
+        Renaming also updates the inverse's @corresp and every classification that uses the category.
+        """
+        with self.lock:
+            self.check_definitions_editable()
+            self.refresh()
+            relation_type = self.get_relation_type(name)
+            name = relation_type.name
+            renaming = new_name is not None and new_name != name
+            if description is None and not renaming:
+                raise AnnotationError("Nothing to change: give a new description or a new name.")
+
+            relations_updated = 0
+            if renaming:
+                self.check_new_category_name(new_name)
+            interp = relation_type.element
+            if description is not None:
+                self.set_interp_text(interp, description.strip())
+            if renaming:
+                interp.set(XML_ID, new_name)
+                for other in self.doc.relation_types.values():
+                    if other.element.attrib.get("corresp", "") == f"#{name}":
+                        other.element.set("corresp", f"#{new_name}")
+                relations_updated = self.rename_in_relations({name: new_name})
+
+            message = f"Renamed '{name}' to '{new_name}'." if renaming else f"Updated the description of '{name}'."
+            if renaming and description is not None:
+                message = f"Renamed '{name}' to '{new_name}' and updated its description."
+            return self.commit_definitions(message, relations_updated)
+
+    def add_category(
+        self,
+        name:str,
+        description:str,
+        inverse_name:str|None=None,
+        inverse_description:str="",
+    ) -> DefinitionsChange:
+        """
+        Adds a category. Without inverse_name it is its own inverse; with inverse_name a reciprocal pair
+        of categories is added, linked with @corresp.
+        """
+        with self.lock:
+            self.check_definitions_editable()
+            self.refresh()
+            self.check_new_category_name(name)
+            if inverse_name is not None:
+                if inverse_name == name:
+                    raise AnnotationError("The inverse category's name must be different from the category's name.")
+                self.check_new_category_name(inverse_name)
+            description = (description or "").strip()
+            inverse_description = (inverse_description or "").strip()
+            if not description:
+                raise AnnotationError("A description is required for the new category.")
+            if inverse_name is not None and not inverse_description:
+                raise AnnotationError("A description is required for the inverse category.")
+
+            interp_group = self.doc.get_interpgrp()
+            tag = tei_tag(interp_group, "interp")
+            attrib = {XML_ID: name}
+            if inverse_name:
+                attrib["corresp"] = f"#{inverse_name}"
+            ET.SubElement(interp_group, tag, attrib=attrib).text = description
+            if inverse_name:
+                ET.SubElement(interp_group, tag, attrib={XML_ID: inverse_name, "corresp": f"#{name}"}).text = inverse_description
+                return self.commit_definitions(f"Added '{name}' and its inverse '{inverse_name}'.")
+            return self.commit_definitions(f"Added '{name}' (its own inverse).")
+
+    def remove_category(self, name:str, reassign_to:str|None=None) -> DefinitionsChange:
+        """
+        Removes a category together with its inverse. If any pairs use them, reassign_to must name a
+        category with a corresponding inverse (the pairs' labels are moved to it, keeping their provenance).
+        """
+        with self.lock:
+            self.check_definitions_editable()
+            self.refresh()
+            relation_type = self.get_relation_type(name)
+            inverse = relation_type.get_inverse()
+            removed = {relation_type.name, inverse.name}
+            removed_text = f"'{relation_type.name}'" + (f" and its inverse '{inverse.name}'" if inverse is not relation_type else "")
+
+            relations_updated = 0
+            if reassign_to is not None:
+                target = self.get_relation_type(reassign_to)
+                if target.name in removed:
+                    raise AnnotationError(f"Cannot reassign to '{target.name}': it is being removed.")
+                target_inverse = target.get_inverse()
+                if (inverse is relation_type) != (target_inverse is target):
+                    raise AnnotationError(
+                        f"Cannot reassign {removed_text} to '{target.name}' (inverse '{target_inverse.name}'): "
+                        "a category that is its own inverse can only be reassigned to another such category, "
+                        "and a reciprocal pair only to another reciprocal pair."
+                    )
+                relations_updated = self.rename_in_relations({relation_type.name: target.name, inverse.name: target_inverse.name})
+            else:
+                in_use = len(self.relations_using(removed))
+                if in_use:
+                    raise AnnotationError(
+                        f"Cannot remove {removed_text}: used by {in_use} pairs. "
+                        "Pass reassign_to to move these classifications to another category."
+                    )
+
+            for removed_name in removed:
+                element = self.doc.relation_types[removed_name].element
+                element.getparent().remove(element)
+
+            message = f"Removed {removed_text}."
+            if reassign_to is not None:
+                message += f" Reassigned {relations_updated} pairs to '{target.name}'."
+            return self.commit_definitions(message, relations_updated)
+
+    def update_guidance(self, guidance:str) -> DefinitionsChange:
+        """ Replaces the guidance comment (e.g. the decision order) placed before the category definitions. """
+        with self.lock:
+            self.check_definitions_editable()
+            self.refresh()
+            guidance = (guidance or "").strip()
+            if "--" in guidance or guidance.endswith("-"):
+                raise AnnotationError("The guidance cannot contain '--' or end with '-' (it is stored in an XML comment).")
+            interp_group = self.doc.get_interpgrp()
+            for sibling in list(interp_group.itersiblings(preceding=True)):
+                if not isinstance(sibling, ET._Comment):
+                    break
+                sibling.getparent().remove(sibling)
+            if guidance:
+                interp_group.addprevious(ET.Comment(f"\n{guidance}\n"))
+            return self.commit_definitions("Updated the guidance.")
 
     # -- sampling -----------------------------------------------------------------------
 

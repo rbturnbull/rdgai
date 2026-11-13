@@ -227,6 +227,7 @@ def serve_mcp(
     annotator:str=typer.Option(None, help="xml:id of the human annotator responsible for classifications set through this server, e.g. 'RT'."),
     annotator_name:str=typer.Option(None, help="Full name of the annotator (used in the <respStmt> added to the TEI header)."),
     read_only:bool=typer.Option(False, help="Disable all tools that change the file."),
+    lock_definitions:bool=typer.Option(False, help="Disable the tools that edit the category definitions."),
     ignore_types:list[str]=typer.Option(["defective"], "--ignore-type", help="Readings of this @type are not classified (repeatable). Defaults to defective."),
     sample_file:Path=typer.Option(None, help="Sidecar YAML file for the sample of units (default: <doc>.sample.yaml)."),
 ):
@@ -239,7 +240,8 @@ def serve_mcp(
 
     try:
         store = AnnotationStore(
-            doc, annotator=annotator, annotator_name=annotator_name, read_only=read_only, ignore_types=ignore_types, sample_path=sample_file,
+            doc, annotator=annotator, annotator_name=annotator_name, read_only=read_only, lock_definitions=lock_definitions,
+            ignore_types=ignore_types, sample_path=sample_file,
         )
     except AnnotationError as error:
         error_console.print(str(error))

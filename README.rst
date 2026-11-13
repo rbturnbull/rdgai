@@ -175,6 +175,10 @@ The tools are:
 - ``clear_classification``: removes the classification of a pair and its reverse.
 
 - ``category_counts`` and ``list_category``: how many pairs have each category, and the pairs in a category with their provenance.
+- ``update_category``, ``add_category``, ``remove_category`` and ``update_guidance``: edit the definitions. Renaming a category updates
+  its inverse's ``@corresp`` and every classification that uses it; reciprocal categories are added and removed together; a category
+  in use can only be removed by reassigning its classifications. These tools are not offered with ``--read-only`` or ``--lock-definitions``.
+  ``get_definitions`` reports a hash of the definitions so that results can be tied to the exact definitions used.
 - ``draw_sample`` and ``get_sample``: a reproducible random sample of units, split into example and test units, and progress in annotating it.
 
 To draw a sample of 200 units, half of them held out for testing:
