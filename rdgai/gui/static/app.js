@@ -1,5 +1,5 @@
 // The rdgai annotation GUI. Talks to the JSON API in rdgai/gui/__init__.py; pure logic lives in logic.js.
-import { keyAction, categoryClick, targetPairs, pairKey, labelRequest, certaintyRequest } from "./logic.js";
+import { keyAction, categoryClick, targetPairs, pairKey, labelRequest, certaintyRequest, visiblePairs, progressText, ruleText } from "./logic.js";
 
 const state = {
   config: null,
@@ -9,7 +9,10 @@ const state = {
   pendingCert: {},   // pairKey -> certainty chosen before a category (unlabelled pairs)
   reasons: {},       // pairKey -> edited reason text not yet saved
   filters: {},
+  showRules: false,  // whether the section of pairs labelled by rule is expanded
 };
+
+const visible = () => (state.unit ? visiblePairs(state.unit, state.showRules) : []);
 
 const $ = (id) => document.getElementById(id);
 
@@ -106,8 +109,9 @@ async function loadUnit(unitId, { keepFocus = false } = {}) {
       state.ticked.clear();
       state.pendingCert = {};
       state.reasons = {};
+      state.showRules = false;
     }
-    state.focused = Math.min(state.focused, Math.max(unit.pairs.length - 1, 0));
+    state.focused = Math.min(state.focused, Math.max(visible().length - 1, 0));
     syncFilterControls();
     render();
     window.scrollTo({ top: 0 });
@@ -137,7 +141,7 @@ function renderHeader(unit) {
       el("h1", {}, unit.id),
       unit.sample_role ? el("span", { class: "badge" }, unit.sample_role) : null,
       el("span", { class: "muted" }, position),
-      el("span", { class: "muted" }, `${unit.progress.pairs_done} / ${unit.progress.pairs_total} pairs`),
+      el("span", { class: "muted" }, progressText(unit.progress)),
     ),
     el("div", { class: "nav" },
       el("button", { type: "button", disabled: !unit.prev, onclick: () => goToUnit(unit.prev) }, "← Prev"),
@@ -201,7 +205,7 @@ function formatWhen(when) {
 function provenanceText(pair) {
   const provenance = pair.provenance;
   if (!provenance) return "Not classified.";
-  const parts = [`Saved by ${provenance.resp || "unknown"}`];
+  const parts = [pair.source === "rule" ? `Labelled by ${provenance.resp.replace("#rule-", "rule: ")}` : `Saved by ${provenance.resp || "unknown"}`];
   if (provenance.when) parts.push(formatWhen(provenance.when));
   if (provenance.cert) parts.push(`certainty ${provenance.cert}`);
   if (provenance.model) parts.push(`model ${provenance.model}`);
@@ -219,42 +223,59 @@ function reasonOf(pair) {
 }
 
 function renderPairs(unit) {
-  const readOnly = state.config.read_only;
-  const panels = unit.pairs.map((pair, index) => {
-    const key = pairKey(pair);
-    const suggested = new Set(pair.suggestions.map((suggestion) => suggestion.category));
-    const buttons = state.config.buttons.map((button) => el("button", {
-      type: "button",
-      class: [pair.category === button.name ? "current" : "", suggested.has(button.name) ? "suggested" : ""].join(" ").trim(),
-      title: `${button.name}${button.inverse !== button.name ? ` (inverse: ${button.inverse})` : ""}\n\n${button.description}`,
-      style: { gridRow: String(button.row + 1), gridColumn: String(button.column + 1) },
-      disabled: readOnly,
-      "data-category": button.name,
-    }, button.key ? el("span", { class: "key" }, button.key.replace("shift+", "⇧")) : null, button.name));
-
-    const suggestions = pair.suggestions.map((suggestion) => el("div", { class: "suggestion muted" },
-      `Suggested by ${suggestion.source}: `, el("strong", {}, suggestion.category),
-      suggestion.justification ? ` — ${suggestion.justification}` : ""));
-
-    const cert = certaintyOf(pair);
-    return el("article", { class: `pair${index === state.focused ? " focused" : ""}`, "data-index": String(index) },
-      el("div", { class: "pair-head" },
-        el("input", { type: "checkbox", title: "Tick (x)", checked: state.ticked.has(key), disabled: readOnly, "data-tick": key }),
-        el("span", { class: "ids" }, `${pair.first} → ${pair.second}`),
-        el("span", { class: "texts" }, pair.first_text, el("span", { class: "arrow" }, "→"), pair.second_text),
-      ),
-      el("div", { class: "categories" }, buttons),
-      suggestions,
-      el("div", { class: "pair-foot" },
-        el("div", { class: "certainty" }, state.config.certainty.map((value) => el("button", {
-          type: "button", class: value === cert ? "selected" : "", disabled: readOnly, title: value[0], "data-cert": value,
-        }, value))),
-        el("textarea", { class: "reason", rows: "1", placeholder: "Reason (saved as the justification)", disabled: readOnly, "data-reason": key }, reasonOf(pair)),
-        el("div", { class: "provenance" }, provenanceText(pair)),
-      ),
+  const panels = unit.pairs.map((pair, index) => pairPanel(pair, index));
+  const rulePairs = unit.rule_pairs || [];
+  const children = [...panels];
+  if (rulePairs.length) {
+    const details = el("details", { class: "rule-section", open: state.showRules },
+      el("summary", {}, `${rulePairs.length} pairs labelled by rule`, el("span", { class: "muted" }, " (subreadings; expand to check or override)")),
+      ...rulePairs.map((pair, index) => pairPanel(pair, unit.pairs.length + index)),
     );
-  });
-  $("pairs").replaceChildren(...panels);
+    details.addEventListener("toggle", () => {
+      if (state.showRules === details.open) return;
+      state.showRules = details.open;
+      if (!state.showRules && state.focused >= unit.pairs.length) state.focused = Math.max(unit.pairs.length - 1, 0);
+    });
+    children.push(details);
+  }
+  $("pairs").replaceChildren(...children);
+}
+
+function pairPanel(pair, index) {
+  const readOnly = state.config.read_only;
+  const key = pairKey(pair);
+  const suggested = new Set(pair.suggestions.map((suggestion) => suggestion.category));
+  const buttons = state.config.buttons.map((button) => el("button", {
+    type: "button",
+    class: [pair.category === button.name ? "current" : "", suggested.has(button.name) ? "suggested" : ""].join(" ").trim(),
+    title: `${button.name}${button.inverse !== button.name ? ` (inverse: ${button.inverse})` : ""}\n\n${button.description}`,
+    style: { gridRow: String(button.row + 1), gridColumn: String(button.column + 1) },
+    disabled: readOnly,
+    "data-category": button.name,
+  }, button.key ? el("span", { class: "key" }, button.key.replace("shift+", "⇧")) : null, button.name));
+
+  const suggestions = pair.suggestions.map((suggestion) => el("div", { class: "suggestion muted" },
+    `Suggested by ${suggestion.source}: `, el("strong", {}, suggestion.category),
+    suggestion.justification ? ` — ${suggestion.justification}` : ""));
+
+  const cert = certaintyOf(pair);
+  const byRule = pair.source === "rule" || (pair.rule && !pair.source);
+  return el("article", { class: `pair${index === state.focused ? " focused" : ""}${byRule ? " rule-pair" : ""}`, "data-index": String(index) },
+    el("div", { class: "pair-head" },
+      el("input", { type: "checkbox", title: "Tick (x)", checked: state.ticked.has(key), disabled: readOnly, "data-tick": key }),
+      el("span", { class: "ids" }, `${pair.first} → ${pair.second}`),
+      el("span", { class: "texts" }, pair.first_text, el("span", { class: "arrow" }, "→"), pair.second_text),
+    ),
+    el("div", { class: "categories" }, buttons),
+    suggestions,
+    el("div", { class: "pair-foot" },
+      el("div", { class: "certainty" }, state.config.certainty.map((value) => el("button", {
+        type: "button", class: value === cert ? "selected" : "", disabled: readOnly, title: value[0], "data-cert": value,
+      }, value))),
+      el("textarea", { class: "reason", rows: "1", placeholder: "Reason (saved as the justification)", disabled: readOnly, "data-reason": key }, reasonOf(pair)),
+      el("div", { class: "provenance" }, pair.rule ? `${ruleText(pair.rule)}${pair.source === "human" ? " (overridden by a human)" : ""} · ${provenanceText(pair)}` : provenanceText(pair)),
+    ),
+  );
 }
 
 function renderDefinitions() {
@@ -291,6 +312,7 @@ function showStatus(message, isError = false) {
 function applyWrite(result) {
   const updated = Object.fromEntries(result.pairs.map((pair) => [pairKey(pair), pair]));
   state.unit.pairs = state.unit.pairs.map((pair) => updated[pairKey(pair)] || pair);
+  state.unit.rule_pairs = (state.unit.rule_pairs || []).map((pair) => updated[pairKey(pair)] || pair);
   state.unit.progress = result.progress;
   state.unit.status = result.status;
   for (const key of Object.keys(updated)) {
@@ -304,7 +326,11 @@ async function write(path, body, message) {
     const result = await api(path, body);
     applyWrite(result);
     state.ticked.clear();
-    render();
+    if (state.unit.rule_pairs?.length) {
+      await loadUnit(state.unit.id, { keepFocus: true });  // the rules may have updated labels derived from this pair
+    } else {
+      render();
+    }
     showStatus(message);
     return true;
   } catch (error) {
@@ -319,7 +345,7 @@ async function write(path, body, message) {
 }
 
 function targets() {
-  return targetPairs(state.unit.pairs, state.focused, state.ticked);
+  return targetPairs(visible(), state.focused, state.ticked);
 }
 
 async function chooseCategory(name) {
@@ -327,13 +353,13 @@ async function chooseCategory(name) {
   if (!pairs.length || state.config.read_only) return;
   const single = pairs.length === 1;
   const category = single ? categoryClick(pairs[0].category, name).category : (pairs.every((pair) => pair.category === name) ? null : name);
-  const focusedPair = state.unit.pairs[state.focused];
+  const focusedPair = visible()[state.focused];
   const reasonSource = single ? pairs[0] : (pairs.includes(focusedPair) ? focusedPair : null);
   const justification = reasonSource ? reasonOf(reasonSource) : "";
   const cert = certaintyOf(single ? pairs[0] : focusedPair);
   const saved = await write("/api/label", labelRequest(state.unit.id, pairs, category, cert, justification),
     category ? `Saved ${category}${single ? "" : ` for ${pairs.length} pairs`}` : "Cleared");
-  if (saved && single && category && state.focused < state.unit.pairs.length - 1) {
+  if (saved && single && category && state.focused < visible().length - 1) {
     moveFocus(1);
   }
 }
@@ -351,13 +377,13 @@ async function chooseCertainty(value) {
 }
 
 async function saveReason(key) {
-  const pair = state.unit.pairs.find((candidate) => pairKey(candidate) === key);
+  const pair = visible().find((candidate) => pairKey(candidate) === key);
   if (!pair || !pair.category || !(key in state.reasons) || state.reasons[key] === pair.reason) return;
   await write("/api/label", labelRequest(state.unit.id, [pair], pair.category, certaintyOf(pair), state.reasons[key]), "Reason saved");
 }
 
 function moveFocus(delta) {
-  const count = state.unit?.pairs.length || 0;
+  const count = visible().length;
   if (!count) return;
   state.focused = Math.max(0, Math.min(count - 1, state.focused + delta));
   for (const panel of document.querySelectorAll(".pair")) {
@@ -418,7 +444,7 @@ function setUpEvents() {
       case "certainty": return chooseCertainty(action.value);
       case "move": return moveFocus(action.delta);
       case "toggle_tick": {
-        const pair = state.unit?.pairs[state.focused];
+        const pair = visible()[state.focused];
         return pair && toggleTick(pairKey(pair));
       }
       case "next_unclassified": return goToUnit(state.unit?.next_unclassified);

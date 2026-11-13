@@ -19,8 +19,9 @@ from typing import Literal
 from lxml import etree as ET
 from pydantic import BaseModel, Field
 
-from .apparatus import Doc, App, Pair, RelationType, tei_tag, unique, relation_provenance
+from .apparatus import Doc, App, Pair, RelationType, tei_tag, unique, relation_provenance, prune_empty_list
 from .notes import resolve_references
+from .rules import SubreadingRule, Parents, Coverage, find_parents, coverage as rule_coverage, RULE_GROUP_TYPE, DEFAULT_SUFFIXES
 
 try:
     import fcntl
@@ -127,6 +128,9 @@ class PairInfo(BaseModel):
     category: str | None = Field(description="Category for the change from active to passive, or null if unclassified.")
     inverse_category: str | None = Field(description="Category on the reverse pair (passive to active).")
     provenance: Provenance | None = None
+    source: Literal["human", "pipeline", "rule"] | None = Field(default=None, description="Who made the current label, if any.")
+    rule: int | None = Field(default=None, description="If a subreading rule covers this pair: 1 (subreading-parent), 2 (sibling subreadings) or 3 (copies the parents' pair). Such pairs are labelled automatically.")
+    rule_parent: list[str] | None = Field(default=None, description="For rule 3: the pair of parent readings whose label is copied.")
 
 
 class NoteReferenceInfo(BaseModel):
@@ -155,10 +159,11 @@ class UnitSummary(BaseModel):
     verse: str
     lemma: str
     reading_count: int
-    pair_count: int = Field(description="Number of unordered pairs of substantive readings to classify.")
+    pair_count: int = Field(description="Number of unordered pairs of substantive readings to classify (excluding pairs covered by subreading rules).")
     classified_count: int
     status: str
     sample_role: str | None = Field(default=None, description="'example' or 'test' if the unit is in the sample.")
+    rule_pair_count: int = Field(default=0, description="Pairs labelled automatically by subreading rules (not counted in pair_count).")
 
 
 class UnitDetail(BaseModel):
@@ -185,11 +190,13 @@ class CategoryCount(BaseModel):
     total: int = Field(description="Number of directed pairs (active → passive) with this category.")
     human: int = Field(description="Of which classified by a human annotator.")
     pipeline: int = Field(description="Of which classified by the rdgai pipeline (tentative).")
+    rule: int = Field(default=0, description="Of which labelled by a subreading rule.")
 
 
 class CategoryCounts(BaseModel):
-    pairs_to_classify: int = Field(description="Unordered pairs of substantive readings in the document.")
+    pairs_to_classify: int = Field(description="Unordered pairs of substantive readings to classify (excluding pairs covered by subreading rules).")
     classified: int = Field(description="Of which classified.")
+    rule_pairs: int = Field(default=0, description="Unordered pairs covered by subreading rules.")
     categories: list[CategoryCount]
 
 
@@ -210,8 +217,9 @@ class SampleProgress(BaseModel):
     role: str
     units: int
     units_classified: int = Field(description="Units whose pairs are all classified.")
-    pairs: int
+    pairs: int = Field(description="Pairs to annotate (excluding pairs covered by subreading rules).")
     pairs_classified: int
+    rule_pairs: int = Field(default=0, description="Pairs labelled automatically by subreading rules.")
 
 
 class SampleUnitStatus(BaseModel):
@@ -220,6 +228,7 @@ class SampleUnitStatus(BaseModel):
     status: str
     pair_count: int
     classified_count: int
+    rule_pair_count: int = 0
 
 
 class SampleInfo(BaseModel):
@@ -256,6 +265,46 @@ class SuggestionResult(BaseModel):
 
 class SuggestionList(BaseModel):
     suggestions: list[SuggestionInfo]
+
+
+class RuleConfig(BaseModel):
+    reading_type: str
+    category: str
+    suffix: str
+
+
+class RuleCount(BaseModel):
+    rule: int = Field(description="1: subreading-parent; 2: sibling subreadings; 3: copies the parents' pair.")
+    covered: int = Field(description="Unordered pairs covered by this rule.")
+    written: int = Field(description="Pairs whose rule label was written or updated.")
+    unchanged: int = Field(description="Pairs whose rule label was already correct.")
+    waiting: int = Field(description="Rule-3 pairs waiting for their parents' pair to be labelled.")
+    human: int = Field(default=0, description="Pairs left alone because a human labelled them.")
+
+
+class RuleReading(BaseModel):
+    unit_id: str
+    reading: str
+    parent: str | None = None
+
+
+class RuleConflict(BaseModel):
+    unit_id: str
+    active: str
+    passive: str
+    label: str = Field(description="The human label (kept).")
+    rule_label: str = Field(description="What the rule would give.")
+    rule: int
+
+
+class RulesReport(BaseModel):
+    rules: list[RuleConfig]
+    counts: list[RuleCount]
+    cleared: int = Field(description="Stale rule labels removed because their parents' pair became unlabelled.")
+    unresolved: list[RuleReading] = Field(description="Typed readings whose parent could not be found (not guessed).")
+    nested: list[RuleReading] = Field(description="Subreadings of subreadings (skipped).")
+    conflicts: list[RuleConflict] = Field(description="Human labels that disagree with the rules (kept).")
+    dry_run: bool
 
 
 class WriteResult(BaseModel):
@@ -342,6 +391,7 @@ class AnnotationStore:
         with self.lock:
             self.doc = Doc(self.path, reading_notes=self.reading_notes)
             self._file_id = self.file_id()
+            self.rules = self.read_rules()
 
     def refresh(self):
         """ Reloads the file if it has been changed by another program (e.g. a second rdgai process). """
@@ -387,6 +437,10 @@ class AnnotationStore:
 
     def save(self):
         with self.lock:
+            # TEI requires at least one <relation> in a <listRelation>: remove emptied lists (also those left by older versions)
+            for list_type in ("transcriptional", "suggestion"):
+                for list_relation in unique(find_elements(self.doc.tree, f".//listRelation[@type='{list_type}']")):
+                    prune_empty_list(list_relation)
             fd, tmp = tempfile.mkstemp(dir=self.path.parent, prefix=f".{self.path.name}.", suffix=".tmp")
             os.close(fd)
             try:
@@ -449,7 +503,7 @@ class AnnotationStore:
         return bool(pair.types) or bool(pair.get_inverse().types)
 
     def status(self, app:App) -> str:
-        pairs = self.substantive_pairs(app)
+        pairs = self.work_pairs(app)
         if not pairs:
             return "nothing_to_classify"
         classified = sum(self.is_classified(pair) for pair in pairs)
@@ -511,6 +565,7 @@ class AnnotationStore:
         relation = pair.relation_element()
         if relation is not None:
             provenance = self.provenance_from_relation(relation)
+        covered = self.coverage_for(pair)
         return PairInfo(
             active=pair.active.n,
             passive=pair.passive.n,
@@ -519,10 +574,13 @@ class AnnotationStore:
             category=" ".join(category) or None,
             inverse_category=" ".join(inverse_category) or None,
             provenance=provenance,
+            source=self.label_source(pair),
+            rule=covered.rule if covered else None,
+            rule_parent=list(covered.parent) if covered and covered.parent else None,
         )
 
     def unit_summary(self, app:App) -> UnitSummary:
-        pairs = self.substantive_pairs(app)
+        pairs = self.work_pairs(app)
         lemma = extract_text(find_element(app.element, ".//lem"))
         return UnitSummary(
             id=str(app),
@@ -533,6 +591,7 @@ class AnnotationStore:
             classified_count=sum(self.is_classified(pair) for pair in pairs),
             status=self.status(app),
             sample_role=self.sample_role(str(app)),
+            rule_pair_count=len(self.rule_pairs(app)),
         )
 
     # -- read operations -----------------------------------------------------------
@@ -671,19 +730,18 @@ class AnnotationStore:
     def category_counts(self) -> CategoryCounts:
         with self.lock:
             self.refresh()
-            counts = {name: CategoryCount(category=name, total=0, human=0, pipeline=0) for name in self.doc.relation_types}
+            counts = {name: CategoryCount(category=name, total=0, human=0, pipeline=0, rule=0) for name in self.doc.relation_types}
             for pair in self.directed_pairs():
+                source = self.label_source(pair)
                 for name in pair.relation_type_names():
-                    count = counts.setdefault(name, CategoryCount(category=name, total=0, human=0, pipeline=0))
+                    count = counts.setdefault(name, CategoryCount(category=name, total=0, human=0, pipeline=0, rule=0))
                     count.total += 1
-                    if self.is_pipeline(pair):
-                        count.pipeline += 1
-                    else:
-                        count.human += 1
-            pairs = [pair for app in self.doc.apps for pair in self.substantive_pairs(app)]
+                    setattr(count, source, getattr(count, source) + 1)
+            pairs = [pair for app in self.doc.apps for pair in self.work_pairs(app)]
             return CategoryCounts(
                 pairs_to_classify=len(pairs),
                 classified=sum(self.is_classified(pair) for pair in pairs),
+                rule_pairs=sum(len(self.rule_pairs(app)) for app in self.doc.apps),
                 categories=list(counts.values()),
             )
 
@@ -753,6 +811,9 @@ class AnnotationStore:
         Returns the number of labels changed.
         """
         pointers = {f"#{old}": f"#{new}" for old, new in mapping.items()}
+        for rule_interp in self.rule_interps():
+            if rule_interp.get("ana") in pointers:
+                rule_interp.set("ana", pointers[rule_interp.get("ana")])
         labels_changed = 0
         for list_type in ("transcriptional", "suggestion"):
             for relation in self.relations_using(set(mapping), list_type):
@@ -884,6 +945,12 @@ class AnnotationStore:
             inverse = relation_type.get_inverse()
             removed = {relation_type.name, inverse.name}
             removed_text = f"'{relation_type.name}'" + (f" and its inverse '{inverse.name}'" if inverse is not relation_type else "")
+            rules_using = [rule.resp_id for rule in self.rules if rule.category in removed]
+            if rules_using and reassign_to is None:
+                raise AnnotationError(
+                    f"Cannot remove {removed_text}: used by subreading rule {', '.join(rules_using)}. "
+                    "Pass reassign_to to move the rule and its labels to another category."
+                )
 
             relations_updated = 0
             dropped_suggestions = 0
@@ -942,6 +1009,256 @@ class AnnotationStore:
                 interp_group.addprevious(ET.Comment(f"\n{guidance}\n"))
             return self.commit_definitions("Updated the guidance.", guidance=guidance)
 
+    # -- subreading rules ----------------------------------------------------------------
+
+    def rule_interps(self) -> list:
+        group = self.rule_group()
+        return unique(find_elements(group, "./interp")) if group is not None else []
+
+    def rule_group(self, create:bool=False):
+        text = find_element(self.doc.tree, ".//text")
+        group = find_element(text, f".//interpGrp[@type='{RULE_GROUP_TYPE}']") if text is not None else None
+        if group is None and create:
+            categories = self.doc.get_interpgrp()
+            group = ET.Element(tei_tag(categories, "interpGrp"), attrib={"type": RULE_GROUP_TYPE})
+            categories.addnext(group)
+        return group
+
+    def read_rules(self) -> list[SubreadingRule]:
+        """ The subreading rules stored in the TEI file. """
+        rules = []
+        for interp in self.rule_interps():
+            reading_type = interp.get("type", "")
+            category = interp.get("ana", "").lstrip("#")
+            suffix = interp.get("n") or DEFAULT_SUFFIXES.get(reading_type, "")
+            if reading_type and category and suffix:
+                rules.append(SubreadingRule(reading_type=reading_type, category=category, suffix=suffix))
+        return rules
+
+    def write_rules(self, rules:list[SubreadingRule]):
+        """ Stores the rules in <interpGrp type="subreading-rules"> next to the category definitions. """
+        group = self.rule_group(create=True)
+        for child in list(group):
+            group.remove(child)
+        for rule in rules:
+            interp = ET.SubElement(group, tei_tag(group, "interp"), attrib={
+                XML_ID: rule.resp_id, "type": rule.reading_type, "ana": f"#{rule.category}", "n": rule.suffix,
+            })
+            interp.text = rule.description()
+
+    def check_rules(self, rules:list[SubreadingRule]):
+        types = [rule.reading_type for rule in rules]
+        if len(set(types)) != len(types):
+            raise AnnotationError("Each reading type can have only one rule.")
+        for rule in rules:
+            self.get_relation_type(rule.category)
+            if not rule.reading_type or not rule.suffix or not re.match(r"^[A-Za-z0-9_.\-]+$", rule.suffix):
+                raise AnnotationError(f"Invalid rule for '{rule.reading_type}': give a reading type and an id suffix (e.g. 'o').")
+
+    def rule_parents(self, app:App, rules:list[SubreadingRule]|None=None) -> Parents:
+        return find_parents(app, self.rules if rules is None else rules)
+
+    def coverage_for(self, pair:Pair, parents:Parents|None=None) -> Coverage|None:
+        if not self.rules and parents is None:
+            return None
+        if self.is_excluded(pair.active) or self.is_excluded(pair.passive):
+            return None
+        parents = parents or self.rule_parents(pair.app)
+        return rule_coverage(pair.active.n, pair.passive.n, parents)
+
+    def rule_pairs(self, app:App) -> list[Pair]:
+        """ Unordered substantive pairs covered by a subreading rule (labelled automatically). """
+        if not self.rules:
+            return []
+        parents = self.rule_parents(app)
+        return [pair for pair in self.substantive_pairs(app) if rule_coverage(pair.active.n, pair.passive.n, parents)]
+
+    def work_pairs(self, app:App) -> list[Pair]:
+        """ Unordered substantive pairs for an annotator (not covered by a subreading rule). """
+        if not self.rules:
+            return self.substantive_pairs(app)
+        parents = self.rule_parents(app)
+        return [pair for pair in self.substantive_pairs(app) if not rule_coverage(pair.active.n, pair.passive.n, parents)]
+
+    @staticmethod
+    def label_source(pair:Pair) -> str|None:
+        relation = pair.relation_element()
+        if relation is None:
+            return None
+        resp = relation.get("resp", "")
+        if resp.startswith("#rule-"):
+            return "rule"
+        if resp == f"#{RDGAI_RESP}":
+            return "pipeline"
+        return "human"
+
+    def is_tentative(self, pair:Pair) -> bool:
+        """ Pipeline labels, and rule labels copied from a pipeline label, are tentative. """
+        source = self.label_source(pair)
+        if source == "pipeline":
+            return True
+        if source == "rule":
+            return bool(self.run_tokens(pair.relation_element()))
+        return False
+
+    @staticmethod
+    def run_tokens(relation) -> list[str]:
+        return [token for token in relation.get("change", "").split() if not token.startswith("#defs-")]
+
+    def reapply_rules(self, app:App):
+        """ Re-applies the stored rules to one unit (after a label in it changed), without saving. """
+        if self.rules:
+            self.apply_rules_to_app(app, self.rules, report=None)
+
+    def apply_rules_to_app(self, app:App, rules:list[SubreadingRule], report:dict|None) -> bool:
+        """ Applies the rules to one unit. Returns True if anything changed. """
+        parents = self.rule_parents(app, rules)
+        by_type = {rule.reading_type: rule for rule in rules}
+        directed = {(pair.active.n, pair.passive.n): pair for pair in app.pairs}
+        changed = False
+        definitions_change = None
+        when = self.now()
+        if report is not None:
+            report["unresolved"].extend(RuleReading(unit_id=str(app), reading=reading) for reading in parents.unresolved)
+            report["nested"].extend(RuleReading(unit_id=str(app), reading=reading, parent=parent) for reading, parent in parents.nested)
+
+        for pair in self.substantive_pairs(app):
+            covered = rule_coverage(pair.active.n, pair.passive.n, parents)
+            if covered is None:
+                continue
+            counts = report["counts"][covered.rule] if report is not None else {}
+            if report is not None:
+                counts["covered"] += 1
+            rule = by_type[covered.reading_type]
+            first, second = pair.active.n, pair.passive.n
+
+            # what the rule gives for first -> second
+            run = []
+            if covered.rule == 3:
+                parent_pair = directed[covered.parent]
+                parent_relation = parent_pair.relation_element()
+                if parent_relation is not None:
+                    relation_type = next(iter(sorted(parent_pair.types, key=lambda t: t.name)), None)
+                else:
+                    reverse = directed[(covered.parent[1], covered.parent[0])]
+                    parent_relation = reverse.relation_element()
+                    reverse_type = next(iter(sorted(reverse.types, key=lambda t: t.name)), None)
+                    relation_type = reverse_type.get_inverse() if reverse_type else None
+                if relation_type is None:
+                    desired = None
+                else:
+                    cert = parent_relation.get("cert") or "high"
+                    run = self.run_tokens(parent_relation)
+                    justification = f"Same as {covered.parent[0]} → {covered.parent[1]}; spelling difference ignored."
+                    inverse_justification = f"Same as {covered.parent[1]} → {covered.parent[0]}; spelling difference ignored."
+                    desired = (relation_type, cert, justification, inverse_justification)
+            else:
+                relation_type = self.get_relation_type(rule.category)
+                if covered.rule == 1 and parents.parents.get(first) == second:
+                    relation_type = relation_type.get_inverse()  # subreading -> parent
+                if covered.rule == 1:
+                    subreading = second if parents.parents.get(second) == first else first
+                    article = "an" if covered.reading_type[:1].lower() in "aeiou" else "a"
+                    justification = f"{subreading} is {article} {covered.reading_type} subreading of {parents.parents[subreading]}."
+                else:
+                    justification = f"{first} and {second} are both {covered.reading_type} subreadings of {parents.parents[first]}."
+                desired = (relation_type, "high", justification, justification)
+
+            source = self.label_source(pair)
+            if source == "human":
+                if report is not None:
+                    counts["human"] += 1
+                    current = self.current_category(pair)
+                    if desired is not None and current != desired[0].name:
+                        report["conflicts"].append(RuleConflict(
+                            unit_id=str(app), active=first, passive=second, label=current or "",
+                            rule_label=desired[0].name, rule=covered.rule,
+                        ))
+                continue
+
+            if desired is None:
+                if report is not None:
+                    counts["waiting"] += 1
+                if source == "rule":
+                    pair.clear_types_with_inverse()
+                    changed = True
+                    if report is not None:
+                        report["cleared"] += 1
+                continue
+
+            relation_type, cert, justification, inverse_justification = desired
+            relation = pair.relation_element()
+            inverse_relation = pair.get_inverse().relation_element()
+            resp = f"#{rule.resp_id}"
+            if (
+                source == "rule" and relation is not None and inverse_relation is not None
+                and self.current_category(pair) == relation_type.name
+                and self.current_category(pair.get_inverse()) == relation_type.get_inverse().name
+                and relation.get("resp") == resp and relation.get("cert") == cert
+                and relation_provenance(relation)["justification"] == justification
+                and self.run_tokens(relation) == run
+            ):
+                if report is not None:
+                    counts["unchanged"] += 1
+                continue
+
+            if definitions_change is None:
+                definitions_change = self.ensure_definitions_change()
+            pair.set_type_with_inverse(
+                relation_type,
+                responsible=resp,
+                cert=cert,
+                description=justification,
+                inverse_description=inverse_justification,
+                change=self.change_pointers(*run, definitions_change),
+                when=when,
+            )
+            changed = True
+            if report is not None:
+                counts["written"] += 1
+        return changed
+
+    def apply_rules(self, rules:list[SubreadingRule]|None=None, dry_run:bool=False) -> RulesReport:
+        """
+        Labels the pairs formed by typed subreadings (see rdgai.rules). Rules given here are stored in the file
+        (replacing the stored rules) unless dry_run; otherwise the stored rules are used. Human labels are never
+        changed; those that disagree with a rule are reported as conflicts. Running again changes nothing.
+        """
+        with self.writing():
+            if not dry_run:
+                self.check_writable()
+            self.refresh()
+            rules = list(rules) if rules is not None else list(self.rules)
+            if not rules:
+                raise AnnotationError("No subreading rules configured: give rules, e.g. orthographic=Orthography.")
+            self.check_rules(rules)
+            report = dict(
+                counts={number: dict(covered=0, written=0, unchanged=0, waiting=0, human=0) for number in (1, 2, 3)},
+                cleared=0, unresolved=[], nested=[], conflicts=[],
+            )
+            changed = False
+            if rules != self.rules:
+                self.write_rules(rules)
+                changed = True
+            for app in self.doc.apps:
+                changed = self.apply_rules_to_app(app, rules, report) or changed
+
+            result = RulesReport(
+                rules=[RuleConfig(reading_type=rule.reading_type, category=rule.category, suffix=rule.suffix) for rule in rules],
+                counts=[RuleCount(rule=number, **values) for number, values in report["counts"].items()],
+                cleared=report["cleared"],
+                unresolved=report["unresolved"],
+                nested=report["nested"],
+                conflicts=report["conflicts"],
+                dry_run=dry_run,
+            )
+            if dry_run:
+                self.load()  # discard the changes
+            elif changed:
+                self.save()
+                self.load()
+            return result
+
     # -- sampling -----------------------------------------------------------------------
 
     def load_sample(self) -> Sample|None:
@@ -992,13 +1309,14 @@ class AnnotationStore:
                 if unit.id not in self.doc.id_to_app:
                     raise AnnotationError(f"Sampled unit '{unit.id}' is not in {self.path.name}.")
                 app = self.doc[unit.id]
-                pairs = self.substantive_pairs(app)
+                pairs = self.work_pairs(app)
                 units.append(SampleUnitStatus(
                     id=unit.id,
                     role=unit.role,
                     status=self.status(app),
                     pair_count=len(pairs),
                     classified_count=sum(self.is_classified(pair) for pair in pairs),
+                    rule_pair_count=len(self.rule_pairs(app)),
                 ))
 
             progress = []
@@ -1010,6 +1328,7 @@ class AnnotationStore:
                     units_classified=sum(unit.status == "classified" for unit in members),
                     pairs=sum(unit.pair_count for unit in members),
                     pairs_classified=sum(unit.classified_count for unit in members),
+                    rule_pairs=sum(unit.rule_pair_count for unit in members),
                 ))
 
             return SampleInfo(
@@ -1218,6 +1537,7 @@ class AnnotationStore:
                     change=change_attr,
                     when=when,
                 )
+            self.reapply_rules(app)
             self.save()
             return self.write_results(app, pair_objects)
 
@@ -1275,6 +1595,7 @@ class AnnotationStore:
                     tokens = [token for token in relation.attrib.get("change", "").split() if not token.startswith("#defs-")]
                     relation.set("change", self.change_pointers(*tokens, definitions_change))
                     self.stamp(relation, when)
+            self.reapply_rules(app)
             self.save()
             return self.write_results(app, pair_objects)
 
@@ -1298,6 +1619,7 @@ class AnnotationStore:
             pair = self.get_pair(app, active, passive)
             self.check_expected([pair], {(active, passive): expected_category})
             pair.clear_types_with_inverse()
+            self.reapply_rules(app)
             self.save()
             return self.write_results(app, [pair])[0]
 
@@ -1313,6 +1635,7 @@ class AnnotationStore:
             self.check_expected(pair_objects, expected or {})
             for pair in pair_objects:
                 pair.clear_types_with_inverse()
+            self.reapply_rules(app)
             self.save()
             return self.write_results(app, pair_objects)
 

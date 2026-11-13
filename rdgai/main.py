@@ -266,6 +266,69 @@ def serve_mcp(
 
 
 @app.command()
+def apply_rules(
+    doc:Path=typer.Argument(..., help="The TEI XML document."),
+    rule:list[str]=typer.Option(None, "--rule", help="Reading type and category, e.g. orthographic=Orthography (repeatable). Replaces the rules stored in the file."),
+    suffix:list[str]=typer.Option(None, "--suffix", help="Reading type and id suffix, e.g. orthographic=o (repeatable). Defaults: orthographic o, defective f."),
+    dry_run:bool=typer.Option(False, "--dry-run", help="Report what would change without saving."),
+    inplace:bool=typer.Option(False, "--inplace", "-i", help="Modify the document in place."),
+    output:Path=typer.Option(None, "--output", "-o", help="Write the result to this file instead."),
+    ignore_types:list[str]=typer.Option(["defective"], "--ignore-type", help="Readings of this @type are not classified (repeatable). Defaults to defective."),
+    reading_notes:bool=typer.Option(True, help="Treat text in parentheses in readings as notes, not reading text."),
+):
+    """
+    Labels the pairs formed by typed subreadings (e.g. ECM orthographic readings 'ao', 'ao1' of reading 'a') by rule:
+    subreading-parent and sibling subreadings get the mapped category; other pairs copy their parents' pair.
+    Human labels are never changed. Running it again changes nothing.
+    """
+    import shutil
+    from .annotation import AnnotationStore, AnnotationError
+    from .rules import build_rules, parse_assignments
+
+    if not dry_run:
+        if inplace and output:
+            raise typer.BadParameter("Use either --inplace or --output, not both.")
+        if not inplace and not output:
+            raise typer.BadParameter("Give --inplace, --output FILE or --dry-run.")
+    target = doc
+    if output and not dry_run:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy(doc, output)
+        target = output
+    try:
+        store = AnnotationStore(target, ignore_types=ignore_types, reading_notes=reading_notes, check_sample=False)
+        rules = build_rules(store.rules, parse_assignments(rule, "--rule"), parse_assignments(suffix, "--suffix"))
+        report = store.apply_rules(rules, dry_run=dry_run)
+    except (AnnotationError, ValueError) as error:
+        error_console.print(str(error))
+        raise typer.Exit(code=1)
+
+    names = {1: "subreading ↔ parent", 2: "sibling subreadings", 3: "copies the parents' pair"}
+    if dry_run:
+        typer.echo("Dry run: nothing was saved.")
+    typer.echo("Rules: " + ", ".join(f"{item.reading_type} → {item.category} (suffix '{item.suffix}')" for item in report.rules))
+    for count in report.counts:
+        line = f"Rule {count.rule} ({names[count.rule]}): {count.covered} pairs: {count.written} written, {count.unchanged} unchanged"
+        if count.rule == 3:
+            line += f", {count.waiting} waiting for their parents' pair"
+        if count.human:
+            line += f", {count.human} kept (labelled by a human)"
+        typer.echo(line)
+    if report.cleared:
+        typer.echo(f"Stale rule labels removed: {report.cleared}")
+    if report.unresolved:
+        typer.echo("Unresolved parents: " + "; ".join(f"{item.unit_id} {item.reading}" for item in report.unresolved))
+    if report.nested:
+        typer.echo("Nested subreadings: " + "; ".join(f"{item.unit_id} {item.reading} (of {item.parent})" for item in report.nested))
+    if report.conflicts:
+        typer.echo(f"Conflicts (human labels kept): {len(report.conflicts)}")
+        for conflict in report.conflicts:
+            typer.echo(f"  {conflict.unit_id} {conflict.active} → {conflict.passive}: {conflict.label} (rule {conflict.rule} gives {conflict.rule_label})")
+    if not dry_run:
+        typer.echo(f"Saved to {target}")
+
+
+@app.command()
 def annotate(
     doc:Path=typer.Argument(..., help="The TEI XML document. It is modified in place when classifications are saved."),
     port:int=typer.Option(8765, help="Port for the GUI."),

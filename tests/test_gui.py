@@ -158,7 +158,7 @@ def test_unit_view(client):
     assert data["prev"] == "Mark.1.1.10"
     assert data["next"] == "Mark.1.2.2"
     assert data["next_unclassified"] == "Mark.1.2.2"
-    assert data["progress"] == {"pairs_done": 0, "pairs_total": 15}
+    assert data["progress"] == {"pairs_done": 0, "pairs_total": 15, "rule_pairs": 0}
     assert data["context"] == {"before": "αρχη του ευαγγελιου ιησου χριστου", "lemma": "υιου του θεου", "after": ""}
 
     readings = {reading["id"]: reading for reading in data["readings"]}

@@ -53,6 +53,22 @@ def relation_provenance(relation:Element) -> dict:
     )
 
 
+def prune_empty_list(list_relation:Element|None):
+    """
+    Removes a <listRelation> with no <relation> left (TEI requires at least one), and its <note> if that is now empty.
+    """
+    if list_relation is None or len(list_relation) > 0:
+        return
+    parent = list_relation.getparent()
+    if parent is None:
+        return
+    parent.remove(list_relation)
+    if ET.QName(parent).localname == "note" and len(parent) == 0 and not (parent.text or "").strip():
+        grandparent = parent.getparent()
+        if grandparent is not None:
+            grandparent.remove(parent)
+
+
 def tei_tag(reference:Element, tag:str) -> str:
     """ Returns the tag name in the same namespace as the reference element. """
     namespace = ET.QName(reference).namespace
@@ -328,7 +344,9 @@ class Pair():
             relation_type.pairs.discard(self)
         self.types = set()
         for relation in self.relation_elements():
-            relation.getparent().remove(relation)
+            list_relation = relation.getparent()
+            list_relation.remove(relation)
+            prune_empty_list(list_relation)
 
     def clear_types_with_inverse(self):
         self.clear_types()

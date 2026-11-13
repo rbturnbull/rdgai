@@ -64,3 +64,21 @@ export function labelRequest(unitId, pairs, category, cert, justification) {
 export function certaintyRequest(unitId, pairs, cert) {
   return { unit_id: unitId, pairs: pairs.map((pair) => [pair.first, pair.second]), cert };
 }
+
+// Pairs that j/k move through: rule pairs only when their (collapsed) section is expanded.
+export function visiblePairs(unit, showRules) {
+  return [...(unit.pairs || []), ...(showRules ? unit.rule_pairs || [] : [])];
+}
+
+export function progressText(progress) {
+  const text = `${progress.pairs_done} / ${progress.pairs_total} pairs`;
+  return progress.rule_pairs ? `${text} · ${progress.rule_pairs} by rule` : text;
+}
+
+// Where a rule pair's label comes from.
+export function ruleText(rule) {
+  if (rule.rule === 1) return "By rule: subreading and parent";
+  if (rule.rule === 2) return "By rule: subreadings of the same reading";
+  const parent = `${rule.parent[0]} → ${rule.parent[1]}`;
+  return rule.waiting ? `By rule: waiting for ${parent} to be labelled` : `By rule: same as ${parent}`;
+}

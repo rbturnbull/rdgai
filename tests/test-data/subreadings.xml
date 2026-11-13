@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+  <teiHeader>
+    <fileDesc>
+      <titleStmt>
+        <title>Typed subreadings</title>
+      </titleStmt>
+      <publicationStmt>
+        <p>Test file</p>
+      </publicationStmt>
+      <sourceDesc>
+        <listWit>
+          <witness n="A"/><witness n="B"/><witness n="C"/><witness n="D"/><witness n="E"/><witness n="F"/>
+          <witness n="G"/><witness n="H"/><witness n="I"/><witness n="J"/><witness n="K"/><witness n="L"/>
+        </listWit>
+      </sourceDesc>
+    </fileDesc>
+  </teiHeader>
+  <text xml:lang="grc">
+    <interpGrp type="transcriptional">
+      <interp xml:id="Orthography">Only the spelling differs.</interp>
+      <interp xml:id="Minor_Addition" corresp="#Minor_Omission">The second reading adds a minor word.</interp>
+      <interp xml:id="Minor_Omission" corresp="#Minor_Addition">The second reading omits a minor word.</interp>
+      <interp xml:id="Major_Addition" corresp="#Major_Omission">The second reading adds words that change the meaning.</interp>
+      <interp xml:id="Major_Omission" corresp="#Major_Addition">The second reading omits words that change the meaning.</interp>
+      <interp xml:id="Minor_Substitution">Different words, same meaning.</interp>
+      <interp xml:id="Major_Substitution">Different words, different meaning.</interp>
+    </interpGrp>
+    <body>
+      <ab>
+        <w>ο</w>
+        <app xml:id="Mark.1.1.2">
+          <lem>θελω</lem>
+          <rdg n="a" wit="A B C D E">θελω</rdg>
+          <rdg n="ao1" type="orthographic" wit="F G">εθελω</rdg>
+          <rdg n="ao2" type="orthographic" wit="H">θελλω</rdg>
+          <rdg n="b" wit="I J">λεγω</rdg>
+          <rdg n="bo" type="orthographic" wit="K">λεγο</rdg>
+          <rdg n="c" wit="L"/>
+        </app>
+        <w>ποιειν</w>
+      </ab>
+      <ab>
+        <app xml:id="Mark.1.1.6">
+          <lem>και</lem>
+          <rdg n="a" wit="A B">και</rdg>
+          <rdg n="ax" type="orthographic" wit="C">κε</rdg>
+          <rdg n="b" wit="D"/>
+        </app>
+      </ab>
+      <ab>
+        <app xml:id="Mark.1.1.8">
+          <lem>ειπεν</lem>
+          <rdg n="a" wit="A B C">ειπεν</rdg>
+          <rdg n="ao" type="orthographic" wit="D">ειπε</rdg>
+          <rdg n="aoo1" type="orthographic" wit="E">ειπαι</rdg>
+          <rdg n="b" wit="F">λεγει</rdg>
+        </app>
+      </ab>
+      <ab>
+        <app xml:id="Mark.1.1.10">
+          <lem>ευθυς</lem>
+          <rdg n="a" wit="A B">ευθυς</rdg>
+          <rdg n="b" wit="C">ευθεως</rdg>
+          <rdg n="bf" type="defective" wit="D">ευθεω</rdg>
+        </app>
+      </ab>
+      <ab>
+        <app xml:id="Mark.1.1.12">
+          <lem>αυτου</lem>
+          <rdg n="a" wit="A B">αυτου</rdg>
+          <rdg n="b" wit="C">αυτων</rdg>
+        </app>
+      </ab>
+    </body>
+  </text>
+</TEI>

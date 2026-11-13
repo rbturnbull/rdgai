@@ -229,6 +229,44 @@ Classifications made by an automated run have ``resp="#rdgai"`` and also point t
 happened and which model it used.
 
 
+Subreading rules
+==================================
+
+ECM apparatuses type some readings as subreadings of another: e.g. orthographic readings ``ao``, ``ao1``, ``ao2`` are
+spellings of reading ``a``. If these readings are kept in the analysis (no ``-t orthographic`` in teiphy), the pairs
+they form can be labelled by rule, with no LLM call and no human decision:
+
+1. subreading ↔ its parent (``a``–``ao``): the mapped category, e.g. Orthography;
+2. two subreadings of the same parent and type (``ao1``–``ao2``): the mapped category;
+3. subreading ↔ anything else (``ao``–``b``, ``ao``–``bo``): the label of the parents' pair (``a``–``b``), in the same
+   direction, because the categories ignore spelling. Such a pair waits until its parents' pair is labelled; a copy of a
+   tentative (pipeline) label is tentative too.
+
+.. code-block:: bash
+
+    rdgai apply-rules doc.xml --rule orthographic=Orthography --inplace      # or --dry-run, or -o out.xml
+
+A subreading's parent is its id without the suffix (``o`` for orthographic, ``f`` for defective; change with
+``--suffix orthographic=o``) and any digits after it. Readings whose parent cannot be found, and subreadings of
+subreadings, are reported and skipped. Human labels are never changed: those that disagree with a rule are reported
+as conflicts. Pipeline labels on rule pairs are replaced, since the rules are more reliable. Running it again changes nothing.
+
+The rules are stored in the file, next to the category definitions, and re-applied to a unit whenever a label in it
+changes (from the GUI, MCP or the pipeline), so a label copied under rule 3 always follows its parents' pair:
+
+.. code-block:: xml
+
+    <interpGrp type="subreading-rules">
+      <interp xml:id="rule-orthographic" type="orthographic" ana="#Orthography" n="o">Readings of type 'orthographic' are …</interp>
+    </interpGrp>
+
+``@type`` is the reading type, ``@ana`` the category and ``@n`` the id suffix. Rule labels are ordinary relations in
+``<listRelation type="transcriptional">`` (so teiphy uses them) with ``resp="#rule-orthographic"``, pointing to the rule.
+Pairs covered by a rule are not annotation work: they are left out of the pairs to classify, unit status, sample
+progress and the evaluation scores, and are shown in a collapsed section in the GUI, where they can be overridden.
+The MCP tool ``apply_rules`` does the same as the command.
+
+
 Annotation GUI
 ==================================
 

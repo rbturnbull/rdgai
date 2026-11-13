@@ -118,6 +118,7 @@ def test_list_units(store):
         "classified_count": 0,
         "status": "unclassified",
         "sample_role": None,
+        "rule_pair_count": 0,
     }
 
 
@@ -191,6 +192,9 @@ def test_get_unit(store):
         "category": None,
         "inverse_category": None,
         "provenance": None,
+        "source": None,
+        "rule": None,
+        "rule_parent": None,
     }
     assert data["status"] == "unclassified"
 
@@ -352,7 +356,7 @@ def test_tool_list(store):
     assert list_tool_names(build_server(store)) == [
         "get_definitions", "list_units", "get_unit", "category_counts", "list_category", "get_sample", "get_suggestions",
         "update_category", "add_category", "remove_category", "update_guidance",
-        "draw_sample", "suggest_classification", "set_classification", "clear_classification",
+        "draw_sample", "apply_rules", "suggest_classification", "set_classification", "clear_classification",
     ]
 
 
@@ -510,9 +514,9 @@ def test_category_counts(store):
     counts = {count["category"]: count for count in data["categories"]}
     assert data["classified"] == 3
     assert data["pairs_to_classify"] == sum(unit.pair_count for unit in store.list_units(limit=500).units)
-    assert counts["Major_Omission"] == {"category": "Major_Omission", "total": 1, "human": 1, "pipeline": 0}
+    assert counts["Major_Omission"] == {"category": "Major_Omission", "total": 1, "human": 1, "pipeline": 0, "rule": 0}
     assert counts["Major_Addition"]["total"] == 1
-    assert counts["Minor_Omission"] == {"category": "Minor_Omission", "total": 1, "human": 0, "pipeline": 1}
+    assert counts["Minor_Omission"] == {"category": "Minor_Omission", "total": 1, "human": 0, "pipeline": 1, "rule": 0}
     assert counts["Major_Substitution"]["total"] == 2  # self-inverse: both directions
     assert counts["Transposition"]["total"] == 0
 
@@ -756,3 +760,31 @@ def test_sample_ignore_types_must_match(mark_path):
     result = CliRunner().invoke(app, ["sample", str(mark_path), "-n", "3", "--seed", "0", "--ignore-type", "orthographic", "--overwrite"])
     assert result.exit_code == 0, result.output
     assert AnnotationStore(mark_path, ignore_types=["orthographic"]).load_sample().ignore_types == ["orthographic"]
+
+
+def empty_lists(path):
+    from lxml import etree as ET
+    tree = ET.parse(str(path))
+    tei = "{http://www.tei-c.org/ns/1.0}"
+    lists = [element for element in tree.iter(f"{tei}listRelation") if len(element) == 0]
+    notes = [element for element in tree.iter(f"{tei}note") if len(element) == 0 and not (element.text or "").strip()]
+    return lists, notes
+
+
+def test_clearing_leaves_no_empty_lists(store, mark_path):
+    """ TEI requires at least one <relation> in a <listRelation>, so emptied lists (and their notes) are removed. """
+    store.set_classification("Mark.1.1.10", "a", "b", "Major_Omission")
+    store.clear_classification("Mark.1.1.10", "a", "b")
+    assert empty_lists(mark_path) == ([], [])
+
+
+def test_saving_removes_empty_lists_left_by_older_versions(store, mark_path):
+    store.set_classification("Mark.1.1.10", "a", "b", "Major_Omission")
+    # simulate an older version that left an empty list behind
+    app = store.get_app("Mark.1.1.10")
+    for relation in app.pairs[0].relation_elements() + app.pairs[1].relation_elements():
+        relation.getparent().remove(relation)
+    store.save()
+    store.load()
+    store.set_classification("Mark.1.2.2", "a", "b", "Minor_Substitution")
+    assert empty_lists(mark_path) == ([], [])

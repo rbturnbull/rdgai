@@ -75,3 +75,24 @@ test("requests carry the categories the page last saw, so stale writes are refus
   });
   assert.deepEqual(certaintyRequest("Mark.1.1.10", [pairs[1]], "low"), { unit_id: "Mark.1.1.10", pairs: [["a", "c"]], cert: "low" });
 });
+
+import { visiblePairs, progressText, ruleText } from "../../rdgai/gui/static/logic.js";
+
+test("rule pairs are only navigable when their section is expanded", () => {
+  const unit = { pairs: [{ first: "a", second: "b" }], rule_pairs: [{ first: "a", second: "ao" }] };
+  assert.deepEqual(visiblePairs(unit, false), [unit.pairs[0]]);
+  assert.deepEqual(visiblePairs(unit, true), [unit.pairs[0], unit.rule_pairs[0]]);
+  assert.deepEqual(visiblePairs({ pairs: [] }, true), []);
+});
+
+test("progress shows the pairs to annotate and those labelled by rule", () => {
+  assert.equal(progressText({ pairs_done: 1, pairs_total: 3, rule_pairs: 12 }), "1 / 3 pairs · 12 by rule");
+  assert.equal(progressText({ pairs_done: 0, pairs_total: 15, rule_pairs: 0 }), "0 / 15 pairs");
+});
+
+test("rule pairs explain where their label comes from", () => {
+  assert.equal(ruleText({ rule: 1, parent: null, waiting: false }), "By rule: subreading and parent");
+  assert.equal(ruleText({ rule: 2, parent: null, waiting: false }), "By rule: subreadings of the same reading");
+  assert.equal(ruleText({ rule: 3, parent: ["a", "b"], waiting: false }), "By rule: same as a → b");
+  assert.equal(ruleText({ rule: 3, parent: ["a", "c"], waiting: true }), "By rule: waiting for a → c to be labelled");
+});

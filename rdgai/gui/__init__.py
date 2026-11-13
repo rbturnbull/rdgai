@@ -143,6 +143,13 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None) -> Starlett
             reason = max(suggestions, key=lambda suggestion: suggestion.when).justification
         else:
             reason = ""
+        rule = None
+        if info.rule is not None:
+            waiting = False
+            if info.rule == 3:
+                parent = store.get_pair(app, *info.rule_parent)
+                waiting = parent.relation_element() is None and parent.get_inverse().relation_element() is None
+            rule = dict(rule=info.rule, parent=info.rule_parent, waiting=waiting)
         return dict(
             first=pair.active.n,
             second=pair.passive.n,
@@ -151,13 +158,19 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None) -> Starlett
             category=info.category,
             inverse_category=info.inverse_category,
             provenance=info.provenance.model_dump() if info.provenance else None,
+            source=info.source,
+            rule=rule,
             suggestions=[suggestion.model_dump() for suggestion in suggestions],
             reason=reason,
         )
 
     def progress(app) -> dict:
-        pairs = store.substantive_pairs(app)
-        return dict(pairs_done=sum(store.is_classified(pair) for pair in pairs), pairs_total=len(pairs))
+        pairs = store.work_pairs(app)
+        return dict(
+            pairs_done=sum(store.is_classified(pair) for pair in pairs),
+            pairs_total=len(pairs),
+            rule_pairs=len(store.rule_pairs(app)),
+        )
 
     def next_unclassified(apps:list, current_id:str) -> str|None:
         ids = [str(app) for app in apps]
@@ -221,6 +234,7 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None) -> Starlett
                 else:
                     position, prev_id, next_id = None, None, (ids[0] if ids else None)
                 detail = store.get_unit(unit_id)
+                ordered = store.ordered_pairs(app)
                 return JSONResponse(dict(
                     id=unit_id,
                     verse=detail.verse,
@@ -234,7 +248,8 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None) -> Starlett
                     context=dict(before=app.text_before(), lemma=app.text(), after=app.text_after()),
                     readings=[reading.model_dump() for reading in detail.readings],
                     lacunose_witnesses=detail.lacunose_witnesses,
-                    pairs=[pair_payload(app, pair, role) for pair in store.ordered_pairs(app)],
+                    pairs=[pair_payload(app, pair, role) for pair in ordered if store.coverage_for(pair) is None],
+                    rule_pairs=[pair_payload(app, pair, role) for pair in ordered if store.coverage_for(pair) is not None],
                     filters=filters,
                 ))
         except AnnotationError as error:

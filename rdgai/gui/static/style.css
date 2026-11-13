@@ -212,3 +212,15 @@ main { max-width: 1100px; margin: 0 auto; padding: 12px 16px 80px; }
   .categories { grid-auto-columns: minmax(100px, 1fr); }
   .pair-foot { grid-template-columns: 1fr; }
 }
+
+.rule-section { margin-top: 6px; }
+.rule-section > summary { cursor: pointer; padding: 6px 2px; color: var(--muted); }
+.rule-section > .pair { margin-top: 10px; }
+.pair.rule-pair { color: var(--muted); border-style: dashed; }
+.pair.rule-pair .pair-head .texts { color: var(--muted); }
+.pair.rule-pair .categories button.current {
+  background: var(--panel);
+  color: var(--fg);
+  border: 1px dashed var(--muted);
+  font-weight: 600;
+}

@@ -71,6 +71,7 @@ def evaluate_docs(
         print("No rdgai relations found in predicted document.")
         return
 
+    excluded_rule_pairs = 0
     for pair in pairs:
         # find app
         app = pair.app
@@ -91,6 +92,11 @@ def evaluate_docs(
         
         # exclude any classified with rdgai
         if ground_truth_pair.rdgai_responsible():
+            continue
+
+        # exclude pairs labelled by a subreading rule: they are not decisions, and would inflate the scores
+        if ground_truth_relation.attrib.get("resp", "").startswith("#rule-"):
+            excluded_rule_pairs += 1
             continue
 
         ground_truth_types = ground_truth_pair.relation_type_names()
@@ -118,6 +124,8 @@ def evaluate_docs(
         predicted.append(" ".join(sorted(predicted_types)))
         gold.append(" ".join(sorted(ground_truth_types)))
 
+    if excluded_rule_pairs:
+        print(f"Excluded {excluded_rule_pairs} rule-labelled pairs from the evaluation.")
     print(len(predicted), len(gold))
     assert len(predicted) == len(gold), f"Predicted and gold lengths do not match: {len(predicted)} != {len(gold)}"
 

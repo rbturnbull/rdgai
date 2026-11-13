@@ -15,6 +15,7 @@ from .annotation import (
     AnnotationError,
     AnnotationStore,
     CategoryCounts,
+    RulesReport,
     DefinitionsChange,
     SampleFilter,
     SampleInfo,
@@ -39,6 +40,10 @@ Workflow:
    The only context is the verse given.
 4. Use set_classification to record a category for a pair. Its inverse is set automatically, so classify
    each unordered pair once. A new classification replaces the old one.
+
+Pairs formed by typed subreadings (e.g. orthographic readings 'ao', 'ao1' of reading 'a') are labelled
+automatically by subreading rules (source 'rule'; see apply_rules) and are not counted as work: do not
+classify them unless the annotator wants to override one.
 
 Annotating the sample: get_sample shows progress; list_units(sample='sampled', status='unclassified')
 gives the next units in document order. Work through one unit at a time.
@@ -219,6 +224,26 @@ def build_server(store:AnnotationStore) -> MCPServer:
             """
             with tool_errors():
                 return store.draw_sample(size=size, seed=seed, test_fraction=test_fraction, max_pairs=max_pairs, overwrite=overwrite)
+
+        @server.tool(annotations=write)
+        def apply_rules(
+            rules: Annotated[dict[str, str] | None, Field(description="Reading type -> category, e.g. {'orthographic': 'Orthography'}. Replaces the rules stored in the file. Omit to use the stored rules.")] = None,
+            suffixes: Annotated[dict[str, str] | None, Field(description="Reading type -> id suffix, e.g. {'orthographic': 'o'} ('ao2' is a subreading of 'a'). Defaults: orthographic 'o', defective 'f'.")] = None,
+            dry_run: Annotated[bool, Field(description="Report what would change without saving.")] = False,
+        ) -> RulesReport:
+            """
+            Labels the pairs formed by typed subreadings (e.g. orthographic readings 'ao', 'ao1' of reading 'a'):
+            subreading-parent and sibling subreadings get the mapped category; any other pair with a subreading copies
+            the label of its parents' pair (waiting if that is unlabelled). Human labels are never changed; those that
+            disagree are reported as conflicts. The rules are re-applied automatically whenever a label in a unit changes.
+            """
+            from .rules import build_rules
+            with tool_errors():
+                try:
+                    rule_list = build_rules(store.rules, rules, suffixes)
+                except ValueError as error:
+                    raise AnnotationError(str(error))
+                return store.apply_rules(rule_list, dry_run=dry_run)
 
         @server.tool(annotations=write)
         def suggest_classification(
