@@ -199,6 +199,13 @@ The sample is saved to ``doc.sample.yaml`` next to the TEI file (the TEI file is
 Use ``--max-pairs`` to leave out units with very many readings. ``list_units`` with ``sample="sampled"`` and
 ``status="unclassified"`` lists the sampled units still to annotate.
 
+Suggestions on the sample's test units are refused (pass ``allow_test_unit`` to override), since they would leak
+into the evaluation. With ``--evaluation`` (on ``serve-mcp`` or ``annotate``), no tool or GUI view reveals the labels
+or suggestions of test units: they are reported as unlabelled, and labels copied from them by subreading rules are
+hidden too. Test units cannot be changed (the refusal is the same whether a pair is labelled or not), the definitions
+are locked (their hash is reported by ``get_definitions``), and rules cannot be applied or the sample redrawn.
+The labels stay in the file for evaluation.
+
 Classifications are stored where teiphy reads them, with their provenance:
 
 .. code-block:: xml
@@ -297,7 +304,18 @@ Then open ``http://127.0.0.1:8765/``. If the port is in use, the MCP server stil
 - Keys: ``j``/``k`` next/previous pair, ``1``–``9``, ``0`` (and shift + number) categories, ``h``/``m``/``l``
   certainty, ``x`` tick, ``n`` next unit with unclassified pairs, ``?`` help.
 - If a pair was changed elsewhere (e.g. by Claude through MCP) since the page loaded, the save is refused and
-  the unit reloads, so no one's label is overwritten silently.
+  the unit reloads, so no one's label is overwritten silently. The page also checks every few seconds (and on focus)
+  whether the file has changed, and reloads the unit, so suggestions and labels made through MCP appear by themselves.
+- Each pair shows a computed description of the change in display order (e.g. "second reading adds: και"), and a
+  warning if a saved label contradicts it (e.g. an Omission where the second reading only adds words).
+- The reason box starts empty. "Use reason" copies a suggestion's justification into it; if it is saved unchanged,
+  it is recorded as the suggester's wording (``<desc type="justification" resp="#claude">``).
+- Units with more than 10 pairs (``--compact-threshold``) are shown as compact rows grouped by the first reading,
+  with short buttons in the same order and with the same keys. Enter or ``e`` expands a row to the full panel
+  (certainty and reason); "same suggestion" and "same change" tick every pair like the focused one.
+- If two ``serve-mcp`` processes serve the same file (Claude Desktop sometimes starts two), only one gets the GUI port;
+  the other logs this, keeps serving MCP, and takes the port over if it is freed (``--gui-retry-seconds``).
+  Every write reloads the file under a lock first, so neither process overwrites the other's work.
 
 
 Credits

@@ -21,6 +21,7 @@ from pydantic import BaseModel, Field
 
 from .apparatus import Doc, App, Pair, RelationType, tei_tag, unique, relation_provenance, prune_empty_list
 from .notes import resolve_references
+from .diff import describe_change, label_warning
 from .rules import SubreadingRule, Parents, Coverage, find_parents, coverage as rule_coverage, RULE_GROUP_TYPE, DEFAULT_SUFFIXES
 
 try:
@@ -121,6 +122,11 @@ class Provenance(BaseModel):
     definitions_hash: str = Field(default="", description="Hash of the category definitions in force when the label was saved, if recorded.")
 
 
+class ChangeInfo(BaseModel):
+    kind: str = Field(description="identical, addition, omission, reordering or substitution (from a word-level diff).")
+    text: str = Field(description="E.g. 'second reading adds: και'. A reading aid only, never a label.")
+
+
 class PairInfo(BaseModel):
     active: str = Field(description="Identifier of the active (first) reading.")
     passive: str = Field(description="Identifier of the passive (second) reading.")
@@ -132,6 +138,8 @@ class PairInfo(BaseModel):
     source: Literal["human", "pipeline", "rule"] | None = Field(default=None, description="Who made the current label, if any.")
     rule: int | None = Field(default=None, description="If a subreading rule covers this pair: 1 (subreading-parent), 2 (sibling subreadings) or 3 (copies the parents' pair). Such pairs are labelled automatically.")
     rule_parent: list[str] | None = Field(default=None, description="For rule 3: the pair of parent readings whose label is copied.")
+    change: ChangeInfo | None = Field(default=None, description="What changes from the active to the passive reading, from a word-level diff.")
+    warning: str | None = Field(default=None, description="Set if the category clearly contradicts the change (e.g. an Omission where the passive reading only adds words).")
 
 
 class NoteReferenceInfo(BaseModel):
@@ -347,6 +355,8 @@ class AnnotationStore:
         check_sample: Check on loading that an existing sample was drawn with the same ignore_types.
         reading_notes: Split notes in parentheses off reading texts (see rdgai.notes).
         lock_timeout: Seconds to wait for another process's write lock on the file.
+        evaluation: Evaluation mode: no read reveals the labels or suggestions of the sample's test units, test units
+            cannot be changed, and the definitions are locked. Requires a sample.
     """
     def __init__(
         self,
@@ -360,6 +370,7 @@ class AnnotationStore:
         check_sample:bool=True,
         reading_notes:bool=True,
         lock_timeout:float=10.0,
+        evaluation:bool=False,
     ):
         self.path = Path(path)
         if not self.path.exists():
@@ -372,14 +383,19 @@ class AnnotationStore:
         self.annotator = annotator.lstrip("#") if annotator else None
         self.annotator_name = annotator_name
         self.read_only = read_only
-        self.lock_definitions = lock_definitions
+        self.evaluation = evaluation
+        self.lock_definitions = lock_definitions or evaluation
         self.ignore_types = set(ignore_types)
         self.lock = threading.RLock()
         self.doc: Doc
         self._file_id = None
         self.load()
-        if check_sample:
+        if check_sample or evaluation:
             self.load_sample()  # fails early if the sample was drawn with different settings
+        if evaluation and self.load_sample() is None:
+            raise AnnotationError(
+                f"Evaluation mode needs a sample of example and test units ({self.sample_path.name} not found): draw one first."
+            )
 
     # -- loading and saving --------------------------------------------------
 
@@ -499,8 +515,18 @@ class AnnotationStore:
             )
         return self.doc.relation_types[name]
 
-    @staticmethod
-    def is_classified(pair:Pair) -> bool:
+    def hides(self, app:App) -> bool:
+        """ In evaluation mode, nothing about the labels or suggestions of test units is revealed. """
+        return self.evaluation and self.sample_role(str(app)) == "test"
+
+    def check_unit_writable(self, app:App):
+        """ In evaluation mode test units cannot be changed (refused the same way whether labelled or not). """
+        if self.hides(app):
+            raise AnnotationError(f"In evaluation mode, test unit {app} cannot be changed.")
+
+    def is_classified(self, pair:Pair) -> bool:
+        if self.hides(pair.app):
+            return False
         return bool(pair.types) or bool(pair.get_inverse().types)
 
     def status(self, app:App) -> str:
@@ -565,9 +591,13 @@ class AnnotationStore:
         inverse_category = sorted(pair.get_inverse().relation_type_names())
         provenance = None
         relation = pair.relation_element()
+        hidden = self.hides(pair.app)
+        if hidden:
+            category, inverse_category, relation = [], [], None
         if relation is not None:
             provenance = self.provenance_from_relation(relation)
         covered = self.coverage_for(pair)
+        change = describe_change(pair.active.text, pair.passive.text)
         return PairInfo(
             active=pair.active.n,
             passive=pair.passive.n,
@@ -576,9 +606,11 @@ class AnnotationStore:
             category=" ".join(category) or None,
             inverse_category=" ".join(inverse_category) or None,
             provenance=provenance,
-            source=self.label_source(pair),
+            source=None if hidden else self.label_source(pair),
             rule=covered.rule if covered else None,
             rule_parent=list(covered.parent) if covered and covered.parent else None,
+            change=ChangeInfo(kind=change.kind, text=change.text),
+            warning=label_warning(" ".join(category) or None, change),
         )
 
     def unit_summary(self, app:App) -> UnitSummary:
@@ -734,6 +766,8 @@ class AnnotationStore:
             self.refresh()
             counts = {name: CategoryCount(category=name, total=0, human=0, pipeline=0, rule=0) for name in self.doc.relation_types}
             for pair in self.directed_pairs():
+                if self.hides(pair.app):
+                    continue
                 source = self.label_source(pair)
                 for name in pair.relation_type_names():
                     count = counts.setdefault(name, CategoryCount(category=name, total=0, human=0, pipeline=0, rule=0))
@@ -758,7 +792,7 @@ class AnnotationStore:
         with self.lock:
             self.refresh()
             relation_type = self.get_relation_type(category)
-            pairs = [pair for pair in self.directed_pairs() if relation_type in pair.types]
+            pairs = [pair for pair in self.directed_pairs() if relation_type in pair.types and not self.hides(pair.app)]
             if source == "human":
                 pairs = [pair for pair in pairs if not self.is_pipeline(pair)]
             elif source == "pipeline":
@@ -1227,6 +1261,8 @@ class AnnotationStore:
         changed; those that disagree with a rule are reported as conflicts. Running again changes nothing.
         """
         with self.writing():
+            if self.evaluation:
+                raise AnnotationError("Subreading rules cannot be applied in evaluation mode (they would change test units).")
             if not dry_run:
                 self.check_writable()
             self.refresh()
@@ -1359,6 +1395,8 @@ class AnnotationStore:
         The sample is saved to the sidecar file. An existing sample is only replaced if overwrite is True.
         """
         with self.writing():
+            if self.evaluation:
+                raise AnnotationError("The sample cannot be drawn again in evaluation mode (it defines the test units).")
             self.check_writable()
             self.refresh()
             if self.sample_path.exists() and not overwrite:
@@ -1523,6 +1561,7 @@ class AnnotationStore:
                 raise AnnotationError("No pairs given.")
             self.check_cert(cert)
             app = self.get_app(unit_id)
+            self.check_unit_writable(app)
             pair_objects = [self.get_pair(app, active, passive) for active, passive in pairs]
             relation_type = self.get_relation_type(category)
             self.check_expected(pair_objects, expected or {})
@@ -1592,6 +1631,7 @@ class AnnotationStore:
                 raise AnnotationError("No pairs given.")
             self.check_cert(cert)
             app = self.get_app(unit_id)
+            self.check_unit_writable(app)
             pair_objects = [self.get_pair(app, active, passive) for active, passive in pairs]
             unlabelled = [f"{pair.active.n}→{pair.passive.n}" for pair in pair_objects if pair.relation_element() is None]
             if unlabelled:
@@ -1630,6 +1670,7 @@ class AnnotationStore:
             self.check_writable()
             self.refresh()
             app = self.get_app(unit_id)
+            self.check_unit_writable(app)
             pair = self.get_pair(app, active, passive)
             self.check_expected([pair], {(active, passive): expected_category})
             pair.clear_types_with_inverse()
@@ -1645,6 +1686,7 @@ class AnnotationStore:
             if not pairs:
                 raise AnnotationError("No pairs given.")
             app = self.get_app(unit_id)
+            self.check_unit_writable(app)
             pair_objects = [self.get_pair(app, active, passive) for active, passive in pairs]
             self.check_expected(pair_objects, expected or {})
             for pair in pair_objects:
@@ -1747,11 +1789,15 @@ class AnnotationStore:
         source:str="claude",
         cert:str|None=None,
         change:str|None=None,
+        allow_test_unit:bool=False,
     ) -> SuggestionResult:
         """
         Records a suggested category for the change from the active to the passive reading (and the inverse
         for the reverse pair). Suggestions are kept in <listRelation type="suggestion">, separate from labels,
         and replace earlier suggestions from the same source for the pair.
+
+        Suggestions on the sample's test units are refused unless allow_test_unit (they would leak into the
+        evaluation); in evaluation mode they are always refused.
         """
         with self.writing():
             self.check_writable()
@@ -1760,6 +1806,12 @@ class AnnotationStore:
             source = f"{name}:{model}" if model else name
             self.check_cert(cert, optional=True)
             app = self.get_app(unit_id)
+            self.check_unit_writable(app)
+            if self.sample_role(str(app)) == "test" and not allow_test_unit:
+                raise AnnotationError(
+                    f"{app} is a test unit: suggestions there would leak into the evaluation. "
+                    "Pass allow_test_unit to make one anyway."
+                )
             pair = self.get_pair(app, active, passive)
             relation_type = self.get_relation_type(category)
 
@@ -1810,6 +1862,7 @@ class AnnotationStore:
         with self.lock:
             self.refresh()
             apps = [self.get_app(unit_id)] if unit_id else self.doc.apps
+            apps = [app for app in apps if not self.hides(app)]
             if source is not None:
                 name, model = self.parse_source(source)
                 source = f"{name}:{model}" if model else name
@@ -1831,6 +1884,8 @@ class AnnotationStore:
 
     def suggestions_for(self, app:App, pair:Pair) -> list[SuggestionInfo]:
         """ Suggestions for a pair in its direction (no file refresh; for use while rendering a unit). """
+        if self.hides(app):
+            return []
         return [
             self.suggestion_info(app, relation) for relation in self.suggestion_relations(app)
             if (relation.get("active"), relation.get("passive")) == (pair.active.n, pair.passive.n)
@@ -1842,6 +1897,7 @@ class AnnotationStore:
             self.check_writable()
             self.refresh()
             app = self.get_app(unit_id)
+            self.check_unit_writable(app)
             self.get_pair(app, active, passive)
             if source is not None:
                 name, model = self.parse_source(source)

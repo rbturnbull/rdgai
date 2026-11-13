@@ -195,6 +195,8 @@ def test_get_unit(store):
         "source": None,
         "rule": None,
         "rule_parent": None,
+        "change": {"kind": "omission", "text": "second reading omits: του"},
+        "warning": None,
     }
     assert data["status"] == "unclassified"
 

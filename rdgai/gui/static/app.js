@@ -1,5 +1,6 @@
 // The rdgai annotation GUI. Talks to the JSON API in rdgai/gui/__init__.py; pure logic lives in logic.js.
-import { keyAction, categoryClick, targetPairs, pairKey, labelRequest, certaintyRequest, visiblePairs, progressText, ruleText, refreshAction, justificationSource } from "./logic.js";
+import { keyAction, categoryClick, targetPairs, pairKey, labelRequest, certaintyRequest, visiblePairs, progressText, ruleText, refreshAction, justificationSource,
+  isCompact, groupByFirst, sameSuggestion, sameChange } from "./logic.js";
 
 const state = {
   config: null,
@@ -9,6 +10,7 @@ const state = {
   pendingCert: {},   // pairKey -> certainty chosen before a category (unlabelled pairs)
   reasons: {},       // pairKey -> edited reason text not yet saved
   copied: {},        // pairKey -> {text, source} when a suggestion's reason was copied into the reason box
+  expanded: new Set(), // in compact mode: pairKeys of the rows shown as full panels
   filters: {},
   showRules: false,  // whether the section of pairs labelled by rule is expanded
   version: null,     // version token of the file the shown unit was read from
@@ -117,6 +119,7 @@ async function loadUnit(unitId, { keepFocus = false } = {}) {
       state.pendingCert = {};
       state.reasons = {};
       state.copied = {};
+      state.expanded = new Set();
       state.showRules = false;
     }
     state.focused = Math.min(state.focused, Math.max(visible().length - 1, 0));
@@ -232,14 +235,61 @@ function reasonOf(pair) {
   return key in state.reasons ? state.reasons[key] : pair.reason;
 }
 
+function compactMode() {
+  return state.unit ? isCompact(state.unit, state.config.compact_threshold) : false;
+}
+
+// In compact mode a pair is a one-line row unless expanded; otherwise always a full panel.
+function pairView(pair, index) {
+  return compactMode() && !state.expanded.has(pairKey(pair)) ? compactRow(pair, index) : pairPanel(pair, index);
+}
+
+function readingLabel(unit, id) {
+  const reading = unit.readings.find((candidate) => candidate.id === id);
+  return reading ? `${id}: ${reading.text} (${reading.witness_count} witnesses)` : id;
+}
+
+function pairViews(unit, pairs, offset) {
+  if (!compactMode()) return pairs.map((pair, index) => pairView(pair, offset + index));
+  let index = offset;
+  return groupByFirst(pairs).map((group) => el("section", { class: "group" },
+    el("h3", { class: "group-head" }, `From ${readingLabel(unit, group.first)}`),
+    ...group.pairs.map((pair) => pairView(pair, index++)),
+  ));
+}
+
+function compactTools() {
+  const box = el("div", { id: "compact-tools", class: "compact-tools" });
+  updateCompactTools(box);
+  return box;
+}
+
+function updateCompactTools(box = document.getElementById("compact-tools")) {
+  if (!box || !state.unit) return;
+  const pairs = visible();
+  const focused = pairs[state.focused];
+  const bySuggestion = focused ? sameSuggestion(pairs, focused) : [];
+  const byChange = focused ? sameChange(pairs, focused) : [];
+  box.replaceChildren(
+    el("span", { class: "muted" }, "Tick all pairs like the focused one: "),
+    el("button", { type: "button", disabled: !bySuggestion.length, "data-tick-keys": bySuggestion.join(" "),
+      title: focused?.suggestions[0] ? `Suggested ${focused.suggestions[0].category}` : "The focused pair has no suggestion" },
+      `same suggestion (${bySuggestion.length})`),
+    el("button", { type: "button", disabled: !byChange.length, "data-tick-keys": byChange.join(" "),
+      title: focused?.change?.text || "" }, `same change (${byChange.length})`),
+    el("span", { class: "muted" }, " · Enter or e expands a row"),
+  );
+}
+
 function renderPairs(unit) {
-  const panels = unit.pairs.map((pair, index) => pairPanel(pair, index));
+  document.getElementById("main").classList.toggle("wide", compactMode());
   const rulePairs = unit.rule_pairs || [];
-  const children = [...panels];
+  const children = compactMode() ? [compactTools()] : [];
+  children.push(...pairViews(unit, unit.pairs, 0));
   if (rulePairs.length) {
     const details = el("details", { class: "rule-section", open: state.showRules },
       el("summary", {}, `${rulePairs.length} pairs labelled by rule`, el("span", { class: "muted" }, " (subreadings; expand to check or override)")),
-      ...rulePairs.map((pair, index) => pairPanel(pair, unit.pairs.length + index)),
+      ...pairViews(unit, rulePairs, unit.pairs.length),
     );
     details.addEventListener("toggle", () => {
       if (state.showRules === details.open) return;
@@ -249,6 +299,43 @@ function renderPairs(unit) {
     children.push(details);
   }
   $("pairs").replaceChildren(...children);
+}
+
+function compactRow(pair, index) {
+  const readOnly = state.config.read_only;
+  const key = pairKey(pair);
+  const suggestion = pair.suggestions[0];
+  const suggested = new Set(pair.suggestions.map((item) => item.category));
+  const byRule = pair.source === "rule" || (pair.rule && !pair.source);
+  const label = pair.category || (pair.rule ? ruleText(pair.rule).replace("By rule: ", "rule: ") : "—");
+  return el("article", { class: `pair compact${index === state.focused ? " focused" : ""}${byRule ? " rule-pair" : ""}`, "data-index": String(index) },
+    el("input", { type: "checkbox", title: "Tick (x)", checked: state.ticked.has(key), disabled: readOnly, "data-tick": key }),
+    el("span", { class: "ids" }, `${pair.first} → ${pair.second}`),
+    el("div", { class: "row-main" },
+      // the first reading is in the group heading ("From a: …"), so the row shows where it goes to
+      el("div", { class: "texts", title: `${pair.first_text} → ${pair.second_text}` }, el("span", { class: "arrow" }, "→"), pair.second_text),
+      pair.change ? el("div", { class: "change" }, pair.change.text) : null,
+      pair.warning ? el("div", { class: "warning" }, `Check: ${pair.warning}`) : null,
+    ),
+    el("div", { class: "row-label" },
+      el("div", { class: pair.category ? "current-label" : "muted" }, label),
+      suggestion ? el("div", { class: "muted" }, "suggested ", el("strong", {}, suggestion.category)) : null,
+    ),
+    el("div", { class: "mini" }, state.config.buttons.map((button) => el("button", {
+      type: "button",
+      class: [pair.category === button.name ? "current" : "", suggested.has(button.name) ? "suggested" : ""].join(" ").trim(),
+      title: `${button.key ? `${button.key}: ` : ""}${button.name}\n\n${button.description}`,
+      disabled: readOnly,
+      "data-category": button.name,
+    }, button.short || button.name))),
+    el("button", { type: "button", class: "expand", title: "Show the full panel: certainty and reason (Enter)", "data-expand": key }, "More"),
+  );
+}
+
+function toggleExpanded(key) {
+  if (state.expanded.has(key)) state.expanded.delete(key);
+  else state.expanded.add(key);
+  render();
 }
 
 function pairPanel(pair, index) {
@@ -266,8 +353,8 @@ function pairPanel(pair, index) {
 
   const suggestions = pair.suggestions.map((suggestion, suggestionIndex) => el("div", { class: "suggestion muted" },
     `Suggested by ${suggestion.source}: `, el("strong", {}, suggestion.category),
-    suggestion.justification ? ` — ${suggestion.justification} ` : "",
-    suggestion.justification && !readOnly
+    suggestion.justification ? ` — ${suggestion.written_for ? `(written for ${suggestion.written_for[0]} → ${suggestion.written_for[1]}) ` : ""}${suggestion.justification} ` : "",
+    suggestion.justification && !suggestion.written_for && !readOnly  // a reason written for the other direction would not fit
       ? el("button", { type: "button", class: "copy-reason", title: "Copy this reason into the reason box (recorded as copied unless you edit it)", "data-copy-reason": String(suggestionIndex) }, "Use reason")
       : null));
 
@@ -278,8 +365,11 @@ function pairPanel(pair, index) {
       el("input", { type: "checkbox", title: "Tick (x)", checked: state.ticked.has(key), disabled: readOnly, "data-tick": key }),
       el("span", { class: "ids" }, `${pair.first} → ${pair.second}`),
       el("span", { class: "texts" }, pair.first_text, el("span", { class: "arrow" }, "→"), pair.second_text),
+      compactMode() ? el("button", { type: "button", class: "expand", title: "Back to a compact row (Enter)", "data-expand": key }, "Less") : null,
     ),
+    pair.change ? el("div", { class: "change", title: "Computed from the words of the two readings; a reading aid, not a label" }, pair.change.text) : null,
     el("div", { class: "categories" }, buttons),
+    pair.warning ? el("div", { class: "warning", role: "note" }, `Check: ${pair.warning}`) : null,
     suggestions,
     el("div", { class: "pair-foot" },
       el("div", { class: "certainty" }, state.config.certainty.map((value) => el("button", {
@@ -414,6 +504,7 @@ function moveFocus(delta) {
     panel.classList.toggle("focused", Number(panel.dataset.index) === state.focused);
   }
   document.querySelector(`.pair[data-index="${state.focused}"]`)?.scrollIntoView({ block: "nearest" });
+  updateCompactTools();
 }
 
 function toggleTick(key) {
@@ -436,6 +527,11 @@ function togglePanel(id) {
 
 function setUpEvents() {
   $("pairs").addEventListener("click", (event) => {
+    const tickButton = event.target.closest("[data-tick-keys]");
+    if (tickButton) {
+      state.ticked = new Set(tickButton.dataset.tickKeys.split(" ").filter(Boolean));
+      return render();
+    }
     const panel = event.target.closest(".pair");
     if (!panel) return;
     const index = Number(panel.dataset.index);
@@ -446,6 +542,8 @@ function setUpEvents() {
     if (certButton) return chooseCertainty(certButton.dataset.cert);
     const copyButton = event.target.closest("[data-copy-reason]");
     if (copyButton) return copyReason(index, Number(copyButton.dataset.copyReason));
+    const expandButton = event.target.closest("[data-expand]");
+    if (expandButton) return toggleExpanded(expandButton.dataset.expand);
   });
   $("pairs").addEventListener("change", (event) => {
     if (event.target.dataset.tick) toggleTick(event.target.dataset.tick);
@@ -474,6 +572,10 @@ function setUpEvents() {
         return pair && toggleTick(pairKey(pair));
       }
       case "next_unclassified": return goToUnit(state.unit?.next_unclassified);
+      case "expand": {
+        const pair = visible()[state.focused];
+        return pair && compactMode() && toggleExpanded(pairKey(pair));
+      }
       case "help": return togglePanel("help");
       case "leave_text": return document.activeElement?.blur();
     }
@@ -520,7 +622,7 @@ function reloadCurrentUnit() {
 
 async function start() {
   state.config = await api("/api/config");
-  $("file").textContent = state.config.file + (state.config.read_only ? " (read-only)" : "");
+  $("file").textContent = state.config.file + (state.config.read_only ? " (read-only)" : "") + (state.config.evaluation ? " · evaluation mode: test units hidden" : "");
   document.title = `rdgai annotate · ${state.config.file}`;
   if (!state.config.has_sample) {
     for (const value of ["sampled", "example", "test"]) $("queue-sample").querySelector(`option[value="${value}"]`).hidden = true;

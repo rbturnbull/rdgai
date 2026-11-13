@@ -20,6 +20,8 @@ export function keyAction(event, buttons) {
   if (event.shiftKey) return null;
 
   switch (event.key) {
+    case "Enter":
+    case "e": return { type: "expand" };
     case "j": return { type: "move", delta: 1 };
     case "k": return { type: "move", delta: -1 };
     case "n": return { type: "next_unclassified" };
@@ -104,4 +106,34 @@ export function justificationSource(reason, copied) {
 // Labels and suggestions saved for the reverse direction start "Inverse of a → b: "; that is not shown.
 export function displayJustification(text) {
   return (text || "").replace(/^Inverse of \S+ → \S+:\s*/, "");
+}
+
+// Units with more pairs than the threshold are shown as compact rows.
+export function isCompact(unit, threshold) {
+  return (unit.pairs?.length || 0) + (unit.rule_pairs?.length || 0) > threshold;
+}
+
+// Consecutive rows with the same first reading, in display order.
+export function groupByFirst(pairs) {
+  const groups = [];
+  for (const pair of pairs) {
+    const last = groups[groups.length - 1];
+    if (last && last.first === pair.first) last.pairs.push(pair);
+    else groups.push({ first: pair.first, pairs: [pair] });
+  }
+  return groups;
+}
+
+// Keys of the pairs whose (first) suggestion is the same category as the given pair's.
+export function sameSuggestion(pairs, pair) {
+  const category = pair.suggestions?.[0]?.category;
+  if (!category) return [];
+  return pairs.filter((candidate) => candidate.suggestions?.[0]?.category === category).map(pairKey);
+}
+
+// Keys of the pairs whose computed change is described the same way as the given pair's.
+export function sameChange(pairs, pair) {
+  const text = pair.change?.text;
+  if (!text) return [];
+  return pairs.filter((candidate) => candidate.change?.text === text).map(pairKey);
 }

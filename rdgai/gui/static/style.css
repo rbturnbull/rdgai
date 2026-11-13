@@ -226,3 +226,40 @@ main { max-width: 1100px; margin: 0 auto; padding: 12px 16px 80px; }
 }
 
 .suggestion .copy-reason { font-size: 12px; padding: 1px 8px; margin-left: 4px; }
+
+.change { margin: -2px 0 8px 54px; font-size: 13px; color: var(--muted); font-style: italic; }
+.warning { margin-top: 6px; font-size: 13px; color: var(--error); }
+
+/* compact mode */
+.compact-tools { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 13px; padding: 4px 0 2px; }
+.compact-tools button { font-size: 12px; padding: 2px 8px; }
+.group { display: flex; flex-direction: column; gap: 4px; }
+.group-head { font-size: 13px; font-weight: 600; margin: 10px 0 2px; font-family: var(--text-font); }
+main.wide { max-width: 1500px; }
+.pair.compact {
+  display: grid;
+  grid-template-columns: auto 52px minmax(200px, 1fr) minmax(120px, 170px) auto auto;
+  gap: 4px 10px;
+  align-items: center;
+  padding: 4px 8px;
+}
+.pair.compact .ids { color: var(--muted); font-size: 12px; }
+.pair.compact .texts { font-family: var(--text-font); font-size: 15px; }
+.pair.compact .change { margin: 0; font-size: 12px; }
+.pair.compact .warning { margin: 0; font-size: 12px; }
+.row-label { font-size: 12px; }
+.row-label .current-label { font-weight: 600; }
+.mini { display: flex; flex-wrap: nowrap; gap: 3px; }
+.pair.compact .arrow { color: var(--muted); padding-right: 6px; }
+.mini button { font-size: 11px; padding: 1px 5px; border-radius: 4px; }
+.mini button.current { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.mini button.suggested { font-weight: 700; }
+.pair.rule-pair .mini button.current { background: var(--panel); color: var(--fg); border: 1px dashed var(--muted); }
+button.expand { font-size: 12px; padding: 1px 8px; }
+@media (max-width: 1100px) {
+  .mini { flex-wrap: wrap; }
+}
+@media (max-width: 900px) {
+  .pair.compact { grid-template-columns: auto 1fr; }
+  .pair.compact .ids, .pair.compact .row-label, .pair.compact .mini, .pair.compact .expand { grid-column: 2; }
+}

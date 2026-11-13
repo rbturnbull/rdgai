@@ -228,12 +228,15 @@ def serve_mcp(
     annotator_name:str=typer.Option(None, help="Full name of the annotator (used in the <respStmt> added to the TEI header)."),
     read_only:bool=typer.Option(False, help="Disable all tools that change the file."),
     lock_definitions:bool=typer.Option(False, help="Disable the tools that edit the category definitions."),
+    evaluation:bool=typer.Option(False, help="Evaluation mode: no tool reveals the labels or suggestions of the sample's test units, test units cannot be changed, and the definitions are locked."),
     reading_notes:bool=typer.Option(True, help="Treat text in parentheses in readings (e.g. ECM's '(cf. 24b)') as notes, not reading text."),
     ignore_types:list[str]=typer.Option(["defective"], "--ignore-type", help="Readings of this @type are not classified (repeatable). Defaults to defective."),
     sample_file:Path=typer.Option(None, help="Sidecar YAML file for the sample of units (default: <doc>.sample.yaml)."),
     gui_port:int=typer.Option(None, help="Also serve the annotation GUI on this port, in the same process (e.g. 8765)."),
     gui_host:str=typer.Option("127.0.0.1", help="Host for the annotation GUI."),
+    gui_retry_seconds:float=typer.Option(15.0, help="If the GUI port is taken (e.g. by a second process for the same file), try it again this often, so the GUI survives either process exiting (0: never)."),
     group_by_prefix:str=typer.Option(None, help="Lay out the GUI's category buttons in rows by the part of the name before this separator, e.g. '_'."),
+    compact_threshold:int=typer.Option(10, help="In the GUI, show units with more pairs than this as compact rows."),
 ):
     """ Serves an MCP server for querying and classifying the reading pairs in a TEI document. """
     from .annotation import AnnotationStore, AnnotationError
@@ -245,7 +248,7 @@ def serve_mcp(
     try:
         store = AnnotationStore(
             doc, annotator=annotator, annotator_name=annotator_name, read_only=read_only, lock_definitions=lock_definitions,
-            ignore_types=ignore_types, sample_path=sample_file, reading_notes=reading_notes,
+            ignore_types=ignore_types, sample_path=sample_file, reading_notes=reading_notes, evaluation=evaluation,
         )
     except AnnotationError as error:
         error_console.print(str(error))
@@ -257,8 +260,10 @@ def serve_mcp(
         import anyio
         from .gui import create_app
         from .gui.serve import serve_mcp_with_gui
-        gui_app = create_app(store, group_by_prefix=group_by_prefix)
-        anyio.run(lambda: serve_mcp_with_gui(server, gui_app, gui_host, gui_port, transport=transport, host=host, port=port))
+        gui_app = create_app(store, group_by_prefix=group_by_prefix, compact_threshold=compact_threshold)
+        anyio.run(lambda: serve_mcp_with_gui(
+            server, gui_app, gui_host, gui_port, transport=transport, host=host, port=port, retry_seconds=gui_retry_seconds,
+        ))
     elif transport == "stdio":
         server.run("stdio")
     else:
@@ -336,10 +341,12 @@ def annotate(
     annotator:str=typer.Option(None, help="xml:id of the human annotator responsible for the labels saved, e.g. 'RT'."),
     annotator_name:str=typer.Option(None, help="Full name of the annotator (used in the <respStmt> added to the TEI header)."),
     read_only:bool=typer.Option(False, help="View only: no labels can be saved."),
+    evaluation:bool=typer.Option(False, help="Evaluation mode: the labels and suggestions of the sample's test units are not shown, and test units cannot be changed."),
     reading_notes:bool=typer.Option(True, help="Treat text in parentheses in readings (e.g. ECM's '(cf. 24b)') as notes, not reading text."),
     ignore_types:list[str]=typer.Option(["defective"], "--ignore-type", help="Readings of this @type are not classified (repeatable). Defaults to defective."),
     sample_file:Path=typer.Option(None, help="Sidecar YAML file for the sample of units (default: <doc>.sample.yaml)."),
     group_by_prefix:str=typer.Option(None, help="Lay out the category buttons in rows by the part of the name before this separator, e.g. '_'."),
+    compact_threshold:int=typer.Option(10, help="Show units with more pairs than this as compact rows."),
     open_browser:bool=typer.Option(False, "--open", help="Open the GUI in a web browser."),
 ):
     """ Runs the annotation GUI on its own (use `serve-mcp --gui-port` to run it inside the MCP server instead). """
@@ -352,7 +359,7 @@ def annotate(
     try:
         store = AnnotationStore(
             doc, annotator=annotator, annotator_name=annotator_name, read_only=read_only,
-            ignore_types=ignore_types, sample_path=sample_file, reading_notes=reading_notes,
+            ignore_types=ignore_types, sample_path=sample_file, reading_notes=reading_notes, evaluation=evaluation,
         )
     except AnnotationError as error:
         error_console.print(str(error))
@@ -367,7 +374,7 @@ def annotate(
         import webbrowser
         webbrowser.open(url)
     import anyio
-    anyio.run(lambda: gui_server(create_app(store, group_by_prefix=group_by_prefix), host, port).serve([sock]))
+    anyio.run(lambda: gui_server(create_app(store, group_by_prefix=group_by_prefix, compact_threshold=compact_threshold), host, port).serve([sock]))
 
 
 @app.command()

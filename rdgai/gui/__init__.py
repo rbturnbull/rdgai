@@ -28,7 +28,7 @@ from ..annotation import (
 )
 
 STATIC = Path(__file__).parent / "static"
-INVERSE_PREFIX = re.compile(r"^Inverse of \S+ → \S+:\s*")
+INVERSE_PREFIX = re.compile(r"^Inverse of (\S+) → (\S+):\s*")
 
 
 def display_justification(text:str) -> str:
@@ -41,12 +41,42 @@ KEYS = [str(digit) for digit in range(1, 10)] + ["0"] + [f"shift+{digit}" for di
 
 class Button(BaseModel):
     name: str
+    short: str = ""
     description: str
     inverse: str
     group: str
     row: int
     column: int
     key: str | None
+
+
+def short_labels(names:list[str]) -> dict[str, str]:
+    """
+    Short, distinct labels for category buttons in compact rows: the first letters of each part of the name
+    (e.g. Minor_Omission -> 'Min·Omi', Orthography -> 'Orth'), lengthened where two would be the same.
+    """
+    def parts(name:str) -> list[str]:
+        return [part for part in re.split(r"[_\-\s.]+", name) if part] or [name]
+
+    def make(name:str, length:int) -> str:
+        name_parts = parts(name)
+        if len(name_parts) == 1:
+            return name_parts[0][:length]
+        return "·".join(part[:length] for part in name_parts)
+
+    lengths = {name: (4 if len(parts(name)) == 1 else 3) for name in names}
+    longest = max((len(name) for name in names), default=0)
+    while True:
+        labels = {name: make(name, lengths[name]) for name in names}
+        seen = {}
+        for name, label in labels.items():
+            seen.setdefault(label, []).append(name)
+        clashes = [group for group in seen.values() if len(group) > 1]
+        if not clashes or all(lengths[name] > longest for group in clashes for name in group):
+            return labels
+        for group in clashes:
+            for name in group:
+                lengths[name] += 1
 
 
 def button_layout(categories:list[Category], group_by_prefix:str|None=None) -> list[Button]:
@@ -84,9 +114,11 @@ def button_layout(categories:list[Category], group_by_prefix:str|None=None) -> l
         cells.append((rows.index(group), column, category, group))
 
     cells.sort(key=lambda cell: (cell[0], cell[1]))
+    shorts = short_labels([category.name for category in categories])
     return [
         Button(
             name=category.name,
+            short=shorts[category.name],
             description=category.description,
             inverse=category.inverse,
             group=group,
@@ -161,7 +193,7 @@ def file_version(*paths:Path) -> str:
     return "|".join(parts)
 
 
-def create_app(store:AnnotationStore, group_by_prefix:str|None=None) -> Starlette:
+def create_app(store:AnnotationStore, group_by_prefix:str|None=None, compact_threshold:int=10) -> Starlette:
     """ Builds the GUI app over a store (which may be shared with an MCP server in the same process). """
 
     def queue_filters(request:Request) -> dict:
@@ -178,9 +210,14 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None) -> Starlett
 
     def pair_payload(app, pair, role:str|None) -> dict:
         info = store.pair_info(pair)
-        suggestions = [] if role == "test" else store.suggestions_for(app, pair)
-        for suggestion in suggestions:
-            suggestion.justification = display_justification(suggestion.justification)
+        suggestions = []
+        for suggestion in ([] if role == "test" else store.suggestions_for(app, pair)):
+            match = INVERSE_PREFIX.match(suggestion.justification or "")
+            payload = suggestion.model_dump()
+            payload["justification"] = display_justification(suggestion.justification)
+            # text written for the other direction would read as contradicting the category shown: say which direction
+            payload["written_for"] = [match[1], match[2]] if match else None
+            suggestions.append(payload)
         if info.provenance is not None:
             info.provenance.justification = display_justification(info.provenance.justification)
         # the reason box holds the annotator's own reason only: it starts empty (suggestions are shown separately)
@@ -190,7 +227,8 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None) -> Starlett
             waiting = False
             if info.rule == 3:
                 parent = store.get_pair(app, *info.rule_parent)
-                waiting = parent.relation_element() is None and parent.get_inverse().relation_element() is None
+                # in evaluation mode, whether the parents' pair is labelled is not revealed for test units
+                waiting = store.hides(app) or (parent.relation_element() is None and parent.get_inverse().relation_element() is None)
             rule = dict(rule=info.rule, parent=info.rule_parent, waiting=waiting)
         return dict(
             first=pair.active.n,
@@ -202,7 +240,9 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None) -> Starlett
             provenance=info.provenance.model_dump() if info.provenance else None,
             source=info.source,
             rule=rule,
-            suggestions=[suggestion.model_dump() for suggestion in suggestions],
+            change=info.change.model_dump() if info.change else None,
+            warning=info.warning,
+            suggestions=suggestions,
             reason=reason,
         )
 
@@ -247,6 +287,8 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None) -> Starlett
                 certainty=list(CERTAINTY_VALUES),
                 annotator=store.annotator,
                 read_only=store.read_only,
+                evaluation=store.evaluation,
+                compact_threshold=compact_threshold,
                 has_sample=store.load_sample() is not None,
             ))
 

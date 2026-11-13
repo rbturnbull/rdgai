@@ -131,3 +131,45 @@ test("the 'Inverse of a → b:' prefix is not shown", () => {
   assert.equal(displayJustification("adds του"), "adds του");
   assert.equal(displayJustification(""), "");
 });
+
+import { isCompact, groupByFirst, sameSuggestion, sameChange } from "../../rdgai/gui/static/logic.js";
+
+const many = (count) => Array.from({ length: count }, (_, index) => ({ first: "a", second: `r${index}` }));
+
+test("units with more pairs than the threshold are shown compactly", () => {
+  assert.equal(isCompact({ pairs: many(10) }, 10), false);
+  assert.equal(isCompact({ pairs: many(11) }, 10), true);
+  assert.equal(isCompact({ pairs: many(3), rule_pairs: many(9) }, 10), true);  // rule pairs count towards the length
+});
+
+test("compact rows are grouped by their first reading, in display order", () => {
+  const pairs = [
+    { first: "a", second: "b" }, { first: "a", second: "c" }, { first: "b", second: "c" }, { first: "a", second: "d" },
+  ];
+  assert.deepEqual(groupByFirst(pairs).map((group) => [group.first, group.pairs.map((pair) => pair.second)]),
+    [["a", ["b", "c"]], ["b", ["c"]], ["a", ["d"]]]);
+});
+
+const suggested = [
+  { first: "a", second: "b", suggestions: [{ category: "Minor_Omission" }], change: { text: "second reading omits: του" } },
+  { first: "a", second: "c", suggestions: [{ category: "Minor_Omission" }], change: { text: "second reading omits: θεου" } },
+  { first: "a", second: "d", suggestions: [{ category: "Major_Omission" }], change: { text: "second reading omits: του" } },
+  { first: "a", second: "e", suggestions: [], change: { text: "second reading omits: του" } },
+];
+
+test("tick all pairs with the same suggestion as the focused pair", () => {
+  assert.deepEqual(sameSuggestion(suggested, suggested[0]), ["a|b", "a|c"]);
+  assert.deepEqual(sameSuggestion(suggested, suggested[3]), []);  // no suggestion: nothing to match
+});
+
+test("tick all pairs with the same change as the focused pair", () => {
+  assert.deepEqual(sameChange(suggested, suggested[0]), ["a|b", "a|d", "a|e"]);
+  assert.deepEqual(sameChange(suggested, { first: "x", second: "y" }), []);
+});
+
+test("Enter or e expands the focused row; other keys are unchanged in compact mode", () => {
+  assert.deepEqual(keyAction(press("Enter", { code: "Enter" }), buttons), { type: "expand" });
+  assert.deepEqual(keyAction(press("e"), buttons), { type: "expand" });
+  assert.deepEqual(keyAction(press("1"), buttons), { type: "category", name: "Orthography" });
+  assert.deepEqual(keyAction(press("j"), buttons), { type: "move", delta: 1 });
+});

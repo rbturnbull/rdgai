@@ -337,7 +337,9 @@ def test_suggestions_hidden_on_test_units(client, store):
     example_unit = next(unit.id for unit in info.units if unit.role == "example")
     for unit_id in (test_unit, example_unit):
         first = store.ordered_pairs(store.get_app(unit_id))[0]
-        store.suggest_classification(unit_id, first.active.n, first.passive.n, "Major_Substitution", justification="x", source="claude")
+        store.suggest_classification(
+            unit_id, first.active.n, first.passive.n, "Major_Substitution", justification="x", source="claude", allow_test_unit=True,
+        )
 
     test_pair = client.get(f"/api/unit/{test_unit}").json()["pairs"][0]
     assert test_pair["suggestions"] == []
@@ -492,8 +494,60 @@ def test_inverse_prefix_is_not_shown(client, store):
     pair = client.get("/api/unit/Mark.1.1.12-16").json()["pairs"][0]
     assert (pair["first"], pair["second"]) == ("a", "b")
     assert pair["suggestions"][0]["justification"] == "adds του"
+    # the text was written for the other direction: say so, rather than leave it to contradict the shown category
+    assert pair["suggestions"][0]["written_for"] == ["b", "a"]
 
     store.set_classification("Mark.1.1.12-16", "b", "a", "Minor_Addition", justification="the article is added")
     pair = client.get("/api/unit/Mark.1.1.12-16").json()["pairs"][0]
     assert pair["reason"] == "the article is added"
     assert pair["provenance"]["justification"] == "the article is added"
+
+
+
+def test_suggestion_in_display_direction_has_no_direction_note(client, store):
+    store.suggest_classification("Mark.1.1.12-16", "a", "b", "Minor_Omission", justification="omits του", source="claude")
+    suggestion = client.get("/api/unit/Mark.1.1.12-16").json()["pairs"][0]["suggestions"][0]
+    assert suggestion["written_for"] is None
+
+
+# ---------------------------------------------------------------------------
+# compact mode for large units
+# ---------------------------------------------------------------------------
+
+from rdgai.gui import short_labels
+
+
+def test_short_labels_for_mark_categories():
+    labels = short_labels(MARK_CATEGORIES)
+    assert labels["Orthography"] == "Orth"
+    assert labels["Transposition"] == "Tran"
+    assert labels["Minor_Omission"] == "Min·Omi"
+    assert labels["Major_Omission"] == "Maj·Omi"
+    assert labels["Minor_Inflection"] == "Min·Inf"
+    assert len(set(labels.values())) == len(labels)
+
+
+def test_short_labels_are_always_distinct():
+    names = ["Addition", "Additional", "Add", "AddX", "Minor_Addition", "Minor_Additional", "x"]
+    labels = short_labels(names)
+    assert len(set(labels.values())) == len(names)
+    assert labels["x"] == "x"
+    assert all(len(label) <= len(name) + 1 for name, label in labels.items())
+
+
+def test_buttons_carry_short_labels(client):
+    buttons = {button["name"]: button for button in client.get("/api/config").json()["buttons"]}
+    assert buttons["Minor_Omission"]["short"] == "Min·Omi"
+
+
+def test_compact_threshold_in_config(store):
+    assert TestClient(create_app(store)).get("/api/config").json()["compact_threshold"] == 10
+    assert TestClient(create_app(store, compact_threshold=3)).get("/api/config").json()["compact_threshold"] == 3
+
+
+def test_cli_compact_threshold_option():
+    from typer.testing import CliRunner
+    from rdgai.main import app
+    runner = CliRunner()
+    assert "--compact-threshold" in runner.invoke(app, ["annotate", "--help"]).output
+    assert "--compact-threshold" in runner.invoke(app, ["serve-mcp", "--help"]).output

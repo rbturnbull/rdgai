@@ -45,6 +45,9 @@ Pairs formed by typed subreadings (e.g. orthographic readings 'ao', 'ao1' of rea
 automatically by subreading rules (source 'rule'; see apply_rules) and are not counted as work: do not
 classify them unless the annotator wants to override one.
 
+Do not suggest classifications for the sample's test units (they are refused unless the annotator explicitly asks):
+suggestions there would leak into the evaluation.
+
 Annotating the sample: get_sample shows progress; list_units(sample='sampled', status='unclassified')
 gives the next units in document order. Work through one unit at a time.
 
@@ -208,7 +211,8 @@ def build_server(store:AnnotationStore) -> MCPServer:
             with tool_errors():
                 return store.update_guidance(guidance)
 
-    if not store.read_only:
+    if not store.read_only and not store.evaluation:
+        # not in evaluation mode: a new sample would change the test units, and rules would change their labels
         @server.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, idempotentHint=True, openWorldHint=False))
         def draw_sample(
             size: Annotated[int, Field(ge=1, description="Number of units to sample.")],
@@ -245,6 +249,7 @@ def build_server(store:AnnotationStore) -> MCPServer:
                     raise AnnotationError(str(error))
                 return store.apply_rules(rule_list, dry_run=dry_run)
 
+    if not store.read_only:
         @server.tool(annotations=write)
         def suggest_classification(
             unit_id: Annotated[str, Field(description="The variation unit's id.")],
@@ -253,6 +258,7 @@ def build_server(store:AnnotationStore) -> MCPServer:
             category: Annotated[str, Field(description="Suggested category for the change from the active to the passive reading.")],
             justification: Annotated[str, Field(description="A short reason for the suggestion.")] = "",
             source: Annotated[str, Field(description="Who is suggesting: 'claude', or e.g. 'rdgai:<model>'.")] = "claude",
+            allow_test_unit: Annotated[bool, Field(description="Suggestions on the sample's test units are refused, because they would leak into the evaluation. Set only if the annotator explicitly asks.")] = False,
         ) -> SuggestionResult:
             """
             Records a suggested category for a pair without classifying it. Suggestions are shown to the
@@ -261,7 +267,9 @@ def build_server(store:AnnotationStore) -> MCPServer:
             the previous one for the pair. Use this to propose labels for the annotator to review.
             """
             with tool_errors():
-                return store.suggest_classification(unit_id, active, passive, category, justification=justification, source=source)
+                return store.suggest_classification(
+                    unit_id, active, passive, category, justification=justification, source=source, allow_test_unit=allow_test_unit,
+                )
 
         @server.tool(annotations=write)
         def set_classification(

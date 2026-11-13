@@ -61,3 +61,43 @@ def test_two_stores_never_lose_writes(mark_path):
     assert reloaded.get_unit("Mark.1.1.10").pairs[0].category == "Major_Omission"
     assert reloaded.get_unit("Mark.1.1.12-16").pairs[0].category == "Minor_Omission"
     assert reloaded.get_unit("Mark.1.2.2").pairs[0].category == "Minor_Substitution"
+
+
+def test_concurrent_writes_from_two_stores_all_survive(mark_path):
+    """ Like Claude Desktop's two serve-mcp processes: each writes under the lock, on freshly loaded state. """
+    import threading
+
+    first = AnnotationStore(mark_path, annotator="RT")
+    second = AnnotationStore(mark_path, annotator="XY")
+    units = [unit.id for unit in first.list_units(limit=500).units]
+    jobs = {first: [], second: []}
+    for index, unit_id in enumerate(units):
+        pair = first.get_unit(unit_id).pairs[0]
+        jobs[first if index % 2 == 0 else second].append((unit_id, pair.active, pair.passive))
+
+    errors = []
+
+    def work(store):
+        try:
+            for repeat in range(3):
+                for unit_id, active, passive in jobs[store]:
+                    store.set_classification(unit_id, active, passive, ["Major_Substitution", "Minor_Substitution", "Transposition"][repeat])
+        except Exception as error:  # pragma: no cover
+            errors.append(error)
+
+    threads = [threading.Thread(target=work, args=(store,)) for store in jobs]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+    assert errors == []
+
+    reloaded = AnnotationStore(mark_path, read_only=True)
+    for store, pairs in jobs.items():
+        for unit_id, active, passive in pairs:
+            pair = next(pair for pair in reloaded.get_unit(unit_id).pairs if (pair.active, pair.passive) == (active, passive))
+            assert pair.category == "Transposition", unit_id
+            assert pair.provenance.resp == f"#{store.annotator}"
+    # and each store reads the other's writes (every unit now has a label)
+    for store in (first, second):
+        assert all(unit.classified_count >= 1 for unit in store.list_units(limit=500).units)
