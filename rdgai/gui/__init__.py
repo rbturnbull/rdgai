@@ -23,9 +23,12 @@ from ..annotation import (
     Category,
     CERTAINTY_VALUES,
     ConflictError,
+    DefinitionsLockedError,
     ReadOnlyError,
     UnitNotFoundError,
 )
+
+from . import views
 
 STATIC = Path(__file__).parent / "static"
 INVERSE_PREFIX = re.compile(r"^Inverse of (\S+) → (\S+):\s*")
@@ -152,7 +155,7 @@ def error_response(error:AnnotationError) -> JSONResponse:
     if isinstance(error, ConflictError):
         current = {pair_key(*key): value for key, value in error.current.items()}
         return JSONResponse({"error": str(error), "current": current}, status_code=409)
-    if isinstance(error, ReadOnlyError):
+    if isinstance(error, (ReadOnlyError, DefinitionsLockedError)):
         return JSONResponse({"error": str(error)}, status_code=403)
     if isinstance(error, UnitNotFoundError):
         return JSONResponse({"error": str(error)}, status_code=404)
@@ -203,10 +206,14 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None, compact_thr
             sample=params.get("sample") or default_sample,
             status=params.get("status") or "all",
             verse=params.get("verse") or "",
+            category=params.get("category") or "",
+            cert=params.get("cert") or "",
+            source=params.get("source") or "",
+            disagreement="1" if (params.get("disagreement") or "").lower() in views.TRUE_VALUES else "",
         )
 
     def queue_apps(filters:dict):
-        return store.filter_units(status=filters["status"], verse=filters["verse"], sample=filters["sample"])
+        return views.filter_queue(store, filters)
 
     def pair_payload(app, pair, role:str|None) -> dict:
         info = store.pair_info(pair)
@@ -287,6 +294,7 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None, compact_thr
                 certainty=list(CERTAINTY_VALUES),
                 annotator=store.annotator,
                 read_only=store.read_only,
+                definitions_editable=not store.read_only and not store.lock_definitions,
                 evaluation=store.evaluation,
                 compact_threshold=compact_threshold,
                 has_sample=store.load_sample() is not None,
@@ -388,6 +396,71 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None, compact_thr
         except AnnotationError as error:
             return error_response(error)
 
+    def categories(request:Request):
+        with store.lock:
+            return JSONResponse(store.category_counts().model_dump())
+
+    def category(request:Request):
+        try:
+            with store.lock:
+                store.refresh()
+                params = request.query_params
+                pairs = views.category_pairs(store, request.path_params["name"], source=params.get("source") or "all")
+                offset = max(int(params.get("offset") or 0), 0)
+                limit = max(min(int(params.get("limit") or 100), 500), 1)
+                roles = store.sample_roles()
+                rows = []
+                for pair in pairs[offset:offset + limit]:
+                    app = pair.app
+                    role = roles.get(str(app))
+                    rows.append(dict(
+                        pair_payload(app, pair, role),
+                        unit_id=str(app),
+                        sample_role=role,
+                        context=dict(before=app.text_before(), lemma=app.text(), after=app.text_after()),
+                    ))
+                return JSONResponse(dict(
+                    category=store.get_relation_type(request.path_params["name"]).name,
+                    total=len(pairs), offset=offset, limit=limit, pairs=rows,
+                    version=current_version(),
+                ))
+        except AnnotationError as error:
+            return error_response(error)
+        except ValueError:
+            return JSONResponse({"error": "offset and limit must be numbers."}, status_code=400)
+
+    def agreement(request:Request):
+        try:
+            with store.lock:
+                store.refresh()
+                params = request.query_params
+                return JSONResponse(views.agreement(
+                    store, scope=params.get("scope") or None, source=params.get("source") or None,
+                    display_justification=display_justification,
+                ))
+        except AnnotationError as error:
+            return error_response(error)
+
+    def definitions_write(method):
+        async def endpoint(request:Request):
+            data = await request.json()
+
+            def run():
+                try:
+                    return JSONResponse(method(data).model_dump())
+                except AnnotationError as error:
+                    return error_response(error)
+            return await run_in_threadpool(run)
+        return endpoint
+
+    update_category = definitions_write(lambda data: store.update_category(
+        data.get("name", ""), description=data.get("description"), new_name=data.get("new_name") or None))
+    update_guidance = definitions_write(lambda data: store.update_guidance(data.get("guidance", "")))
+    add_category = definitions_write(lambda data: store.add_category(
+        data.get("name", ""), data.get("description", ""),
+        inverse_name=data.get("inverse_name") or None, inverse_description=data.get("inverse_description") or ""))
+    remove_category = definitions_write(lambda data: store.remove_category(data.get("name", ""), reassign_to=data.get("reassign_to") or None))
+
     routes = [
         Route("/", index),
         Route("/api/config", config),
@@ -396,6 +469,13 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None, compact_thr
         Route("/api/unit/{unit_id:path}", unit),
         Route("/api/label", label, methods=["POST"]),
         Route("/api/certainty", certainty, methods=["POST"]),
+        Route("/api/categories", categories),
+        Route("/api/category/{name}", category),
+        Route("/api/agreement", agreement),
+        Route("/api/definitions/category", update_category, methods=["POST"]),
+        Route("/api/definitions/guidance", update_guidance, methods=["POST"]),
+        Route("/api/definitions/add", add_category, methods=["POST"]),
+        Route("/api/definitions/remove", remove_category, methods=["POST"]),
         Mount("/static", StaticFiles(directory=STATIC), name="static"),
     ]
     return Starlette(routes=routes, middleware=[Middleware(CacheControl)])

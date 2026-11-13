@@ -4,15 +4,23 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>rdgai annotate</title>
+  <meta name="theme-color" content="#940000">
+  <link rel="icon" type="image/svg+xml" href="static/favicon.svg">
   <link rel="stylesheet" href="static/style.css">
 </head>
 <body>
   <header class="bar">
     <div class="bar-left">
-      <strong class="brand">rdgai</strong>
+      <a class="brand" href="https://rbturnbull.github.io/rdgai/" target="_blank" title="rdgAI"><img src="static/logo.svg" alt="rdgAI" height="34"></a>
       <span id="file" class="muted"></span>
     </div>
+    <nav class="views" aria-label="Views">
+      <button type="button" data-view="annotate" title="Annotate the units in the queue">Annotate</button>
+      <button type="button" data-view="category" title="Every pair with a category, to check consistency and re-label in place">By category</button>
+      <button type="button" data-view="agreement" title="Human labels compared with suggestions">Agreement</button>
+    </nav>
     <nav class="bar-right">
+      <span id="queue-filters" class="queue-filters">
       <label class="muted" for="queue-sample">Queue</label>
       <select id="queue-sample" title="Which units to work through">
         <option value="sampled">Sample</option>
@@ -27,17 +35,38 @@
         <option value="classified">Classified</option>
       </select>
       <input id="queue-verse" type="search" placeholder="Verse, e.g. Mark.1.2" size="14" title="Only units in this verse or chapter">
-      <button id="definitions-toggle" type="button" title="Show the category definitions and guidance">Definitions</button>
+      <select id="queue-category" title="Only units with a pair labelled with this category">
+        <option value="">Any category</option>
+      </select>
+      <select id="queue-cert" title="Only units with a label of this certainty">
+        <option value="">Any certainty</option>
+        <option value="high">High</option>
+        <option value="medium">Medium</option>
+        <option value="low">Low</option>
+      </select>
+      <select id="queue-source" title="Only units with labels from this source, or with suggestions">
+        <option value="">Any source</option>
+        <option value="human">Human labels</option>
+        <option value="pipeline">Pipeline labels</option>
+        <option value="rule">Rule labels</option>
+        <option value="suggestion">Suggestions</option>
+      </select>
+      <label class="check" title="Only units where a label differs from a suggestion"><input id="queue-disagreement" type="checkbox"> Disagreement</label>
+      </span>      <button id="definitions-toggle" type="button" title="Show the category definitions and guidance">Definitions</button>
       <button id="help-toggle" type="button" title="Keyboard shortcuts (?)">?</button>
     </nav>
   </header>
 
   <main id="main">
-    <section id="unit-header" class="unit-header"></section>
-    <section id="context" class="context"></section>
-    <section id="readings" class="readings"></section>
-    <section id="bulk-bar" class="bulk-bar" hidden></section>
-    <section id="pairs" class="pairs"></section>
+    <div id="view-unit">
+      <section id="unit-header" class="unit-header"></section>
+      <section id="context" class="context"></section>
+      <section id="readings" class="readings"></section>
+      <section id="bulk-bar" class="bulk-bar" hidden></section>
+      <section id="pairs" class="pairs"></section>
+    </div>
+    <section id="view-category" class="view" hidden></section>
+    <section id="view-agreement" class="view" hidden></section>
   </main>
 
   <aside id="definitions" class="panel" hidden></aside>
@@ -54,6 +83,8 @@
       <dt>?</dt><dd>show or hide this help</dd>
     </dl>
     <p class="muted">Each label is saved for the first reading → the second reading; the inverse is set automatically.</p>
+    <p class="muted">Keys work in the Annotate view. In the By category view, click a category to re-label a pair in place.</p>
+    <p class="muted"><img src="static/favicon.svg" alt="" class="rdgai-mark"> marks a label made by the rdgai pipeline (tentative).</p>
   </aside>
 
   <div id="status" class="status" role="status" aria-live="polite"></div>

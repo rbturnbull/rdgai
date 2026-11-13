@@ -1,33 +1,33 @@
-=====================================
+==================================
 Classification
-=====================================
+==================================
 
-Assuming that you have `prepared your TEI XML file <preparation>`_ and `validated the results <validation>`_, you can now classify the transitions in the variation units.
-
-To do that, run the following command:
+After evaluating, classify the reading pairs that are still unclassified. First estimate the cost (no model is called):
 
 .. code-block:: bash
 
-    rdgai classify apparatus.xml output.xml
+    rdgai estimate apparatus.xml --model anthropic:claude-opus-5-5
 
-You can modify the TEI XML file in place with the ``--inplace`` flag:
-
-.. code-block:: bash
-
-    rdgai classify apparatus.xml --inplace
-
-Use the same LLM that you used for validation with the ``--llm`` flag. You can also set the number of examples per category with the ``--examples`` flag. e.g.
+The draft pass classifies every pair still to classify, unit by unit. Agents read through the Rdgai MCP server (the
+definitions, the unit, similar labelled pairs) and give a checked, structured decision for every pair, which is written
+to the file with ``resp="#rdgai"``, the agent's confidence as ``@cert`` and a ``<change>`` recording the run and model.
+Human labels are never changed, and the run can be stopped and continued at any time:
 
 .. code-block:: bash
 
-    rdgai classify apparatus.xml output.xml --llm claude-3-5-sonnet-20241022 --examples 20
+    rdgai draft apparatus.xml --model anthropic:claude-opus-5-5 --limit-units 20   # calibrate the estimate first
+    rdgai draft apparatus.xml --model anthropic:claude-opus-5-5
 
-The classifications and justifications will be added to the TEI XML file with "#rdgai" as the responsible party.
-
-You can view the output TEI XML in the Rdgai GUI by running:
+Then review the pipeline's labels one category at a time; the revisions are applied and logged to
+``apparatus.revisions.jsonl``:
 
 .. code-block:: bash
 
-    rdgai gui output.xml --inplace
+    rdgai review apparatus.xml --rounds 3
 
-This will launch a Flask server that you can visit in your browser. The Rdgai classifications will show the Rdgai logo.
+``rdgai run apparatus.xml`` does all of this (subreading rules, draft and review). Check the results in the
+annotation GUI, where the pipeline's labels are shown with their source and can be corrected:
+
+.. code-block:: bash
+
+    rdgai annotate apparatus.xml --annotator RT

@@ -345,24 +345,14 @@ def test_category_counts_have_a_rule_source(ruled):
 # evaluation
 # ---------------------------------------------------------------------------
 
-def test_evaluation_excludes_rule_labelled_pairs(ruled, path, tmp_path, capsys):
-    from rdgai.evaluation import evaluate_docs
-
-    ruled.set_classification("Mark.1.1.2", "a", "b", "Minor_Substitution")  # human gold label
-    predicted_path = tmp_path / "predicted.xml"
-    shutil.copy(path, predicted_path)
-    predicted = Doc(predicted_path)
-    types = predicted.relation_types
-    unit = predicted["Mark.1.1.2"]
-    by_direction = {(pair.active.n, pair.passive.n): pair for pair in unit.pairs}
-    by_direction[("a", "b")].set_type_with_inverse(types["Minor_Substitution"], responsible="#rdgai")
-    by_direction[("a", "ao1")].set_type_with_inverse(types["Major_Substitution"], responsible="#rdgai")
-    predicted.write(predicted_path)
-
-    evaluate_docs(Doc(predicted_path), Doc(path))
-    output = capsys.readouterr().out
-    assert "Excluded 2 rule-labelled pairs" in output  # a→ao1 and ao1→a
-    assert "accuracy 100.0" in output
+def test_evaluation_excludes_rule_labelled_pairs(ruled, path):
+    """ Rule-covered pairs are not decisions: they are left out of the gold set and the scores. """
+    from rdgai.evaluate import gold_labels, metrics
+    ruled.set_classification("Mark.1.1.2", "a", "b", "Minor_Substitution")  # human; rule 3 copies it to ao1-b, ...
+    gold = gold_labels(ruled, ["Mark.1.1.2"])
+    assert gold == {("Mark.1.1.2", "a", "b"): "Minor_Substitution"}
+    assert len(ruled.rule_pairs(ruled.get_app("Mark.1.1.2"))) == 12
+    assert metrics(gold, gold, ["Minor_Substitution"]).n == 1
 
 
 # ---------------------------------------------------------------------------

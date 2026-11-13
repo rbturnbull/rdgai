@@ -6,15 +6,11 @@ from lxml.etree import _Element as Element
 from lxml.etree import _ElementTree as ElementTree
 from lxml import etree as ET
 from rich.console import Console
-import functools
 import textwrap
 from collections import defaultdict
-import Levenshtein
-import numpy as np
 
 # from .relations import Relation, get_reading_identifier
 from .tei import read_tei, find_elements, extract_text, find_parent, find_element, write_tei, make_nc_name, get_language, get_reading_identifier, extract_text_siblings
-from .mapper import Mapper
 from .notes import parse_reading_notes
 
 
@@ -147,40 +143,6 @@ class RelationType():
 
     def get_inverse(self) -> 'RelationType':
         return self.inverse if self.inverse else self
-    
-    @functools.lru_cache(maxsize=None)
-    def representative_examples(self, k:int, random_state:int=42) -> list['Pair']:
-        
-        def find_representative_examples(pairs_list:list[Pair], k:int, random_state:int=42):
-            import kmedoids
-            if len(pairs_list) <= k:
-                return pairs_list
-            distance_matrix = np.zeros((len(pairs_list), len(pairs_list)))
-            for index1, pair in enumerate(pairs_list):
-                for index2 in range(index1+1, len(pairs_list)):
-                    other_pair = pairs_list[index2]
-                    active_text_distance = Levenshtein.distance(pair.active.text, other_pair.active.text)
-                    passive_text_distance = Levenshtein.distance(pair.passive.text, other_pair.passive.text)
-                    distance = active_text_distance + passive_text_distance
-                    distance_matrix[index1, index2] = distance
-                    distance_matrix[index2, index1] = distance
-
-            result = kmedoids.fasterpam(distance_matrix, k, random_state=random_state, init="build")
-
-            return [pairs_list[index] for index in result.medoids]
-    
-        pairs_list = self.pairs_sorted(exclude_rdgai=True)
-        pairs_with_descriptions = [pair for pair in pairs_list if pair.has_description()]
-        representative_pairs = []
-        if pairs_with_descriptions:
-            representative_pairs = find_representative_examples(pairs_with_descriptions, k, random_state=random_state)
-        
-        if len(representative_pairs) < k:
-            pairs_without_descriptions = [pair for pair in pairs_list if not pair.has_description()]
-            additional_pairs = find_representative_examples(pairs_without_descriptions, k-len(representative_pairs), random_state=random_state)
-            representative_pairs.extend(additional_pairs)
-        
-        return representative_pairs
 
 
 @dataclass
@@ -740,89 +702,6 @@ class Doc():
                 pair.print(console)
 
             console.print("")
-
-    def render_html(self, output:Path|None=None, all_apps:bool=False) -> str:
-        from flask import Flask, request, render_template
-        
-        mapper = Mapper()
-        app = Flask(__name__)
-
-        with app.app_context():
-            html = render_template('server.html', doc=self, mapper=mapper, all_apps=all_apps)
-        
-        if output:
-            output.parent.mkdir(parents=True, exist_ok=True)
-            output.write_text(html)
-        
-        return html
-
-    def flask_app(self, output:Path, all_apps:bool=False):
-        from flask import Flask, request, render_template
-
-        self.write(output)
-        mapper = Mapper()
-        
-        app = Flask(__name__)
-
-        @app.route("/")
-        def root():
-            return render_template('server.html', doc=self, mapper=mapper, all_apps=all_apps)
-
-        @app.route("/api/relation-type", methods=['POST'])
-        def api_relation_type():
-            data = request.get_json()
-            
-            relation_type = mapper.obj(data['relation_type'])
-            assert isinstance(relation_type, RelationType), f"Expected RelationType, got {type(relation_type)}"
-            
-            pair = mapper.obj(data['pair'])
-            assert isinstance(pair, Pair), f"Expected Pair, got {type(pair)}"
-
-            try:
-                if data['operation'] == 'remove':
-                    print('remove', relation_type)
-                    pair.remove_type_with_inverse(relation_type)
-                elif data['operation'] == 'add':
-                    print('add', relation_type)
-                    pair.add_type_with_inverse(relation_type)
-                else:
-                    raise ValueError(f"Unknown operation {data['operation']}")
-                
-                print('write', output)
-                self.write(output)
-                return "Success", 200           
-            except Exception as e:  
-                print(str(e))
-                return str(e), 400
-
-            return "Failed", 400
-        
-        @app.route("/api/desc", methods=['POST'])
-        def desc():
-            data = request.get_json()
-                        
-            pair = mapper.obj(data['pair'])
-            assert isinstance(pair, Pair), f"Expected Pair, got {type(pair)}"
-
-            try:
-                if data['operation'] == 'remove':
-                    pair.remove_description()
-                elif data['operation'] == 'add':
-                    pair.add_description(data['description'])   
-                else:
-                    raise ValueError(f"Unknown operation {data['operation']}")
-
-                print('write', output)
-                self.write(output)
-                return "Success", 200           
-            except Exception as e:  
-                print(str(e))
-                return str(e), 400
-
-            return "Failed", 400
-
-        return app
-        # app.run(debug=True, use_reloader=True)
 
     def clean(self, output:Path|None=None):
         """ Cleans a TEI XML file for common errors. """

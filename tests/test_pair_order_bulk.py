@@ -183,3 +183,43 @@ def test_bulk_expected_categories(store, mark_path):
         "Mark.1.1.12-16", [("a", "b"), ("a", "c")], "Major_Substitution",
         expected={("a", "b"): "Minor_Omission", ("a", "c"): None},
     )
+
+
+# ---------------------------------------------------------------------------
+# writing many different decisions with one save (used by the pipeline)
+# ---------------------------------------------------------------------------
+
+def test_write_decisions(store, monkeypatch):
+    saves = []
+    original_save = store.save
+    monkeypatch.setattr(store, "save", lambda: (saves.append(1), original_save()))
+    run = store.start_run(model="test-model")
+    saves.clear()
+    store.set_classification("Mark.1.1.12-16", "a", "c", "Minor_Substitution")  # a human label made meanwhile
+    saves.clear()
+    result = store.write_decisions(
+        "Mark.1.1.12-16",
+        [
+            ("a", "b", "Minor_Omission", "omits του", "high"),
+            ("a", "c", "Major_Substitution", "x", "low"),   # labelled meanwhile: skipped
+            ("e", "a", "Minor_Addition", "adds υιου", "medium"),
+        ],
+        resp="rdgai", change=run,
+    )
+    assert len(saves) == 1
+    assert result.written == [("a", "b"), ("e", "a")]
+    assert result.skipped == [("a", "c")]
+    pairs = {(pair.active, pair.passive): pair for pair in store.get_unit("Mark.1.1.12-16").pairs}
+    assert (pairs[("a", "b")].category, pairs[("a", "b")].provenance.cert, pairs[("a", "b")].source) == ("Minor_Omission", "high", "pipeline")
+    assert pairs[("a", "c")].category == "Minor_Substitution"
+    assert pairs[("a", "e")].category == "Minor_Omission"  # inverse of e → a Minor_Addition
+    assert pairs[("a", "b")].provenance.change.split()[0] == f"#{run}"
+
+
+def test_write_decisions_validates_everything_first(store, mark_path):
+    before = mark_path.read_bytes()
+    with pytest.raises(AnnotationError, match="Unknown category"):
+        store.write_decisions("Mark.1.1.12-16", [("a", "b", "Minor_Omission", "", "high"), ("a", "c", "Nope", "", "high")], resp="rdgai")
+    with pytest.raises(AnnotationError, match="cert"):
+        store.write_decisions("Mark.1.1.12-16", [("a", "b", "Minor_Omission", "", "certain")], resp="rdgai")
+    assert mark_path.read_bytes() == before

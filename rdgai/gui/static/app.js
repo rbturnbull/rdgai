@@ -1,6 +1,6 @@
 // The rdgai annotation GUI. Talks to the JSON API in rdgai/gui/__init__.py; pure logic lives in logic.js.
 import { keyAction, categoryClick, targetPairs, pairKey, labelRequest, certaintyRequest, visiblePairs, progressText, ruleText, refreshAction, justificationSource,
-  isCompact, groupByFirst, sameSuggestion, sameChange } from "./logic.js";
+  isCompact, groupByFirst, sameSuggestion, sameChange, parseRoute, routeHash, QUEUE_FILTERS, pageInfo, expectedFor } from "./logic.js";
 
 const state = {
   config: null,
@@ -13,8 +13,25 @@ const state = {
   expanded: new Set(), // in compact mode: pairKeys of the rows shown as full panels
   filters: {},
   showRules: false,  // whether the section of pairs labelled by rule is expanded
-  version: null,     // version token of the file the shown unit was read from
+  version: null,     // version token of the file the shown view was read from
+  view: "unit",      // "unit", "category" or "agreement"
+  lastUnitId: null,  // the unit to go back to from the other views
+  category: null,    // the category view: {params, data, counts}
+  agreement: null,   // the agreement view: {params, data}
+  editing: null,     // the definition being edited in the definitions panel: {kind, name}
+  look: readLook(),  // how readings are shown: "cards" (the original rdgai look) or "table"
 };
+
+function readLook() {
+  try { return localStorage.getItem("rdgai.look") || "cards"; } catch { return "cards"; }
+}
+
+function setLook(look) {
+  state.look = look;
+  try { localStorage.setItem("rdgai.look", look); } catch { /* the choice is kept for this page only */ }
+  document.body.classList.toggle("look-cards", look === "cards");
+  if (state.unit) renderReadings(state.unit);
+}
 
 const POLL_MILLISECONDS = 3000;
 
@@ -60,17 +77,8 @@ function filterQuery(filters = state.filters) {
   return query ? `?${query}` : "";
 }
 
-function parseHash() {
-  const match = /^#\/unit\/([^?]*)(\?.*)?$/.exec(location.hash);
-  const params = new URLSearchParams((match && match[2]) || (location.hash.split("?")[1] ?? ""));
-  return {
-    unitId: match ? decodeURIComponent(match[1]) : null,
-    filters: { sample: params.get("sample") || "", status: params.get("status") || "", verse: params.get("verse") || "" },
-  };
-}
-
 function unitHash(unitId, filters = state.filters) {
-  return `#/unit/${encodeURIComponent(unitId)}${filterQuery(filters)}`;
+  return routeHash({ view: "unit", unitId, filters });
 }
 
 function goToUnit(unitId) {
@@ -81,12 +89,35 @@ function goToUnit(unitId) {
 }
 
 async function route() {
-  const { unitId, filters } = parseHash();
-  state.filters = filters;
-  if (unitId) {
-    await loadUnit(unitId);
+  const current = parseRoute(location.hash);
+  showView(current.view === "queue" ? "unit" : current.view);
+  if (current.view === "category") return loadCategory(current.category, current.params);
+  if (current.view === "agreement") return loadAgreement(current.params);
+  state.filters = current.filters;
+  if (current.view === "unit") return loadUnit(current.unitId);
+  return goToQueueStart();
+}
+
+function showView(view) {
+  state.view = view;
+  $("view-unit").hidden = view !== "unit";
+  $("view-category").hidden = view !== "category";
+  $("view-agreement").hidden = view !== "agreement";
+  $("queue-filters").hidden = view !== "unit";
+  for (const button of document.querySelectorAll("[data-view]")) {
+    button.classList.toggle("active", button.dataset.view === (view === "unit" ? "annotate" : view));
+  }
+  $("main").classList.toggle("wide", view !== "unit" || compactMode());
+}
+
+function openView(view) {
+  if (view === "annotate") {
+    location.hash = state.lastUnitId ? unitHash(state.lastUnitId) : routeHash({ view: "queue", filters: state.filters });
+  } else if (view === "category") {
+    const name = state.category?.data.category || state.config.buttons[0]?.name;
+    if (name) location.hash = routeHash({ view: "category", category: name, params: {} });
   } else {
-    await goToQueueStart();
+    location.hash = routeHash({ view: "agreement", params: state.agreement?.params || {} });
   }
 }
 
@@ -111,6 +142,7 @@ async function loadUnit(unitId, { keepFocus = false } = {}) {
     const unit = await api(`/api/unit/${encodeURIComponent(unitId)}${filterQuery()}`);
     const previousId = state.unit?.id;
     state.unit = unit;
+    state.lastUnitId = unit.id;
     state.version = unit.version;
     state.filters = unit.filters;
     if (!keepFocus || previousId !== unit.id) {
@@ -186,7 +218,27 @@ function renderNotes(notes) {
   });
 }
 
+function readingCard(reading) {
+  return el("div", { class: `reading-card${reading.excluded ? " excluded" : ""}`, title: reading.excluded ? "Not classified (excluded reading type)" : null },
+    el("div", { class: "reading-id" }, reading.id, reading.type ? ` · ${reading.type}` : ""),
+    el("div", { class: "reading-text" }, reading.text, ...renderNotes(reading.notes)),
+    el("details", { class: "reading-witnesses" },
+      el("summary", {}, `${reading.witness_count} witness${reading.witness_count === 1 ? "" : "es"}`),
+      el("div", {}, reading.witnesses.join(" "))),
+  );
+}
+
+function lookToggle() {
+  const other = state.look === "cards" ? "table" : "cards";
+  return el("button", { type: "button", class: "look-toggle", title: `Show the readings as ${other === "cards" ? "cards (the original rdgai look)" : "a table"}`,
+    onclick: () => setLook(other) }, other === "cards" ? "Cards" : "Table");
+}
+
 function renderReadings(unit) {
+  if (state.look === "cards") {
+    $("readings").replaceChildren(lookToggle(), el("div", { class: "reading-cards" }, unit.readings.map(readingCard)));
+    return;
+  }
   const rows = unit.readings.map((reading) => el("tr", { class: reading.excluded ? "excluded" : "" },
     el("td", {}, reading.id),
     el("td", { class: "text" }, reading.text, ...renderNotes(reading.notes)),
@@ -194,7 +246,7 @@ function renderReadings(unit) {
     el("td", {}, String(reading.witness_count)),
     el("td", {}, el("details", {}, el("summary", {}, "witnesses"), el("div", { class: "witnesses" }, reading.witnesses.join(" ")))),
   ));
-  $("readings").replaceChildren(el("table", {},
+  $("readings").replaceChildren(lookToggle(), el("table", {},
     el("thead", {}, el("tr", {}, ...["", "Reading", "Type", "Witnesses", ""].map((heading) => el("th", {}, heading)))),
     el("tbody", {}, rows),
   ));
@@ -224,6 +276,15 @@ function provenanceText(pair) {
   if (provenance.definitions_hash) parts.push(`definitions ${provenance.definitions_hash.slice(0, 8)}`);
   if (provenance.justification_source) parts.push(`reason copied from ${provenance.justification_source}`);
   return parts.join(" · ");
+}
+
+// Long category names wrap after an underscore rather than mid-word.
+function breakable(name) {
+  return name.replaceAll("_", "_\u200b");
+}
+
+function pipelineMark() {
+  return el("img", { src: "static/favicon.svg", alt: "rdgai", class: "rdgai-mark", title: "Labelled by the rdgai pipeline (tentative)" });
 }
 
 function certaintyOf(pair) {
@@ -282,7 +343,7 @@ function updateCompactTools(box = document.getElementById("compact-tools")) {
 }
 
 function renderPairs(unit) {
-  document.getElementById("main").classList.toggle("wide", compactMode());
+  $("main").classList.toggle("wide", compactMode());
   const rulePairs = unit.rule_pairs || [];
   const children = compactMode() ? [compactTools()] : [];
   children.push(...pairViews(unit, unit.pairs, 0));
@@ -313,12 +374,12 @@ function compactRow(pair, index) {
     el("span", { class: "ids" }, `${pair.first} → ${pair.second}`),
     el("div", { class: "row-main" },
       // the first reading is in the group heading ("From a: …"), so the row shows where it goes to
-      el("div", { class: "texts", title: `${pair.first_text} → ${pair.second_text}` }, el("span", { class: "arrow" }, "→"), pair.second_text),
+      el("div", { class: "texts", title: `${pair.first_text} → ${pair.second_text}` }, el("span", { class: "arrow" }, "➜"), pair.second_text),
       pair.change ? el("div", { class: "change" }, pair.change.text) : null,
       pair.warning ? el("div", { class: "warning" }, `Check: ${pair.warning}`) : null,
     ),
     el("div", { class: "row-label" },
-      el("div", { class: pair.category ? "current-label" : "muted" }, label),
+      el("div", { class: pair.category ? "current-label" : "muted" }, pair.source === "pipeline" ? pipelineMark() : null, label),
       suggestion ? el("div", { class: "muted" }, "suggested ", el("strong", {}, suggestion.category)) : null,
     ),
     el("div", { class: "mini" }, state.config.buttons.map((button) => el("button", {
@@ -349,7 +410,7 @@ function pairPanel(pair, index) {
     style: { gridRow: String(button.row + 1), gridColumn: String(button.column + 1) },
     disabled: readOnly,
     "data-category": button.name,
-  }, button.key ? el("span", { class: "key" }, button.key.replace("shift+", "⇧")) : null, button.name));
+  }, button.key ? el("span", { class: "key" }, button.key.replace("shift+", "⇧")) : null, breakable(button.name)));
 
   const suggestions = pair.suggestions.map((suggestion, suggestionIndex) => el("div", { class: "suggestion muted" },
     `Suggested by ${suggestion.source}: `, el("strong", {}, suggestion.category),
@@ -364,7 +425,8 @@ function pairPanel(pair, index) {
     el("div", { class: "pair-head" },
       el("input", { type: "checkbox", title: "Tick (x)", checked: state.ticked.has(key), disabled: readOnly, "data-tick": key }),
       el("span", { class: "ids" }, `${pair.first} → ${pair.second}`),
-      el("span", { class: "texts" }, pair.first_text, el("span", { class: "arrow" }, "→"), pair.second_text),
+      el("span", { class: "texts" }, pair.first_text, el("span", { class: "arrow" }, "➜"), pair.second_text),
+      pair.source === "pipeline" ? pipelineMark() : null,
       compactMode() ? el("button", { type: "button", class: "expand", title: "Back to a compact row (Enter)", "data-expand": key }, "Less") : null,
     ),
     pair.change ? el("div", { class: "change", title: "Computed from the words of the two readings; a reading aid, not a label" }, pair.change.text) : null,
@@ -381,22 +443,316 @@ function pairPanel(pair, index) {
   );
 }
 
+// ---------------------------------------------------------------------------
+// definitions panel (editable unless the server is read-only or the definitions are locked)
+// ---------------------------------------------------------------------------
+
 function renderDefinitions() {
   const config = state.config;
+  const editable = config.definitions_editable;
+  const editing = state.editing || {};
+  const names = config.buttons.map((button) => button.name);
+
+  const guidance = editing.kind === "guidance"
+    ? el("form", { class: "definition-form", "data-form": "guidance" },
+        el("textarea", { name: "guidance", rows: "8" }, config.guidance || ""),
+        formButtons("Save guidance"))
+    : el("div", {},
+        config.guidance ? el("pre", {}, config.guidance) : el("p", { class: "muted" }, "No guidance."),
+        editable ? el("button", { type: "button", "data-edit": "guidance" }, "Edit guidance") : null);
+
+  const categories = config.buttons.map((button) => {
+    if (editing.kind === "category" && editing.name === button.name) {
+      return el("form", { class: "definition-form", "data-form": "category", "data-name": button.name },
+        el("label", {}, "Name ", el("input", { name: "new_name", value: button.name, size: "28" })),
+        el("textarea", { name: "description", rows: "6" }, button.description),
+        el("p", { class: "muted" }, "Renaming also updates every label and suggestion that uses the category."),
+        formButtons("Save"));
+    }
+    if (editing.kind === "remove" && editing.name === button.name) {
+      return el("form", { class: "definition-form", "data-form": "remove", "data-name": button.name },
+        el("p", {}, `Remove ${button.name}${button.inverse !== button.name ? ` and its inverse ${button.inverse}` : ""}?`),
+        el("label", {}, "Move its labels to ", el("select", { name: "reassign_to" },
+          el("option", { value: "" }, "— nothing (only if unused) —"),
+          ...names.filter((name) => name !== button.name && name !== button.inverse).map((name) => el("option", { value: name }, name)))),
+        formButtons("Remove"));
+    }
+    return el("section", {},
+      el("h3", {}, button.name, button.inverse !== button.name ? el("span", { class: "muted" }, ` ↔ ${button.inverse}`) : null),
+      el("p", {}, button.description),
+      el("div", { class: "definition-actions" },
+        el("a", { href: routeHash({ view: "category", category: button.name, params: {} }) }, "Pairs"),
+        editable ? el("button", { type: "button", "data-edit": "category", "data-name": button.name }, "Edit") : null,
+        editable ? el("button", { type: "button", "data-edit": "remove", "data-name": button.name }, "Remove") : null));
+  });
+
+  const add = !editable ? null : editing.kind === "add"
+    ? el("form", { class: "definition-form", "data-form": "add" },
+        el("h3", {}, "New category"),
+        el("label", {}, "Name ", el("input", { name: "name", size: "28", required: true })),
+        el("textarea", { name: "description", rows: "4", placeholder: "Description", required: true }),
+        el("label", {}, "Inverse (optional) ", el("input", { name: "inverse_name", size: "28" })),
+        el("textarea", { name: "inverse_description", rows: "3", placeholder: "Description of the inverse (if it has one)" }),
+        formButtons("Add"))
+    : el("button", { type: "button", "data-edit": "add" }, "Add a category");
+
   $("definitions").replaceChildren(
     el("h2", {}, "Definitions"),
     el("p", { class: "muted" }, `Version ${config.definitions_hash.slice(0, 8)} · ${config.direction_convention}`),
-    config.guidance ? el("pre", {}, config.guidance) : null,
-    ...config.buttons.map((button) => el("section", {},
-      el("h3", {}, button.name, button.inverse !== button.name ? el("span", { class: "muted" }, ` ↔ ${button.inverse}`) : null),
-      el("p", {}, button.description))),
+    ...[!editable ? el("p", { class: "muted" }, config.read_only ? "Read-only: the definitions cannot be edited." : "The definitions are locked on this server.") : null,
+      guidance, ...categories, add].filter(Boolean),
   );
+}
+
+function formButtons(label) {
+  return el("div", { class: "definition-actions" },
+    el("button", { type: "submit", class: "primary" }, label),
+    el("button", { type: "button", "data-edit": "" }, "Cancel"));
+}
+
+function onDefinitionsClick(event) {
+  const button = event.target.closest("[data-edit]");
+  if (!button) return;
+  state.editing = button.dataset.edit ? { kind: button.dataset.edit, name: button.dataset.name } : null;
+  renderDefinitions();
+  $("definitions").querySelector("form textarea, form input")?.focus();
+}
+
+async function onDefinitionsSubmit(event) {
+  event.preventDefault();
+  const form = event.target;
+  const values = Object.fromEntries(new FormData(form));
+  const name = form.dataset.name;
+  const requests = {
+    guidance: () => api("/api/definitions/guidance", { guidance: values.guidance }),
+    category: () => api("/api/definitions/category", {
+      name, description: values.description, new_name: values.new_name.trim() !== name ? values.new_name.trim() : null,
+    }),
+    remove: () => api("/api/definitions/remove", { name, reassign_to: values.reassign_to || null }),
+    add: () => api("/api/definitions/add", {
+      name: values.name.trim(), description: values.description,
+      inverse_name: values.inverse_name.trim() || null, inverse_description: values.inverse_description,
+    }),
+  };
+  try {
+    const change = await requests[form.dataset.form]();
+    state.editing = null;
+    await refreshConfig();
+    showStatus(change.message || "Definitions saved");
+  } catch (error) {
+    showStatus(error.message, true);
+  }
+}
+
+async function refreshConfig() {
+  state.config = await api("/api/config");
+  fillCategoryFilter();
+  renderDefinitions();
+  await reloadView();
+}
+
+// ---------------------------------------------------------------------------
+// by category: every pair with a category, with its context; re-label in place
+// ---------------------------------------------------------------------------
+
+const CATEGORY_PAGE = 100;
+
+async function loadCategory(name, params = {}) {
+  try {
+    const query = filterQuery({ source: params.source || "", offset: params.offset || "", limit: CATEGORY_PAGE });
+    const [counts, data] = await Promise.all([api("/api/categories"), api(`/api/category/${encodeURIComponent(name)}${query}`)]);
+    state.category = { params, data, counts };
+    state.version = data.version;
+    renderCategory();
+  } catch (error) {
+    $("view-category").replaceChildren(el("p", { class: "muted" }, error.message));
+  }
+}
+
+function categoryHash(changes) {
+  const { data, params } = state.category;
+  return routeHash({ view: "category", category: changes.category ?? data.category, params: {
+    source: changes.source ?? (params.source || ""), offset: changes.offset ?? 0,
+  } });
+}
+
+function pager(data) {
+  const page = pageInfo(data.total, data.offset, data.limit);
+  return el("div", { class: "pager" },
+    el("span", { class: "muted" }, data.total ? `${page.from}–${page.to} of ${data.total} pairs` : "No pairs"),
+    page.prev !== null ? el("a", { href: categoryHash({ offset: page.prev }) }, "← Previous") : null,
+    page.next !== null ? el("a", { href: categoryHash({ offset: page.next }) }, "Next →") : null);
+}
+
+function renderCategory() {
+  const { data, counts, params } = state.category;
+  const button = state.config.buttons.find((candidate) => candidate.name === data.category);
+  const count = counts.categories.find((row) => row.category === data.category);
+  const categorySelect = el("select", { title: "Category", onchange: (event) => { location.hash = categoryHash({ category: event.target.value, offset: 0 }); } },
+    counts.categories.map((row) => el("option", { value: row.category, selected: row.category === data.category }, `${row.category} (${row.total})`)));
+  const sourceSelect = el("select", { title: "Who labelled the pairs", onchange: (event) => { location.hash = categoryHash({ source: event.target.value, offset: 0 }); } },
+    [["", "Any source"], ["human", "Human"], ["pipeline", "Pipeline"], ["rule", "Rule"]].map(([value, label]) =>
+      el("option", { value, selected: (params.source || "") === value }, label)));
+  $("view-category").replaceChildren(
+    el("div", { class: "view-head" },
+      el("h1", {}, data.category),
+      categorySelect, sourceSelect,
+      count ? el("span", { class: "muted" }, `${count.human} human · ${count.pipeline} pipeline · ${count.rule} by rule`) : null),
+    ...[button ? el("p", { class: "category-description" }, button.description,
+      button.inverse !== button.name ? el("span", { class: "muted" }, ` Inverse: ${button.inverse}.`) : null) : null].filter(Boolean),
+    pager(data),
+    el("div", { class: "category-rows" }, data.pairs.map(categoryRow)),
+    ...(data.pairs.length > 10 ? [pager(data)] : []),
+  );
+}
+
+function categoryRow(pair, index) {
+  const readOnly = state.config.read_only;
+  const unitLink = unitHash(pair.unit_id, { sample: "all" });
+  return el("article", { class: `category-row${pair.source === "rule" ? " rule-pair" : ""}`, "data-index": String(index) },
+    el("div", { class: "row-top" },
+      el("a", { href: unitLink, class: "unit-link", title: "Open the unit" }, pair.unit_id),
+      pair.sample_role ? el("span", { class: "badge" }, pair.sample_role) : null,
+      el("span", { class: "muted" }, `${pair.first} → ${pair.second}`),
+      pair.source === "pipeline" ? pipelineMark() : null),
+    el("p", { class: "verse" }, pair.context.before ? `${pair.context.before} ` : "",
+      el("span", { class: "unit-text" }, pair.context.lemma || "⸆"), pair.context.after ? ` ${pair.context.after}` : ""),
+    el("p", { class: "relation" }, pair.first_text, el("span", { class: "arrow" }, "➜"), pair.second_text),
+    pair.change ? el("div", { class: "change" }, pair.change.text) : null,
+    pair.warning ? el("div", { class: "warning" }, `Check: ${pair.warning}`) : null,
+    pair.reason ? el("p", { class: "reason-text" }, `“${pair.reason}”`) : null,
+    el("div", { class: "provenance" }, pair.rule ? `${ruleText(pair.rule)} · ${provenanceText(pair)}` : provenanceText(pair)),
+    el("div", { class: "mini" }, state.config.buttons.map((button) => el("button", {
+      type: "button",
+      class: pair.category === button.name ? "current" : "",
+      title: `Re-label as ${button.name}\n\n${button.description}`,
+      disabled: readOnly || pair.category === button.name,
+      "data-relabel": button.name,
+    }, button.short || button.name))),
+  );
+}
+
+async function onCategoryClick(event) {
+  const button = event.target.closest("[data-relabel]");
+  if (!button || !state.category) return;
+  const pair = state.category.data.pairs[Number(button.closest(".category-row").dataset.index)];
+  const category = button.dataset.relabel;
+  if (!pair || pair.category === category) return;
+  // a human's own reason is kept; the pipeline's reasoning is not carried over as the human's
+  const own = pair.source === "human";
+  const request = labelRequest(pair.unit_id, [pair], category, pair.provenance?.cert || "high",
+    own ? pair.reason : "", own ? pair.provenance?.justification_source || null : null);
+  request.expected = expectedFor([pair]);
+  try {
+    await api("/api/label", request);
+    showStatus(`${pair.unit_id} ${pair.first} → ${pair.second}: ${category}`);
+  } catch (error) {
+    showStatus(error.status === 409 ? "This pair was changed elsewhere; reloaded." : error.message, true);
+  }
+  await loadCategory(state.category.data.category, state.category.params);
+}
+
+// ---------------------------------------------------------------------------
+// agreement: human labels compared with suggestions
+// ---------------------------------------------------------------------------
+
+async function loadAgreement(params = {}) {
+  try {
+    const data = await api(`/api/agreement${filterQuery({ scope: params.scope || "", source: params.source || "" })}`);
+    state.agreement = { params, data };
+    state.version = null;  // remembered on the next check
+    renderAgreement();
+  } catch (error) {
+    $("view-agreement").replaceChildren(el("p", { class: "muted" }, error.message));
+  }
+}
+
+const percent = (value) => `${(value * 100).toFixed(1)}%`;
+
+function agreementHash(changes) {
+  const { data } = state.agreement;
+  return routeHash({ view: "agreement", params: { scope: changes.scope ?? data.scope, source: changes.source ?? (data.source || "") } });
+}
+
+function renderAgreement() {
+  const { data } = state.agreement;
+  const scopes = state.config.has_sample
+    ? [["example", "Example units"], ["sampled", "Example and test units"], ["test", "Test units"], ["all", "All units"]]
+    : [["all", "All units"]];
+  const head = el("div", { class: "view-head" },
+    el("h1", {}, "Agreement"),
+    el("select", { title: "Which units to compare", onchange: (event) => { location.hash = agreementHash({ scope: event.target.value }); } },
+      scopes.map(([value, label]) => el("option", { value, selected: value === data.scope }, label))),
+    data.sources.length ? el("select", { title: "Whose suggestions", onchange: (event) => { location.hash = agreementHash({ source: event.target.value }); } },
+      data.sources.map((row) => el("option", { value: row.source, selected: row.source === data.source }, `${row.source} (${row.count} suggestions)`))) : null);
+  const children = [head];
+  if (data.scope === "sampled" || data.scope === "test" || (data.scope === "all" && state.config.has_sample)) {
+    children.push(el("p", { class: "warning" }, "Includes test units: these suggestions are for units held out for evaluation."));
+  }
+  if (!data.sources.length) {
+    children.push(el("p", { class: "muted" }, "No suggestions in these units yet. Suggestions are made through MCP (suggest_classification), e.g. by Claude."));
+    return $("view-agreement").replaceChildren(...children);
+  }
+  const scores = data.metrics;
+  children.push(
+    el("p", { class: "agreement-summary" },
+      el("strong", {}, `${data.agreed} of ${data.compared}`), ` pairs labelled by a human agree with ${data.source}`,
+      data.compared ? ` (${percent(scores.accuracy)}; macro F1 ${percent(scores.macro_f1)}).` : "."),
+    el("p", { class: "muted" }, "Only pairs with both a human label and a suggestion are compared, in display direction."));
+  if (data.compared) {
+    children.push(
+      el("h2", {}, "Per category"),
+      el("table", { class: "scores" },
+        el("thead", {}, el("tr", {}, ["Category", "Human labels", "Suggested", "Agree (recall)", "Precision", "F1"].map((heading) => el("th", {}, heading)))),
+        el("tbody", {}, scores.per_category.map((row) => el("tr", { class: row.indicative ? "indicative" : "", title: row.indicative ? "Fewer than 10 pairs: indicative only" : null },
+          el("th", {}, el("a", { href: routeHash({ view: "category", category: row.category, params: {} }) }, row.category)),
+          el("td", {}, String(row.support)), el("td", {}, String(row.predicted)),
+          el("td", {}, percent(row.recall)), el("td", {}, percent(row.precision)), el("td", {}, percent(row.f1)))))),
+      el("h2", {}, "Confusion"),
+      confusionTable(scores.confusion),
+      el("h2", {}, `Disagreements (${data.disagreements.length})`),
+      el("div", { class: "disagreements" }, data.disagreements.map((row) => el("a", {
+        class: "disagreement", href: unitHash(row.unit_id, { sample: data.scope === "all" ? "all" : data.scope, disagreement: "1" }),
+        title: "Open the unit (Next goes through the units with disagreements)",
+      },
+        el("span", { class: "unit-link" }, `${row.unit_id} ${row.first} → ${row.second}`),
+        el("span", { class: "texts" }, row.first_text, el("span", { class: "arrow" }, "➜"), row.second_text),
+        el("span", {}, "human ", el("strong", {}, row.human), " · suggested ", el("strong", {}, row.suggested)),
+        row.justification ? el("span", { class: "muted" }, row.justification) : null))));
+  }
+  $("view-agreement").replaceChildren(...children);
+}
+
+function confusionTable(confusion) {
+  return el("div", { class: "confusion-wrap" }, el("table", { class: "confusion" },
+    el("thead", {}, el("tr", {}, el("th", { class: "corner" }, "human ↓ · suggested →"), confusion.labels.map((label) => el("th", { class: "rotate" }, el("span", {}, label))))),
+    el("tbody", {}, confusion.matrix.map((row, rowIndex) => {
+      const total = row.reduce((sum, value) => sum + value, 0);
+      return el("tr", {}, el("th", {}, confusion.labels[rowIndex]), row.map((value, columnIndex) => {
+        const share = total ? value / total : 0;
+        return el("td", {
+          class: columnIndex === rowIndex ? "diagonal" : "",
+          style: { backgroundColor: `rgba(148, 0, 0, ${(share * 0.85).toFixed(2)})`, color: share > 0.5 ? "#fff" : "" },
+        }, value ? String(value) : "");
+      }));
+    }))));
 }
 
 function syncFilterControls() {
   $("queue-sample").value = state.filters.sample || "all";
   $("queue-status").value = state.filters.status || "all";
   $("queue-verse").value = state.filters.verse || "";
+  $("queue-category").value = state.filters.category || "";
+  $("queue-cert").value = state.filters.cert || "";
+  $("queue-source").value = state.filters.source || "";
+  $("queue-disagreement").checked = Boolean(state.filters.disagreement);
+}
+
+function fillCategoryFilter() {
+  const select = $("queue-category");
+  select.replaceChildren(el("option", { value: "" }, "Any category"),
+    ...state.config.buttons.map((button) => el("option", { value: button.name }, button.name)));
+  select.value = state.filters.category || "";
 }
 
 // ---------------------------------------------------------------------------
@@ -559,7 +915,7 @@ function setUpEvents() {
     if (!state.config) return;
     const action = keyAction({
       key: event.key, code: event.code, shiftKey: event.shiftKey, ctrlKey: event.ctrlKey,
-      metaKey: event.metaKey, altKey: event.altKey, inTextField: event.target.matches("textarea, input, select"),
+      metaKey: event.metaKey, altKey: event.altKey, inTextField: event.target.matches("textarea, input, select"), view: state.view,
     }, state.config.buttons);
     if (!action) return;
     event.preventDefault();
@@ -582,12 +938,21 @@ function setUpEvents() {
   });
 
   const onFilterChange = () => {
-    state.filters = { sample: $("queue-sample").value, status: $("queue-status").value, verse: $("queue-verse").value.trim() };
-    location.hash = `#/${filterQuery()}`;
+    state.filters = {
+      sample: $("queue-sample").value, status: $("queue-status").value, verse: $("queue-verse").value.trim(),
+      category: $("queue-category").value, cert: $("queue-cert").value, source: $("queue-source").value,
+      disagreement: $("queue-disagreement").checked ? "1" : "",
+    };
+    state.lastUnitId = null;
+    location.hash = routeHash({ view: "queue", filters: state.filters });
   };
-  $("queue-sample").addEventListener("change", onFilterChange);
-  $("queue-status").addEventListener("change", onFilterChange);
-  $("queue-verse").addEventListener("change", onFilterChange);
+  for (const id of ["queue-sample", "queue-status", "queue-verse", "queue-category", "queue-cert", "queue-source", "queue-disagreement"]) {
+    $(id).addEventListener("change", onFilterChange);
+  }
+  for (const button of document.querySelectorAll("[data-view]")) button.addEventListener("click", () => openView(button.dataset.view));
+  $("view-category").addEventListener("click", onCategoryClick);
+  $("definitions").addEventListener("click", onDefinitionsClick);
+  $("definitions").addEventListener("submit", onDefinitionsSubmit);
   $("help-toggle").addEventListener("click", () => togglePanel("help"));
   $("definitions-toggle").addEventListener("click", () => togglePanel("definitions"));
   window.addEventListener("hashchange", route);
@@ -599,7 +964,7 @@ function setUpEvents() {
 
 // Keeps the page in step with the file, which other processes (e.g. Claude through MCP) may change at any time.
 async function checkForChanges() {
-  if (!state.unit) return;
+  if (state.view === "unit" && !state.unit) return;
   let latest;
   try {
     latest = (await api("/api/version")).version;
@@ -610,14 +975,20 @@ async function checkForChanges() {
   const action = refreshAction({ hidden: document.hidden, typing, known: state.version, latest });
   if (action === "remember") state.version = latest;
   if (action === "reload") {
-    await loadUnit(state.unit.id, { keepFocus: true });
+    await reloadView();
     showStatus("Updated: the file was changed elsewhere.");
   }
 }
 
+async function reloadView() {
+  if (state.view === "category" && state.category) return loadCategory(state.category.data.category, state.category.params);
+  if (state.view === "agreement" && state.agreement) return loadAgreement(state.agreement.params);
+  if (state.view === "unit" && state.unit) return loadUnit(state.unit.id, { keepFocus: true });
+}
+
 function reloadCurrentUnit() {
-  const typing = document.activeElement?.matches("textarea, input[type=search]") ?? false;
-  if (state.unit && !document.hidden && !typing) loadUnit(state.unit.id, { keepFocus: true });
+  const typing = document.activeElement?.matches("textarea, input, select") ?? false;
+  if (!document.hidden && !typing) reloadView();
 }
 
 async function start() {
@@ -627,6 +998,8 @@ async function start() {
   if (!state.config.has_sample) {
     for (const value of ["sampled", "example", "test"]) $("queue-sample").querySelector(`option[value="${value}"]`).hidden = true;
   }
+  document.body.classList.toggle("look-cards", state.look === "cards");
+  fillCategoryFilter();
   setUpEvents();
   await route();
 }

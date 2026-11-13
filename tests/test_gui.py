@@ -551,3 +551,18 @@ def test_cli_compact_threshold_option():
     runner = CliRunner()
     assert "--compact-threshold" in runner.invoke(app, ["annotate", "--help"]).output
     assert "--compact-threshold" in runner.invoke(app, ["serve-mcp", "--help"]).output
+
+
+# ---------------------------------------------------------------------------
+# the rdgai look, carried over from the original GUI
+# ---------------------------------------------------------------------------
+
+def test_page_has_the_rdgai_brand(client):
+    page = client.get("/").text
+    assert '<meta name="theme-color" content="#940000">' in page
+    assert 'rel="icon"' in page and 'static/favicon.svg' in page
+    assert 'src="static/logo.svg"' in page
+    assert client.get("/static/logo.svg").status_code == 200
+    assert client.get("/static/favicon.svg").status_code == 200
+    css = client.get("/static/style.css").text
+    assert "--brand: #940000" in css

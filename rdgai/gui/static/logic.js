@@ -9,6 +9,8 @@ export function keyAction(event, buttons) {
     return event.key === "Escape" ? { type: "leave_text" } : null;
   }
   if (event.ctrlKey || event.metaKey || event.altKey) return null;
+  // annotation keys act on the unit being annotated; the other views are used with the mouse
+  if (event.view && event.view !== "unit") return event.key === "?" ? { type: "help" } : null;
 
   const digit = /^Digit([0-9])$/.exec(event.code || "");
   if (digit) {
@@ -136,4 +138,49 @@ export function sameChange(pairs, pair) {
   const text = pair.change?.text;
   if (!text) return [];
   return pairs.filter((candidate) => candidate.change?.text === text).map(pairKey);
+}
+
+// ---------------------------------------------------------------------------
+// views and routing: #/unit/ID?filters, #/category/NAME?params, #/agreement?params, otherwise the queue's start
+// ---------------------------------------------------------------------------
+
+export const QUEUE_FILTERS = ["sample", "status", "verse", "category", "cert", "source", "disagreement"];
+
+function query(values) {
+  const params = new URLSearchParams();
+  for (const [name, value] of Object.entries(values || {})) if (value !== "" && value !== null && value !== undefined && value !== 0) params.set(name, value);
+  const text = params.toString();
+  return text ? `?${text}` : "";
+}
+
+export function parseRoute(hash) {
+  const [path, search = ""] = (hash || "").replace(/^#/, "").split("?");
+  const params = Object.fromEntries(new URLSearchParams(search));
+  const filters = Object.fromEntries(QUEUE_FILTERS.map((name) => [name, params[name] || ""]));
+  let match = /^\/unit\/(.+)$/.exec(path);
+  if (match) return { view: "unit", unitId: decodeURIComponent(match[1]), filters };
+  match = /^\/category\/(.+)$/.exec(path);
+  if (match) return { view: "category", category: decodeURIComponent(match[1]), params };
+  if (path === "/agreement") return { view: "agreement", params };
+  return { view: "queue", filters };
+}
+
+export function routeHash(route) {
+  switch (route.view) {
+    case "unit": return `#/unit/${encodeURIComponent(route.unitId)}${query(route.filters)}`;
+    case "category": return `#/category/${encodeURIComponent(route.category)}${query(route.params)}`;
+    case "agreement": return `#/agreement${query(route.params)}`;
+    default: return `#/${query(route.filters)}`;
+  }
+}
+
+// Which rows a page shows (1-based, for display) and the offsets of the previous and next pages.
+export function pageInfo(total, offset, limit) {
+  if (!total) return { from: 0, to: 0, prev: null, next: null };
+  return {
+    from: offset + 1,
+    to: Math.min(offset + limit, total),
+    prev: offset > 0 ? Math.max(offset - limit, 0) : null,
+    next: offset + limit < total ? offset + limit : null,
+  };
 }

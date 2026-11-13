@@ -22,6 +22,7 @@ from pydantic import BaseModel, Field
 from .apparatus import Doc, App, Pair, RelationType, tei_tag, unique, relation_provenance, prune_empty_list
 from .notes import resolve_references
 from .diff import describe_change, label_warning
+from . import search
 from .rules import SubreadingRule, Parents, Coverage, find_parents, coverage as rule_coverage, RULE_GROUP_TYPE, DEFAULT_SUFFIXES
 
 try:
@@ -314,6 +315,34 @@ class RulesReport(BaseModel):
     nested: list[RuleReading] = Field(description="Subreadings of subreadings (skipped).")
     conflicts: list[RuleConflict] = Field(description="Human labels that disagree with the rules (kept).")
     dry_run: bool
+
+
+class SimilarPair(BaseModel):
+    corpus: str = Field(description="'target' for this file (other corpora are references).")
+    unit_id: str
+    verse: str = Field(description="E.g. 'Mark 2:27'.")
+    active: str
+    passive: str
+    active_text: str
+    passive_text: str
+    change: str
+    category: str
+    source: str = Field(description="human, or pipeline (tentative).")
+    tentative: bool = Field(description="True for pipeline labels: weigh them much less than human (certain) labels.")
+    cert: str = ""
+    justification: str = ""
+    definitions_hash: str = ""
+    score: float
+
+
+class SimilarResults(BaseModel):
+    query: dict
+    results: list[SimilarPair]
+
+
+class DecisionsResult(BaseModel):
+    written: list[tuple[str, str]] = Field(default_factory=list)
+    skipped: list[tuple[str, str]] = Field(default_factory=list, description="Pairs labelled by someone else meanwhile (left as they are).")
 
 
 class WriteResult(BaseModel):
@@ -1045,6 +1074,84 @@ class AnnotationStore:
                 interp_group.addprevious(ET.Comment(f"\n{guidance}\n"))
             return self.commit_definitions("Updated the guidance.", guidance=guidance)
 
+    # -- similarity search ---------------------------------------------------------------
+
+    TENTATIVE_WEIGHT = 0.5
+
+    def search_index(self):
+        """
+        The labelled directed pairs (human and pipeline, never rules) with their search terms and a BM25 index,
+        rebuilt when the file changes. Test units are left out in evaluation mode.
+        """
+        if getattr(self, "_search_cache", (None,))[0] == self._file_id:
+            return self._search_cache[1]
+        entries = []
+        for app in self.doc.apps:
+            if self.hides(app):
+                continue
+            before, after = app.text_before(), app.text_after()
+            for pair in app.pairs:
+                if self.is_excluded(pair.active) or self.is_excluded(pair.passive):
+                    continue
+                source = self.label_source(pair)
+                if source not in ("human", "pipeline"):
+                    continue
+                terms = search.pair_terms(pair.active.text, pair.passive.text, before, after)
+                entries.append((app, pair, source, terms))
+        index = search.BM25([terms for _, _, _, terms in entries])
+        self._search_cache = (self._file_id, (entries, index))
+        return entries, index
+
+    def search_similar(
+        self,
+        unit_id:str,
+        active:str,
+        passive:str,
+        limit:int=10,
+        sources:tuple[str, ...]|list[str]=("human", "pipeline"),
+    ) -> list[SimilarPair]:
+        """
+        Labelled pairs whose change resembles the change from active to passive in this unit, best first.
+        Pipeline (tentative) labels count for less than human ones. The pair itself and its inverse are never
+        returned, so a label cannot be evidence for itself.
+        """
+        with self.lock:
+            self.refresh()
+            app = self.get_app(unit_id)
+            pair = self.get_pair(app, active, passive)
+            query = search.pair_terms(pair.active.text, pair.passive.text, app.text_before(), app.text_after())
+            entries, index = self.search_index()
+            scored = []
+            for (candidate_app, candidate, source, _), score in zip(entries, index.scores(query)):
+                if score <= 0 or source not in sources:
+                    continue
+                if candidate_app is app and {candidate.active.n, candidate.passive.n} == {active, passive}:
+                    continue
+                weighted = score * (self.TENTATIVE_WEIGHT if source == "pipeline" else 1.0)
+                scored.append((weighted, candidate_app, candidate, source))
+            scored.sort(key=lambda item: -item[0])
+            results = []
+            for score, candidate_app, candidate, source in scored[:max(limit, 0)]:
+                provenance = self.provenance_from_relation(candidate.relation_element())
+                results.append(SimilarPair(
+                    corpus="target",
+                    unit_id=str(candidate_app),
+                    verse=search.verse_label(str(candidate_app)),
+                    active=candidate.active.n,
+                    passive=candidate.passive.n,
+                    active_text=str(candidate.active),
+                    passive_text=str(candidate.passive),
+                    change=describe_change(candidate.active.text, candidate.passive.text).text,
+                    category=self.current_category(candidate) or "",
+                    source=source,
+                    tentative=source == "pipeline",
+                    cert=provenance.cert,
+                    justification=provenance.justification,
+                    definitions_hash=provenance.definitions_hash,
+                    score=round(score, 3),
+                ))
+            return results
+
     # -- subreading rules ----------------------------------------------------------------
 
     def rule_interps(self) -> list:
@@ -1618,6 +1725,51 @@ class AnnotationStore:
             unit_id, [(active, passive)], category, justification=justification, cert=cert, resp=resp, change=change,
             expected={(active, passive): expected_category},
         )[0]
+
+    def write_decisions(
+        self,
+        unit_id:str,
+        decisions:list[tuple[str, str, str, str, str]],
+        resp:str|None=None,
+        change:str|None=None,
+    ) -> DecisionsResult:
+        """
+        Writes several different decisions for one unit, (active, passive, category, justification, cert) each, with
+        one save. Everything is checked before anything is written. Only unlabelled pairs are written: a pair that
+        someone labelled meanwhile is skipped and reported, never overwritten. Used by the pipeline.
+        """
+        with self.writing():
+            self.check_writable()
+            self.refresh()
+            app = self.get_app(unit_id)
+            self.check_unit_writable(app)
+            checked = []
+            for active, passive, category, justification, cert in decisions:
+                self.check_cert(cert)
+                checked.append((self.get_pair(app, active, passive), self.get_relation_type(category), (justification or "").strip(), cert))
+            resp = self.resolve_resp(resp)
+            change_attr = self.change_pointers(change, self.ensure_definitions_change())
+            when = self.now()
+            result = DecisionsResult()
+            for pair, relation_type, justification, cert in checked:
+                key = (pair.active.n, pair.passive.n)
+                if pair.relation_element() is not None or pair.get_inverse().relation_element() is not None:
+                    result.skipped.append(key)
+                    continue
+                pair.set_type_with_inverse(
+                    relation_type,
+                    responsible=f"#{resp}",
+                    cert=cert,
+                    description=justification,
+                    inverse_description=f"Inverse of {key[0]} → {key[1]}: {justification}" if justification else "",
+                    change=change_attr,
+                    when=when,
+                )
+                result.written.append(key)
+            if result.written:
+                self.reapply_rules(app)
+                self.save()
+            return result
 
     def set_certainty(self, unit_id:str, pairs:list[tuple[str, str]], cert:str) -> list[WriteResult]:
         """

@@ -19,6 +19,7 @@ from .annotation import (
     DefinitionsChange,
     SampleFilter,
     SampleInfo,
+    SimilarResults,
     SuggestionList,
     SuggestionResult,
     CategoryPairList,
@@ -158,6 +159,29 @@ def build_server(store:AnnotationStore) -> MCPServer:
         """
         with tool_errors():
             return SuggestionList(suggestions=store.get_suggestions(unit_id, active, passive, source))
+
+    @server.tool(annotations=read_only)
+    def search_similar(
+        unit_id: Annotated[str, Field(description="The variation unit's id.")],
+        active: Annotated[str, Field(description="Id of the active (first) reading.")],
+        passive: Annotated[str, Field(description="Id of the passive (second) reading.")],
+        limit: Annotated[int, Field(ge=1, le=50)] = 10,
+        include_pipeline: Annotated[bool, Field(description="Also return pipeline labels (tentative; weigh them much less than human labels).")] = True,
+    ) -> SimilarResults:
+        """
+        Finds labelled pairs whose change resembles this pair's (what the second reading adds or omits, and the
+        words around the unit), best first, with their category, who labelled them and why. Use them as precedents:
+        human labels are certain, pipeline labels are tentative. The pair itself and its inverse are never returned.
+        """
+        with tool_errors():
+            results = store.search_similar(
+                unit_id, active, passive, limit=limit, sources=("human", "pipeline") if include_pipeline else ("human",),
+            )
+            app = store.get_app(unit_id)
+            pair = store.get_pair(app, active, passive)
+            from .diff import describe_change
+            query = dict(unit_id=unit_id, active=active, passive=passive, change=describe_change(pair.active.text, pair.passive.text).text)
+            return SimilarResults(query=query, results=results)
 
     if not store.read_only and not store.lock_definitions:
         @server.tool(annotations=write)
