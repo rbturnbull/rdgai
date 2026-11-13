@@ -96,3 +96,38 @@ test("rule pairs explain where their label comes from", () => {
   assert.equal(ruleText({ rule: 3, parent: ["a", "b"], waiting: false }), "By rule: same as a → b");
   assert.equal(ruleText({ rule: 3, parent: ["a", "c"], waiting: true }), "By rule: waiting for a → c to be labelled");
 });
+
+import { refreshAction } from "../../rdgai/gui/static/logic.js";
+
+test("the page reloads the unit when the file has changed, unless hidden or while typing", () => {
+  assert.equal(refreshAction({ hidden: false, typing: false, known: "v1", latest: "v1" }), "none");
+  assert.equal(refreshAction({ hidden: false, typing: false, known: "v1", latest: "v2" }), "reload");
+  assert.equal(refreshAction({ hidden: true, typing: false, known: "v1", latest: "v2" }), "skip");
+  // never replace a reason box while it is being typed in; reload once typing stops
+  assert.equal(refreshAction({ hidden: false, typing: true, known: "v1", latest: "v2" }), "later");
+  // no version known yet (first check): just remember it
+  assert.equal(refreshAction({ hidden: false, typing: false, known: null, latest: "v1" }), "remember");
+});
+
+import { justificationSource, displayJustification } from "../../rdgai/gui/static/logic.js";
+
+test("a reason counts as copied only if it is saved exactly as copied", () => {
+  const copied = { text: "omits the article", source: "claude" };
+  assert.equal(justificationSource("omits the article", copied), "claude");
+  assert.equal(justificationSource("  omits the article ", copied), "claude");
+  assert.equal(justificationSource("omits the article του", copied), null);  // edited: the annotator's own
+  assert.equal(justificationSource("", copied), null);
+  assert.equal(justificationSource("omits the article", undefined), null);
+});
+
+test("label requests say whose wording a copied reason is", () => {
+  const pair = { first: "a", second: "b", category: null };
+  assert.equal(labelRequest("U", [pair], "X", "high", "r").justification_source, undefined);
+  assert.equal(labelRequest("U", [pair], "X", "high", "r", "claude").justification_source, "claude");
+});
+
+test("the 'Inverse of a → b:' prefix is not shown", () => {
+  assert.equal(displayJustification("Inverse of b → a: adds του"), "adds του");
+  assert.equal(displayJustification("adds του"), "adds του");
+  assert.equal(displayJustification(""), "");
+});

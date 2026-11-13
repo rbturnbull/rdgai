@@ -308,12 +308,13 @@ def test_read_only(mark_path):
 # suggestions
 # ---------------------------------------------------------------------------
 
-def test_suggestions_shown_with_prefilled_reason(client, store):
+def test_suggestion_shown_but_reason_starts_empty(client, store):
+    """ The suggestion's justification is shown on its own line; the annotator's reason box starts empty. """
     store.suggest_classification("Mark.1.1.12-16", "a", "b", "Minor_Omission", justification="omits του", source="claude")
     pair = client.get("/api/unit/Mark.1.1.12-16").json()["pairs"][0]
     assert [(suggestion["category"], suggestion["source"]) for suggestion in pair["suggestions"]] == [("Minor_Omission", "claude")]
     assert pair["suggestions"][0]["justification"] == "omits του"
-    assert pair["reason"] == "omits του"
+    assert pair["reason"] == ""
 
 
 def test_suggestion_shown_in_display_direction(client, store):
@@ -375,3 +376,124 @@ def test_cli_options():
         assert option in annotate
     assert "--gui-port" in runner.invoke(app, ["serve-mcp", "--help"]).output
     assert "--group-by-prefix" in runner.invoke(app, ["serve-mcp", "--help"]).output
+
+
+# ---------------------------------------------------------------------------
+# fresh data: no caching, and a version token that changes with the file
+# ---------------------------------------------------------------------------
+
+def test_api_responses_are_never_cached(client, store):
+    store.set_classification("Mark.1.1.10", "a", "b", "Major_Omission")
+    responses = [
+        client.get("/api/config"),
+        client.get("/api/queue"),
+        client.get("/api/unit/Mark.1.1.10"),
+        client.get("/api/unit/Mark.99.1.1"),  # an error
+        client.get("/api/version"),
+        client.post("/api/label", json={"unit_id": "Mark.1.1.10", "pairs": [["a", "b"]], "category": "Minor_Omission"}),
+        client.post("/api/label", json={"unit_id": "Mark.1.1.10", "pairs": [["a", "b"]], "category": "Major_Omission", "expected": {"a|b": None}}),  # a conflict
+        client.post("/api/certainty", json={"unit_id": "Mark.1.1.10", "pairs": [["a", "b"]], "cert": "low"}),
+    ]
+    assert [response.status_code for response in responses] == [200, 200, 200, 404, 200, 200, 409, 200]
+    for response in responses:
+        assert response.headers["cache-control"] == "no-store", response.request.url
+
+
+def test_page_and_scripts_are_revalidated(client):
+    for path in ("/", "/static/app.js", "/static/logic.js", "/static/style.css"):
+        assert client.get(path).headers["cache-control"] == "no-cache", path
+
+
+def test_version_changes_when_the_file_changes(client, mark_path):
+    first = client.get("/api/version").json()["version"]
+    assert client.get("/api/version").json()["version"] == first
+
+    other = AnnotationStore(mark_path, annotator="XY")  # e.g. a second serve-mcp process
+    other.set_classification("Mark.1.1.10", "a", "b", "Major_Omission")
+    second = client.get("/api/version").json()["version"]
+    assert second != first
+
+    other.suggest_classification("Mark.1.1.12-16", "a", "b", "Minor_Omission", source="claude")
+    assert client.get("/api/version").json()["version"] != second
+
+
+def test_version_changes_when_the_sample_changes(client, store):
+    first = client.get("/api/version").json()["version"]
+    store.draw_sample(size=3, seed=0)
+    assert client.get("/api/version").json()["version"] != first
+
+
+def test_unit_reflects_writes_from_another_process(client, mark_path):
+    other = AnnotationStore(mark_path, annotator="XY")
+    assert client.get("/api/unit/Mark.1.1.10").json()["pairs"][0]["category"] is None
+    other.set_classification("Mark.1.1.10", "b", "a", "Major_Addition")
+    assert client.get("/api/unit/Mark.1.1.10").json()["pairs"][0]["category"] == "Major_Omission"
+    other.clear_classification("Mark.1.1.10", "a", "b")
+    assert client.get("/api/unit/Mark.1.1.10").json()["pairs"][0]["category"] is None
+
+
+def test_unit_carries_the_version_it_was_read_at(client):
+    assert client.get("/api/unit/Mark.1.1.10").json()["version"] == client.get("/api/version").json()["version"]
+
+
+
+# ---------------------------------------------------------------------------
+# the annotator's reason: empty by default, copied reasons marked as copied, no "Inverse of" prefix
+# ---------------------------------------------------------------------------
+
+def test_saving_without_typing_stores_an_empty_justification(client, store):
+    store.suggest_classification("Mark.1.1.12-16", "a", "b", "Minor_Omission", justification="omits του", source="claude")
+    response = client.post("/api/label", json={"unit_id": "Mark.1.1.12-16", "pairs": [["a", "b"]], "category": "Minor_Omission", "justification": ""})
+    pair = response.json()["pairs"][0]
+    assert pair["provenance"]["justification"] == ""
+    assert pair["provenance"]["justification_source"] == ""
+    assert pair["reason"] == ""
+
+
+def test_copied_reason_is_marked_as_copied(client, store, mark_path):
+    store.suggest_classification("Mark.1.1.12-16", "a", "b", "Minor_Omission", justification="omits του", source="claude")
+    response = client.post("/api/label", json={
+        "unit_id": "Mark.1.1.12-16", "pairs": [["a", "b"]], "category": "Minor_Omission",
+        "justification": "omits του", "justification_source": "claude",
+    })
+    assert response.status_code == 200, response.text
+    provenance = response.json()["pairs"][0]["provenance"]
+    assert provenance["resp"] == "#RT"  # the annotator decided the label
+    assert provenance["justification"] == "omits του"
+    assert provenance["justification_source"] == "claude"  # but the wording is Claude's
+
+    # recorded in the TEI as the <desc>'s @resp, on both directions
+    from .test_label_provenance import relation
+    for active, passive in (("a", "b"), ("b", "a")):
+        desc = relation(mark_path, "Mark.1.1.12-16", active, passive).find("{http://www.tei-c.org/ns/1.0}desc")
+        assert desc.get("resp") == "#claude"
+
+
+def test_own_reason_is_not_marked(client, mark_path):
+    response = client.post("/api/label", json={
+        "unit_id": "Mark.1.1.12-16", "pairs": [["a", "b"]], "category": "Minor_Omission", "justification": "the article is dropped",
+    })
+    assert response.json()["pairs"][0]["provenance"]["justification_source"] == ""
+    from .test_label_provenance import relation
+    assert relation(mark_path, "Mark.1.1.12-16", "a", "b").find("{http://www.tei-c.org/ns/1.0}desc").get("resp") is None
+
+
+def test_invalid_justification_source(client):
+    response = client.post("/api/label", json={
+        "unit_id": "Mark.1.1.12-16", "pairs": [["a", "b"]], "category": "Minor_Omission",
+        "justification": "x", "justification_source": "not a name",
+    })
+    assert response.status_code == 400
+
+
+def test_inverse_prefix_is_not_shown(client, store):
+    # a suggestion and a label made in the other direction from the one displayed (a -> b)
+    store.suggest_classification("Mark.1.1.12-16", "b", "a", "Minor_Addition", justification="adds του", source="claude")
+    pair = client.get("/api/unit/Mark.1.1.12-16").json()["pairs"][0]
+    assert (pair["first"], pair["second"]) == ("a", "b")
+    assert pair["suggestions"][0]["justification"] == "adds του"
+
+    store.set_classification("Mark.1.1.12-16", "b", "a", "Minor_Addition", justification="the article is added")
+    pair = client.get("/api/unit/Mark.1.1.12-16").json()["pairs"][0]
+    assert pair["reason"] == "the article is added"
+    assert pair["provenance"]["justification"] == "the article is added"

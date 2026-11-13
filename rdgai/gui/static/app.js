@@ -1,5 +1,5 @@
 // The rdgai annotation GUI. Talks to the JSON API in rdgai/gui/__init__.py; pure logic lives in logic.js.
-import { keyAction, categoryClick, targetPairs, pairKey, labelRequest, certaintyRequest, visiblePairs, progressText, ruleText } from "./logic.js";
+import { keyAction, categoryClick, targetPairs, pairKey, labelRequest, certaintyRequest, visiblePairs, progressText, ruleText, refreshAction, justificationSource } from "./logic.js";
 
 const state = {
   config: null,
@@ -8,9 +8,13 @@ const state = {
   ticked: new Set(),
   pendingCert: {},   // pairKey -> certainty chosen before a category (unlabelled pairs)
   reasons: {},       // pairKey -> edited reason text not yet saved
+  copied: {},        // pairKey -> {text, source} when a suggestion's reason was copied into the reason box
   filters: {},
   showRules: false,  // whether the section of pairs labelled by rule is expanded
+  version: null,     // version token of the file the shown unit was read from
 };
+
+const POLL_MILLISECONDS = 3000;
 
 const visible = () => (state.unit ? visiblePairs(state.unit, state.showRules) : []);
 
@@ -38,7 +42,9 @@ function el(tag, attrs = {}, ...children) {
 // ---------------------------------------------------------------------------
 
 async function api(path, body) {
-  const options = body === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) };
+  const options = body === undefined
+    ? { cache: "no-store" }
+    : { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) };
   const response = await fetch(path, options);
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw Object.assign(new Error(data.error || response.statusText), { status: response.status, data });
@@ -103,18 +109,21 @@ async function loadUnit(unitId, { keepFocus = false } = {}) {
     const unit = await api(`/api/unit/${encodeURIComponent(unitId)}${filterQuery()}`);
     const previousId = state.unit?.id;
     state.unit = unit;
+    state.version = unit.version;
     state.filters = unit.filters;
     if (!keepFocus || previousId !== unit.id) {
       state.focused = 0;
       state.ticked.clear();
       state.pendingCert = {};
       state.reasons = {};
+      state.copied = {};
       state.showRules = false;
     }
     state.focused = Math.min(state.focused, Math.max(visible().length - 1, 0));
     syncFilterControls();
+    const scroll = window.scrollY;
     render();
-    window.scrollTo({ top: 0 });
+    window.scrollTo({ top: keepFocus && previousId === unit.id ? scroll : 0 });
   } catch (error) {
     showStatus(error.message, true);
   }
@@ -210,6 +219,7 @@ function provenanceText(pair) {
   if (provenance.cert) parts.push(`certainty ${provenance.cert}`);
   if (provenance.model) parts.push(`model ${provenance.model}`);
   if (provenance.definitions_hash) parts.push(`definitions ${provenance.definitions_hash.slice(0, 8)}`);
+  if (provenance.justification_source) parts.push(`reason copied from ${provenance.justification_source}`);
   return parts.join(" · ");
 }
 
@@ -254,9 +264,12 @@ function pairPanel(pair, index) {
     "data-category": button.name,
   }, button.key ? el("span", { class: "key" }, button.key.replace("shift+", "⇧")) : null, button.name));
 
-  const suggestions = pair.suggestions.map((suggestion) => el("div", { class: "suggestion muted" },
+  const suggestions = pair.suggestions.map((suggestion, suggestionIndex) => el("div", { class: "suggestion muted" },
     `Suggested by ${suggestion.source}: `, el("strong", {}, suggestion.category),
-    suggestion.justification ? ` — ${suggestion.justification}` : ""));
+    suggestion.justification ? ` — ${suggestion.justification} ` : "",
+    suggestion.justification && !readOnly
+      ? el("button", { type: "button", class: "copy-reason", title: "Copy this reason into the reason box (recorded as copied unless you edit it)", "data-copy-reason": String(suggestionIndex) }, "Use reason")
+      : null));
 
   const cert = certaintyOf(pair);
   const byRule = pair.source === "rule" || (pair.rule && !pair.source);
@@ -318,6 +331,7 @@ function applyWrite(result) {
   for (const key of Object.keys(updated)) {
     delete state.reasons[key];
     delete state.pendingCert[key];
+    delete state.copied[key];
   }
 }
 
@@ -326,11 +340,9 @@ async function write(path, body, message) {
     const result = await api(path, body);
     applyWrite(result);
     state.ticked.clear();
-    if (state.unit.rule_pairs?.length) {
-      await loadUnit(state.unit.id, { keepFocus: true });  // the rules may have updated labels derived from this pair
-    } else {
-      render();
-    }
+    render();
+    // fetch the unit again: other labels may have changed too (subreading rules, or another process)
+    await loadUnit(state.unit.id, { keepFocus: true });
     showStatus(message);
     return true;
   } catch (error) {
@@ -356,8 +368,9 @@ async function chooseCategory(name) {
   const focusedPair = visible()[state.focused];
   const reasonSource = single ? pairs[0] : (pairs.includes(focusedPair) ? focusedPair : null);
   const justification = reasonSource ? reasonOf(reasonSource) : "";
+  const source = reasonSource ? justificationSource(justification, state.copied[pairKey(reasonSource)]) : null;
   const cert = certaintyOf(single ? pairs[0] : focusedPair);
-  const saved = await write("/api/label", labelRequest(state.unit.id, pairs, category, cert, justification),
+  const saved = await write("/api/label", labelRequest(state.unit.id, pairs, category, cert, justification, source),
     category ? `Saved ${category}${single ? "" : ` for ${pairs.length} pairs`}` : "Cleared");
   if (saved && single && category && state.focused < visible().length - 1) {
     moveFocus(1);
@@ -379,7 +392,18 @@ async function chooseCertainty(value) {
 async function saveReason(key) {
   const pair = visible().find((candidate) => pairKey(candidate) === key);
   if (!pair || !pair.category || !(key in state.reasons) || state.reasons[key] === pair.reason) return;
-  await write("/api/label", labelRequest(state.unit.id, [pair], pair.category, certaintyOf(pair), state.reasons[key]), "Reason saved");
+  const source = justificationSource(state.reasons[key], state.copied[key]);
+  await write("/api/label", labelRequest(state.unit.id, [pair], pair.category, certaintyOf(pair), state.reasons[key], source), "Reason saved");
+}
+
+function copyReason(pairIndex, suggestionIndex) {
+  const pair = visible()[pairIndex];
+  const suggestion = pair?.suggestions[suggestionIndex];
+  if (!suggestion) return;
+  const key = pairKey(pair);
+  state.reasons[key] = suggestion.justification;
+  state.copied[key] = { text: suggestion.justification, source: suggestion.source.split(":")[0] };
+  render();  // focus stays on the pair, so a number key can save the label with this reason straight away
 }
 
 function moveFocus(delta) {
@@ -420,6 +444,8 @@ function setUpEvents() {
     if (categoryButton) return chooseCategory(categoryButton.dataset.category);
     const certButton = event.target.closest("[data-cert]");
     if (certButton) return chooseCertainty(certButton.dataset.cert);
+    const copyButton = event.target.closest("[data-copy-reason]");
+    if (copyButton) return copyReason(index, Number(copyButton.dataset.copyReason));
   });
   $("pairs").addEventListener("change", (event) => {
     if (event.target.dataset.tick) toggleTick(event.target.dataset.tick);
@@ -463,6 +489,33 @@ function setUpEvents() {
   $("help-toggle").addEventListener("click", () => togglePanel("help"));
   $("definitions-toggle").addEventListener("click", () => togglePanel("definitions"));
   window.addEventListener("hashchange", route);
+  window.addEventListener("focus", reloadCurrentUnit);
+  document.addEventListener("visibilitychange", reloadCurrentUnit);
+  window.addEventListener("pageshow", (event) => { if (event.persisted) reloadCurrentUnit(); });  // restored from the back/forward cache
+  setInterval(checkForChanges, POLL_MILLISECONDS);
+}
+
+// Keeps the page in step with the file, which other processes (e.g. Claude through MCP) may change at any time.
+async function checkForChanges() {
+  if (!state.unit) return;
+  let latest;
+  try {
+    latest = (await api("/api/version")).version;
+  } catch {
+    return;  // the server may be restarting; try again on the next check
+  }
+  const typing = document.activeElement?.matches("textarea, input[type=search]") ?? false;
+  const action = refreshAction({ hidden: document.hidden, typing, known: state.version, latest });
+  if (action === "remember") state.version = latest;
+  if (action === "reload") {
+    await loadUnit(state.unit.id, { keepFocus: true });
+    showStatus("Updated: the file was changed elsewhere.");
+  }
+}
+
+function reloadCurrentUnit() {
+  const typing = document.activeElement?.matches("textarea, input[type=search]") ?? false;
+  if (state.unit && !document.hidden && !typing) loadUnit(state.unit.id, { keepFocus: true });
 }
 
 async function start() {

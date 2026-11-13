@@ -33,9 +33,11 @@ def relation_provenance(relation:Element) -> dict:
     """ Reads resp, cert, change, the justification and the time saved from a <relation> element. """
     justification_parts = []
     when = ""
+    justification_source = ""
     for desc in unique(find_elements(relation, "./desc")):
         if desc.attrib.get("type", "justification") != "justification":
             continue
+        justification_source = justification_source or desc.attrib.get("resp", "").lstrip("#")
         text = desc.text or ""
         for child in desc:
             if isinstance(child.tag, str) and ET.QName(child).localname == "date":
@@ -50,6 +52,7 @@ def relation_provenance(relation:Element) -> dict:
         change=relation.attrib.get("change", ""),
         justification="\n".join(part for part in justification_parts if part).strip(),
         when=when,
+        justification_source=justification_source,
     )
 
 
@@ -287,6 +290,7 @@ class Pair():
         description:str="",
         change:str|None=None,
         when:str|None=None,
+        description_resp:str|None=None,
     ) -> Element:
         """
         Sets the classification of this pair to a single relation type, replacing any existing classification.
@@ -313,7 +317,10 @@ class Pair():
 
         description = (description or "").strip()
         if description or when:
-            desc = ET.SubElement(relation, tei_tag(relation, "desc"), attrib={"type":"justification"})
+            desc_attrib = {"type":"justification"}
+            if description and description_resp:
+                desc_attrib["resp"] = description_resp  # whose wording the justification is, if not the label's resp
+            desc = ET.SubElement(relation, tei_tag(relation, "desc"), attrib=desc_attrib)
             desc.text = description or None
             if when:
                 ET.SubElement(desc, tei_tag(relation, "date"), attrib={"when": when})
@@ -329,12 +336,16 @@ class Pair():
         inverse_description:str|None=None,
         change:str|None=None,
         when:str|None=None,
+        description_resp:str|None=None,
     ) -> Element:
         """ Sets the classification of this pair and sets the inverse category on the inverse pair. """
-        relation = self.set_type(type, responsible=responsible, cert=cert, description=description, change=change, when=when)
+        relation = self.set_type(
+            type, responsible=responsible, cert=cert, description=description, change=change, when=when, description_resp=description_resp,
+        )
         inverse_description = description if inverse_description is None else inverse_description
         self.get_inverse().set_type(
             type.get_inverse(), responsible=responsible, cert=cert, description=inverse_description, change=change, when=when,
+            description_resp=description_resp,
         )
         return relation
 

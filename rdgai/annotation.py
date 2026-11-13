@@ -114,6 +114,7 @@ class Provenance(BaseModel):
     resp: str = Field(default="", description="Who is responsible, e.g. '#RT' for a human annotator or '#rdgai' for the pipeline.")
     cert: str = Field(default="", description="Certainty: high, medium or low.")
     justification: str = ""
+    justification_source: str = Field(default="", description="If the justification's wording was copied from someone else (e.g. 'claude' from a suggestion), who.")
     change: str = Field(default="", description="Pointers to <change> elements: the pipeline run (if any) and the definitions version.")
     when: str = Field(default="", description="When the label was saved (ISO 8601, UTC), if recorded.")
     model: str = Field(default="", description="The model used, if any.")
@@ -550,6 +551,7 @@ class AnnotationStore:
             resp=data["resp"],
             cert=data["cert"],
             justification=data["justification"],
+            justification_source=data["justification_source"],
             change=data["change"],
             when=data["when"] or info["run_when"],
             model=info["model"],
@@ -1502,6 +1504,7 @@ class AnnotationStore:
         resp:str|None=None,
         change:str|None=None,
         expected:dict|None=None,
+        justification_source:str|None=None,
     ) -> list[WriteResult]:
         """
         Sets the same category on several pairs of a unit (each from its active to its passive reading),
@@ -1510,6 +1513,8 @@ class AnnotationStore:
 
         expected: optional {(active, passive): category or None}. If any pair's current category differs,
         ConflictError is raised and nothing is written.
+        justification_source: if the justification's wording was copied from someone else (e.g. 'claude' from a
+        suggestion), who; recorded as the @resp of the justification's <desc>.
         """
         with self.writing():
             self.check_writable()
@@ -1522,6 +1527,14 @@ class AnnotationStore:
             relation_type = self.get_relation_type(category)
             self.check_expected(pair_objects, expected or {})
             resp = self.resolve_resp(resp)
+            description_resp = None
+            if justification_source and (justification or "").strip():
+                source_name = justification_source.lstrip("#")
+                if not NC_NAME.match(source_name):
+                    raise AnnotationError(f"Invalid justification source '{justification_source}': use a name such as 'claude'.")
+                if source_name == "claude":
+                    self.ensure_resp_stmt("claude", "Claude", "suggested classifications")
+                description_resp = f"#{source_name}"
 
             change_attr = self.change_pointers(change, self.ensure_definitions_change())
             when = self.now()
@@ -1536,6 +1549,7 @@ class AnnotationStore:
                     inverse_description=inverse_justification,
                     change=change_attr,
                     when=when,
+                    description_resp=description_resp,
                 )
             self.reapply_rules(app)
             self.save()

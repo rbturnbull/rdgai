@@ -50,8 +50,8 @@ export function expectedFor(pairs) {
   return Object.fromEntries(pairs.map((pair) => [pairKey(pair), pair.category ?? null]));
 }
 
-export function labelRequest(unitId, pairs, category, cert, justification) {
-  return {
+export function labelRequest(unitId, pairs, category, cert, justification, justificationSource = null) {
+  const request = {
     unit_id: unitId,
     pairs: pairs.map((pair) => [pair.first, pair.second]),
     category,
@@ -59,6 +59,8 @@ export function labelRequest(unitId, pairs, category, cert, justification) {
     justification,
     expected: expectedFor(pairs),
   };
+  if (justificationSource) request.justification_source = justificationSource;
+  return request;
 }
 
 export function certaintyRequest(unitId, pairs, cert) {
@@ -81,4 +83,25 @@ export function ruleText(rule) {
   if (rule.rule === 2) return "By rule: subreadings of the same reading";
   const parent = `${rule.parent[0]} → ${rule.parent[1]}`;
   return rule.waiting ? `By rule: waiting for ${parent} to be labelled` : `By rule: same as ${parent}`;
+}
+
+// What to do when the file's version token has been checked: reload the unit if the file changed, but never while
+// the page is hidden (check again when it is shown) or while the annotator is typing (check again later).
+export function refreshAction({ hidden, typing, known, latest }) {
+  if (known === null || known === undefined) return "remember";
+  if (known === latest) return "none";
+  if (hidden) return "skip";
+  if (typing) return "later";
+  return "reload";
+}
+
+// Whose wording a reason is: the source it was copied from, but only if it is saved exactly as copied.
+export function justificationSource(reason, copied) {
+  if (!copied || !reason || !reason.trim()) return null;
+  return reason.trim() === copied.text.trim() ? copied.source : null;
+}
+
+// Labels and suggestions saved for the reverse direction start "Inverse of a → b: "; that is not shown.
+export function displayJustification(text) {
+  return (text || "").replace(/^Inverse of \S+ → \S+:\s*/, "");
 }

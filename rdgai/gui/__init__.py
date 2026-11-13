@@ -5,10 +5,12 @@ It is a small Starlette app over the same ``AnnotationStore`` as the MCP server,
 server's process (``rdgai serve-mcp --gui-port``) or on its own (``rdgai annotate``). Everything about the
 categories comes from the TEI ``<interpGrp type="transcriptional">``; nothing is specific to one corpus.
 """
+import re
 from pathlib import Path
 
 from pydantic import BaseModel
 from starlette.applications import Starlette
+from starlette.middleware import Middleware
 from starlette.concurrency import run_in_threadpool
 from starlette.requests import Request
 from starlette.responses import FileResponse, JSONResponse
@@ -26,6 +28,12 @@ from ..annotation import (
 )
 
 STATIC = Path(__file__).parent / "static"
+INVERSE_PREFIX = re.compile(r"^Inverse of \S+ → \S+:\s*")
+
+
+def display_justification(text:str) -> str:
+    """ Labels and suggestions saved for the reverse direction start 'Inverse of a → b: '; the GUI does not show that. """
+    return INVERSE_PREFIX.sub("", text or "")
 
 # Keys for the category buttons, in button order: 1-9, 0, then shift+1 ... shift+0.
 KEYS = [str(digit) for digit in range(1, 10)] + ["0"] + [f"shift+{digit}" for digit in [*range(1, 10), 0]]
@@ -119,6 +127,40 @@ def error_response(error:AnnotationError) -> JSONResponse:
     return JSONResponse({"error": str(error)}, status_code=400)
 
 
+class CacheControl:
+    """
+    The API is never cached (another process, e.g. Claude through MCP, may change the file at any time);
+    the page and its scripts are revalidated on every load.
+    """
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            return await self.app(scope, receive, send)
+        value = b"no-store" if scope["path"].startswith("/api/") else b"no-cache"
+
+        async def send_with_header(message):
+            if message["type"] == "http.response.start":
+                headers = [(name, item) for name, item in message.get("headers", []) if name.lower() != b"cache-control"]
+                message = {**message, "headers": headers + [(b"cache-control", value)]}
+            await send(message)
+
+        await self.app(scope, receive, send_with_header)
+
+
+def file_version(*paths:Path) -> str:
+    """ A token that changes whenever any of the files changes (rdgai replaces files atomically, so the inode changes). """
+    parts = []
+    for path in paths:
+        try:
+            stat = path.stat()
+            parts.append(f"{stat.st_ino}-{stat.st_mtime_ns}-{stat.st_size}")
+        except FileNotFoundError:
+            parts.append("none")
+    return "|".join(parts)
+
+
 def create_app(store:AnnotationStore, group_by_prefix:str|None=None) -> Starlette:
     """ Builds the GUI app over a store (which may be shared with an MCP server in the same process). """
 
@@ -137,12 +179,12 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None) -> Starlett
     def pair_payload(app, pair, role:str|None) -> dict:
         info = store.pair_info(pair)
         suggestions = [] if role == "test" else store.suggestions_for(app, pair)
+        for suggestion in suggestions:
+            suggestion.justification = display_justification(suggestion.justification)
         if info.provenance is not None:
-            reason = info.provenance.justification
-        elif suggestions:
-            reason = max(suggestions, key=lambda suggestion: suggestion.when).justification
-        else:
-            reason = ""
+            info.provenance.justification = display_justification(info.provenance.justification)
+        # the reason box holds the annotator's own reason only: it starts empty (suggestions are shown separately)
+        reason = info.provenance.justification if info.provenance is not None else ""
         rule = None
         if info.rule is not None:
             waiting = False
@@ -180,6 +222,12 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None) -> Starlett
             if str(app) != current_id and store.status(app) in ("unclassified", "partial"):
                 return str(app)
         return None
+
+    def current_version() -> str:
+        return file_version(store.path, store.sample_path)
+
+    def version(request:Request):
+        return JSONResponse(dict(version=current_version()))
 
     async def index(request:Request):
         return FileResponse(STATIC / "index.html")
@@ -251,6 +299,7 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None) -> Starlett
                     pairs=[pair_payload(app, pair, role) for pair in ordered if store.coverage_for(pair) is None],
                     rule_pairs=[pair_payload(app, pair, role) for pair in ordered if store.coverage_for(pair) is not None],
                     filters=filters,
+                    version=current_version(),
                 ))
         except AnnotationError as error:
             return error_response(error)
@@ -279,6 +328,7 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None) -> Starlett
                     justification=data.get("justification") or "",
                     cert=data.get("cert") or "high",
                     expected=expected,
+                    justification_source=data.get("justification_source") or None,
                 )
             return write_response(unit_id, pairs)
         except AnnotationError as error:
@@ -300,9 +350,10 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None) -> Starlett
         Route("/", index),
         Route("/api/config", config),
         Route("/api/queue", queue),
+        Route("/api/version", version),
         Route("/api/unit/{unit_id:path}", unit),
         Route("/api/label", label, methods=["POST"]),
         Route("/api/certainty", certainty, methods=["POST"]),
         Mount("/static", StaticFiles(directory=STATIC), name="static"),
     ]
-    return Starlette(routes=routes)
+    return Starlette(routes=routes, middleware=[Middleware(CacheControl)])
