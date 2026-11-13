@@ -229,6 +229,39 @@ Classifications made by an automated run have ``resp="#rdgai"`` and also point t
 happened and which model it used.
 
 
+Annotation GUI
+==================================
+
+A browser interface for annotating and reviewing classifications, generated from the categories in the
+``<interpGrp type="transcriptional">`` (nothing is specific to one corpus or category set).
+Run it inside the MCP server's process, so that only one program writes the file:
+
+.. code-block:: bash
+
+    rdgai serve-mcp doc.xml --annotator RT --gui-port 8765 --group-by-prefix _
+
+or on its own:
+
+.. code-block:: bash
+
+    rdgai annotate doc.xml --annotator RT --group-by-prefix _ --open
+
+Then open ``http://127.0.0.1:8765/``. If the port is in use, the MCP server still starts (without the GUI).
+
+- Each pair is shown with the better-attested reading first; the label is saved for first → second and the
+  inverse is set automatically.
+- One button per category, always in the same position. ``--group-by-prefix _`` lays them out in rows
+  (e.g. Minor_* above Major_*), as does a ``@type`` on the ``<interp>`` elements. Hover over a button for its definition.
+- Clicking another category replaces the label; clicking the current one clears it.
+- A suggestion (e.g. from Claude via ``suggest_classification``) is shown in bold with its justification, and
+  pre-fills the reason. Suggestions are never shown on test units.
+- Tick several pairs to label them, or set their certainty, together.
+- Keys: ``j``/``k`` next/previous pair, ``1``–``9``, ``0`` (and shift + number) categories, ``h``/``m``/``l``
+  certainty, ``x`` tick, ``n`` next unit with unclassified pairs, ``?`` help.
+- If a pair was changed elsewhere (e.g. by Claude through MCP) since the page loaded, the save is refused and
+  the unit reloads, so no one's label is overwritten silently.
+
+
 Credits
 ==================================
 

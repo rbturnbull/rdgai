@@ -231,6 +231,9 @@ def serve_mcp(
     reading_notes:bool=typer.Option(True, help="Treat text in parentheses in readings (e.g. ECM's '(cf. 24b)') as notes, not reading text."),
     ignore_types:list[str]=typer.Option(["defective"], "--ignore-type", help="Readings of this @type are not classified (repeatable). Defaults to defective."),
     sample_file:Path=typer.Option(None, help="Sidecar YAML file for the sample of units (default: <doc>.sample.yaml)."),
+    gui_port:int=typer.Option(None, help="Also serve the annotation GUI on this port, in the same process (e.g. 8765)."),
+    gui_host:str=typer.Option("127.0.0.1", help="Host for the annotation GUI."),
+    group_by_prefix:str=typer.Option(None, help="Lay out the GUI's category buttons in rows by the part of the name before this separator, e.g. '_'."),
 ):
     """ Serves an MCP server for querying and classifying the reading pairs in a TEI document. """
     from .annotation import AnnotationStore, AnnotationError
@@ -247,13 +250,61 @@ def serve_mcp(
     except AnnotationError as error:
         error_console.print(str(error))
         raise typer.Exit(code=1)
-    server = build_server(store)
-    if transport == "stdio":
-        server.run("stdio")
-    elif transport == "http":
-        server.run("streamable-http", host=host, port=port)
-    else:
+    if transport not in ("stdio", "http"):
         raise typer.BadParameter("transport must be 'stdio' or 'http'.")
+    server = build_server(store)
+    if gui_port:
+        import anyio
+        from .gui import create_app
+        from .gui.serve import serve_mcp_with_gui
+        gui_app = create_app(store, group_by_prefix=group_by_prefix)
+        anyio.run(lambda: serve_mcp_with_gui(server, gui_app, gui_host, gui_port, transport=transport, host=host, port=port))
+    elif transport == "stdio":
+        server.run("stdio")
+    else:
+        server.run("streamable-http", host=host, port=port)
+
+
+@app.command()
+def annotate(
+    doc:Path=typer.Argument(..., help="The TEI XML document. It is modified in place when classifications are saved."),
+    port:int=typer.Option(8765, help="Port for the GUI."),
+    host:str=typer.Option("127.0.0.1", help="Host for the GUI."),
+    annotator:str=typer.Option(None, help="xml:id of the human annotator responsible for the labels saved, e.g. 'RT'."),
+    annotator_name:str=typer.Option(None, help="Full name of the annotator (used in the <respStmt> added to the TEI header)."),
+    read_only:bool=typer.Option(False, help="View only: no labels can be saved."),
+    reading_notes:bool=typer.Option(True, help="Treat text in parentheses in readings (e.g. ECM's '(cf. 24b)') as notes, not reading text."),
+    ignore_types:list[str]=typer.Option(["defective"], "--ignore-type", help="Readings of this @type are not classified (repeatable). Defaults to defective."),
+    sample_file:Path=typer.Option(None, help="Sidecar YAML file for the sample of units (default: <doc>.sample.yaml)."),
+    group_by_prefix:str=typer.Option(None, help="Lay out the category buttons in rows by the part of the name before this separator, e.g. '_'."),
+    open_browser:bool=typer.Option(False, "--open", help="Open the GUI in a web browser."),
+):
+    """ Runs the annotation GUI on its own (use `serve-mcp --gui-port` to run it inside the MCP server instead). """
+    from .annotation import AnnotationStore, AnnotationError
+    from .gui import create_app
+    from .gui.serve import bind, gui_server
+
+    if not read_only and not annotator:
+        raise typer.BadParameter("Provide --annotator (the xml:id of the person responsible) or use --read-only.")
+    try:
+        store = AnnotationStore(
+            doc, annotator=annotator, annotator_name=annotator_name, read_only=read_only,
+            ignore_types=ignore_types, sample_path=sample_file, reading_notes=reading_notes,
+        )
+    except AnnotationError as error:
+        error_console.print(str(error))
+        raise typer.Exit(code=1)
+
+    sock = bind(host, port)
+    if sock is None:
+        raise typer.Exit(code=1)
+    url = f"http://{host}:{port}/"
+    console.print(f"Annotation GUI for {doc} at {url}")
+    if open_browser:
+        import webbrowser
+        webbrowser.open(url)
+    import anyio
+    anyio.run(lambda: gui_server(create_app(store, group_by_prefix=group_by_prefix), host, port).serve([sock]))
 
 
 @app.command()

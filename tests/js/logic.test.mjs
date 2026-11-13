@@ -1,0 +1,77 @@
+// Tests for the pure logic of the annotation GUI (rdgai/gui/static/logic.js). Run with: node --test tests/js
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { keyAction, categoryClick, targetPairs, pairKey, expectedFor, labelRequest, certaintyRequest } from "../../rdgai/gui/static/logic.js";
+
+const buttons = [
+  { name: "Orthography", key: "1" },
+  { name: "Transposition", key: "2" },
+  { name: "Major_Omission", key: "0" },
+  { name: "Eleventh", key: "shift+1" },
+];
+
+const press = (key, extra = {}) => ({ key, code: /^[0-9]$/.test(key) ? `Digit${key}` : `Key${key.toUpperCase()}`, shiftKey: false, ctrlKey: false, metaKey: false, altKey: false, inTextField: false, ...extra });
+
+test("number keys select categories in button order", () => {
+  assert.deepEqual(keyAction(press("1"), buttons), { type: "category", name: "Orthography" });
+  assert.deepEqual(keyAction(press("0"), buttons), { type: "category", name: "Major_Omission" });
+  assert.equal(keyAction(press("5"), buttons), null);
+});
+
+test("shift + number selects categories beyond ten (by key code, whatever the keyboard layout)", () => {
+  assert.deepEqual(keyAction(press("!", { code: "Digit1", shiftKey: true }), buttons), { type: "category", name: "Eleventh" });
+});
+
+test("j/k move between pairs, h/m/l set certainty, n goes to the next unclassified unit, x ticks", () => {
+  assert.deepEqual(keyAction(press("j"), buttons), { type: "move", delta: 1 });
+  assert.deepEqual(keyAction(press("k"), buttons), { type: "move", delta: -1 });
+  assert.deepEqual(keyAction(press("h"), buttons), { type: "certainty", value: "high" });
+  assert.deepEqual(keyAction(press("m"), buttons), { type: "certainty", value: "medium" });
+  assert.deepEqual(keyAction(press("l"), buttons), { type: "certainty", value: "low" });
+  assert.deepEqual(keyAction(press("n"), buttons), { type: "next_unclassified" });
+  assert.deepEqual(keyAction(press("x"), buttons), { type: "toggle_tick" });
+  assert.deepEqual(keyAction(press("?", { code: "Slash", shiftKey: true }), buttons), { type: "help" });
+});
+
+test("keys are ignored while typing a reason, except Escape which leaves the text box", () => {
+  assert.equal(keyAction(press("j", { inTextField: true }), buttons), null);
+  assert.equal(keyAction(press("1", { inTextField: true }), buttons), null);
+  assert.deepEqual(keyAction(press("Escape", { code: "Escape", inTextField: true }), buttons), { type: "leave_text" });
+});
+
+test("keys with modifiers are left to the browser", () => {
+  assert.equal(keyAction(press("1", { metaKey: true }), buttons), null);
+  assert.equal(keyAction(press("j", { ctrlKey: true }), buttons), null);
+});
+
+test("clicking the current category clears it; another category replaces it", () => {
+  assert.deepEqual(categoryClick("Minor_Omission", "Minor_Omission"), { category: null });
+  assert.deepEqual(categoryClick("Minor_Omission", "Major_Omission"), { category: "Major_Omission" });
+  assert.deepEqual(categoryClick(null, "Major_Omission"), { category: "Major_Omission" });
+});
+
+const pairs = [
+  { first: "a", second: "b", category: null },
+  { first: "a", second: "c", category: "Minor_Omission" },
+  { first: "b", second: "c", category: null },
+];
+
+test("actions apply to ticked pairs (in display order) or else the focused pair", () => {
+  assert.deepEqual(targetPairs(pairs, 1, new Set()), [pairs[1]]);
+  assert.deepEqual(targetPairs(pairs, 0, new Set(["b|c", "a|b"])), [pairs[0], pairs[2]]);
+  assert.deepEqual(targetPairs(pairs, -1, new Set()), []);
+});
+
+test("requests carry the categories the page last saw, so stale writes are refused", () => {
+  assert.equal(pairKey(pairs[1]), "a|c");
+  assert.deepEqual(expectedFor([pairs[0], pairs[1]]), { "a|b": null, "a|c": "Minor_Omission" });
+  assert.deepEqual(labelRequest("Mark.1.1.10", [pairs[0]], "Major_Omission", "medium", "reason"), {
+    unit_id: "Mark.1.1.10",
+    pairs: [["a", "b"]],
+    category: "Major_Omission",
+    cert: "medium",
+    justification: "reason",
+    expected: { "a|b": null },
+  });
+  assert.deepEqual(certaintyRequest("Mark.1.1.10", [pairs[1]], "low"), { unit_id: "Mark.1.1.10", pairs: [["a", "c"]], cert: "low" });
+});

@@ -57,6 +57,10 @@ class DefinitionsLockedError(AnnotationError):
     pass
 
 
+class UnitNotFoundError(AnnotationError):
+    pass
+
+
 class ConflictError(AnnotationError):
     """ A write was based on a stale view: the current categories differ from what the caller expected. """
     def __init__(self, message:str, current:dict):
@@ -85,6 +89,7 @@ class Category(BaseModel):
     name: str
     description: str
     inverse: str = Field(description="The category assigned to the reverse pair. Equal to name if the category is its own inverse.")
+    group: str = Field(default="", description="Optional grouping hint from the <interp>'s @type or @n (used to lay out GUI buttons).")
 
 
 class Definitions(BaseModel):
@@ -402,7 +407,7 @@ class AnnotationStore:
         try:
             return self.doc[unit_id]
         except KeyError:
-            raise AnnotationError(f"No variation unit with id '{unit_id}'.")
+            raise UnitNotFoundError(f"No variation unit with id '{unit_id}'.")
 
     def is_excluded(self, reading) -> bool:
         return reading.type in self.ignore_types
@@ -534,7 +539,12 @@ class AnnotationStore:
 
     def categories(self) -> list[Category]:
         return [
-            Category(name=relation_type.name, description=relation_type.description, inverse=relation_type.get_inverse().name)
+            Category(
+                name=relation_type.name,
+                description=relation_type.description,
+                inverse=relation_type.get_inverse().name,
+                group=relation_type.element.attrib.get("type") or relation_type.element.attrib.get("n") or "",
+            )
             for relation_type in self.doc.relation_types.values()
         ]
 
@@ -560,6 +570,23 @@ class AnnotationStore:
                 definitions_hash=self.definitions_hash(),
             )
 
+    def filter_units(self, status:UnitStatus="all", verse:str="", sample:SampleFilter="all") -> list[App]:
+        """ The units matching the filters, in document order (call refresh() first). """
+        apps = self.doc.apps
+        if sample != "all":
+            roles = self.sample_roles()
+            if sample == "sampled":
+                apps = [app for app in apps if str(app) in roles]
+            elif sample == "unsampled":
+                apps = [app for app in apps if str(app) not in roles]
+            else:
+                apps = [app for app in apps if roles.get(str(app)) == sample]
+        if verse:
+            apps = [app for app in apps if matches_verse(str(app), verse)]
+        if status != "all":
+            apps = [app for app in apps if self.status(app) == status]
+        return apps
+
     def list_units(
         self,
         status:UnitStatus="all",
@@ -570,19 +597,7 @@ class AnnotationStore:
     ) -> UnitList:
         with self.lock:
             self.refresh()
-            apps = self.doc.apps
-            if sample != "all":
-                roles = self.sample_roles()
-                if sample == "sampled":
-                    apps = [app for app in apps if str(app) in roles]
-                elif sample == "unsampled":
-                    apps = [app for app in apps if str(app) not in roles]
-                else:
-                    apps = [app for app in apps if roles.get(str(app)) == sample]
-            if verse:
-                apps = [app for app in apps if matches_verse(str(app), verse)]
-            if status != "all":
-                apps = [app for app in apps if self.status(app) == status]
+            apps = self.filter_units(status=status, verse=verse, sample=sample)
             offset = max(offset, 0)
             limit = max(min(limit, 500), 1)
             return UnitList(
@@ -1285,6 +1300,21 @@ class AnnotationStore:
             pair.clear_types_with_inverse()
             self.save()
             return self.write_results(app, [pair])[0]
+
+    def clear_classifications(self, unit_id:str, pairs:list[tuple[str, str]], expected:dict|None=None) -> list[WriteResult]:
+        """ Removes the classifications of several pairs (and their inverses), saving once. All-or-nothing. """
+        with self.writing():
+            self.check_writable()
+            self.refresh()
+            if not pairs:
+                raise AnnotationError("No pairs given.")
+            app = self.get_app(unit_id)
+            pair_objects = [self.get_pair(app, active, passive) for active, passive in pairs]
+            self.check_expected(pair_objects, expected or {})
+            for pair in pair_objects:
+                pair.clear_types_with_inverse()
+            self.save()
+            return self.write_results(app, pair_objects)
 
     def start_run(self, model:str, description:str="") -> str:
         """
