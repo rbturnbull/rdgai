@@ -51,7 +51,13 @@ def test_update_description(store, mark_path):
     before = categories(store)
     result = store.update_category("Transposition", description="  Same words, different order.  ")
     assert result.relations_updated == 0
-    after = {category.name: category for category in result.definitions.categories}
+    # the result is compact: only the changed category and the new hash
+    assert [category.name for category in result.changed] == ["Transposition"]
+    assert result.changed[0].description == "Same words, different order."
+    assert result.removed == []
+    assert result.definitions_hash == store.definitions().definitions_hash
+    assert "definitions" not in result.model_dump()
+    after = categories(store)
     assert after["Transposition"].description == "Same words, different order."
     assert {name: category for name, category in after.items() if name != "Transposition"} == \
         {name: category for name, category in before.items() if name != "Transposition"}
@@ -66,13 +72,16 @@ def test_rename_category_updates_corresp_and_labels(store, mark_path):
 
     result = store.update_category("Major_Addition", new_name="Major_Plus")
     assert result.relations_updated == 2
+    # the renamed category and its inverse (whose corresp changed) are reported
+    assert {category.name for category in result.changed} == {"Major_Plus", "Major_Omission"}
+    assert result.removed == ["Major_Addition"]
 
     after = categories(store)
     assert "Major_Addition" not in after
     assert after["Major_Plus"].inverse == "Major_Omission"
     assert after["Major_Omission"].inverse == "Major_Plus"
     # order of categories is kept
-    assert [category.name for category in result.definitions.categories].index("Major_Plus") == 7
+    assert [category.name for category in store.definitions().categories].index("Major_Plus") == 7
 
     pair = store.get_unit("Mark.1.1.10").pairs[0]
     assert pair.category == "Major_Omission"
@@ -123,10 +132,11 @@ def test_update_needs_a_change(store):
 
 def test_add_self_inverse_category(store, mark_path):
     result = store.add_category("Harmonization", description="Assimilated to a parallel passage.")
-    after = {category.name: category for category in result.definitions.categories}
+    assert [category.name for category in result.changed] == ["Harmonization"]
+    after = categories(store)
     assert after["Harmonization"].inverse == "Harmonization"
     assert after["Harmonization"].description == "Assimilated to a parallel passage."
-    assert [category.name for category in result.definitions.categories][-1] == "Harmonization"
+    assert [category.name for category in store.definitions().categories][-1] == "Harmonization"
 
     write = store.set_classification("Mark.1.2.8-14", "a", "e", "Harmonization")
     assert write.inverse.category == "Harmonization"
@@ -134,7 +144,8 @@ def test_add_self_inverse_category(store, mark_path):
 
 
 def test_add_category_pair(store, mark_path):
-    store.add_category("Gloss_Addition", description="Adds a gloss.", inverse_name="Gloss_Omission", inverse_description="Omits a gloss.")
+    result = store.add_category("Gloss_Addition", description="Adds a gloss.", inverse_name="Gloss_Omission", inverse_description="Omits a gloss.")
+    assert [category.name for category in result.changed] == ["Gloss_Addition", "Gloss_Omission"]
     after = categories(store)
     assert after["Gloss_Addition"].inverse == "Gloss_Omission"
     assert after["Gloss_Omission"].inverse == "Gloss_Addition"
@@ -170,12 +181,15 @@ def test_add_category_errors(store, mark_path, kwargs, message):
 def test_remove_unused_category(store, mark_path):
     result = store.remove_category("Transposition")
     assert result.relations_updated == 0
+    assert result.removed == ["Transposition"]
+    assert result.changed == []
     assert "Transposition" not in categories(store)
     assert 'xml:id="Transposition"' not in mark_path.read_text()
 
 
 def test_remove_pair_removes_both(store, mark_path):
-    store.remove_category("Major_Addition")
+    result = store.remove_category("Major_Addition")
+    assert sorted(result.removed) == ["Major_Addition", "Major_Omission"]
     after = categories(store)
     assert "Major_Addition" not in after
     assert "Major_Omission" not in after
@@ -231,12 +245,13 @@ def test_remove_category_reassign_errors(store, mark_path, name, reassign_to, me
 
 def test_update_guidance(store, mark_path):
     result = store.update_guidance("Decision order:\n  1. Spelling only -> Orthography\n  2. Anything else -> Substitution")
-    assert result.definitions.guidance == "Decision order:\n  1. Spelling only -> Orthography\n  2. Anything else -> Substitution"
+    assert result.guidance == "Decision order:\n  1. Spelling only -> Orthography\n  2. Anything else -> Substitution"
+    assert result.changed == []
     text = mark_path.read_text()
     assert text.count("<!--") == 1
     assert "Spelling only -> Orthography" in text
     assert "Transcriptional change categories for ECM Mark." not in text
-    assert AnnotationStore(mark_path, read_only=True).definitions().guidance == result.definitions.guidance
+    assert AnnotationStore(mark_path, read_only=True).definitions().guidance == result.guidance
 
 
 def test_update_guidance_without_existing_comment(tmp_path):
@@ -301,13 +316,15 @@ def test_tools_through_mcp(store):
     server = build_server(store)
     result = call(server, "add_category", name="Harmonization", description="Assimilated to a parallel.")
     assert not result.is_error
-    assert "Harmonization" in [category["name"] for category in result.structured_content["definitions"]["categories"]]
+    assert [category["name"] for category in result.structured_content["changed"]] == ["Harmonization"]
+    assert "definitions" not in result.structured_content
+    assert len(result.structured_content["definitions_hash"]) == 64
 
     result = call(server, "update_category", name="Harmonization", description="Assimilated to a parallel passage.")
     assert not result.is_error
 
     result = call(server, "update_guidance", guidance="Prefer Minor when in doubt.")
-    assert result.structured_content["definitions"]["guidance"] == "Prefer Minor when in doubt."
+    assert result.structured_content["guidance"] == "Prefer Minor when in doubt."
 
     result = call(server, "remove_category", name="Harmonization")
     assert not result.is_error

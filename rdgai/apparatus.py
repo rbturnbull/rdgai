@@ -15,6 +15,7 @@ import numpy as np
 # from .relations import Relation, get_reading_identifier
 from .tei import read_tei, find_elements, extract_text, find_parent, find_element, write_tei, make_nc_name, get_language, get_reading_identifier, extract_text_siblings
 from .mapper import Mapper
+from .notes import parse_reading_notes
 
 
 def unique(elements:list[Element]) -> list[Element]:
@@ -26,6 +27,30 @@ def unique(elements:list[Element]) -> list[Element]:
             seen.add(id(element))
             result.append(element)
     return result
+
+
+def relation_provenance(relation:Element) -> dict:
+    """ Reads resp, cert, change, the justification and the time saved from a <relation> element. """
+    justification_parts = []
+    when = ""
+    for desc in unique(find_elements(relation, "./desc")):
+        if desc.attrib.get("type", "justification") != "justification":
+            continue
+        text = desc.text or ""
+        for child in desc:
+            if isinstance(child.tag, str) and ET.QName(child).localname == "date":
+                when = when or child.attrib.get("when", "")
+            else:
+                text += " " + extract_text(child, include_tail=False)
+            text += child.tail or ""
+        justification_parts.append(" ".join(text.split()))
+    return dict(
+        resp=relation.attrib.get("resp", ""),
+        cert=relation.attrib.get("cert", ""),
+        change=relation.attrib.get("change", ""),
+        justification="\n".join(part for part in justification_parts if part).strip(),
+        when=when,
+    )
 
 
 def tei_tag(reference:Element, tag:str) -> str:
@@ -41,10 +66,15 @@ class Reading():
     text: str  = field(default=None)
     witnesses: list[str] = field(default_factory=list)
     type: str = field(default="")
+    raw_text: str = field(default="")
+    notes: list[str] = field(default_factory=list)
 
     def __post_init__(self):
         self.n = get_reading_identifier(self.element)
-        self.text = extract_text(self.element).strip()
+        self.raw_text = extract_text(self.element).strip()
+        self.text = self.raw_text
+        if self.app.doc.reading_notes:
+            self.text, self.notes = parse_reading_notes(self.raw_text)
         self.witnesses = self.element.attrib.get("wit", "").split()
         self.type = self.element.attrib.get("type", "")
 
@@ -240,9 +270,13 @@ class Pair():
         cert:str|None=None,
         description:str="",
         change:str|None=None,
+        when:str|None=None,
     ) -> Element:
         """
         Sets the classification of this pair to a single relation type, replacing any existing classification.
+
+        The justification and the time it was saved (``when``) go in a single <desc type="justification">,
+        as TEI allows only one <desc> in a <relation>.
 
         Any existing <relation> elements for this pair are removed so that the pair has exactly one category
         (teiphy adds the rates of multiple categories on one pair).
@@ -262,9 +296,11 @@ class Pair():
         relation = ET.SubElement(list_relation, tei_tag(list_relation, "relation"), attrib=attrib)
 
         description = (description or "").strip()
-        if description:
+        if description or when:
             desc = ET.SubElement(relation, tei_tag(relation, "desc"), attrib={"type":"justification"})
-            desc.text = description
+            desc.text = description or None
+            if when:
+                ET.SubElement(desc, tei_tag(relation, "date"), attrib={"when": when})
 
         return relation
 
@@ -276,12 +312,13 @@ class Pair():
         description:str="",
         inverse_description:str|None=None,
         change:str|None=None,
+        when:str|None=None,
     ) -> Element:
         """ Sets the classification of this pair and sets the inverse category on the inverse pair. """
-        relation = self.set_type(type, responsible=responsible, cert=cert, description=description, change=change)
+        relation = self.set_type(type, responsible=responsible, cert=cert, description=description, change=change, when=when)
         inverse_description = description if inverse_description is None else inverse_description
         self.get_inverse().set_type(
-            type.get_inverse(), responsible=responsible, cert=cert, description=inverse_description, change=change,
+            type.get_inverse(), responsible=responsible, cert=cert, description=inverse_description, change=change, when=when,
         )
         return relation
 
@@ -306,16 +343,7 @@ class Pair():
         relation = self.relation_element()
         if relation is None:
             return {}
-        justification = "\n".join(
-            extract_text(desc) for desc in find_elements(relation, "./desc")
-            if desc.attrib.get("type", "justification") == "justification"
-        ).strip()
-        return dict(
-            resp=relation.attrib.get("resp", ""),
-            cert=relation.attrib.get("cert", ""),
-            change=relation.attrib.get("change", ""),
-            justification=justification,
-        )
+        return relation_provenance(relation)
 
     def remove_description(self):
         for relation in self.relation_elements():
@@ -514,7 +542,10 @@ class App():
         return f"{self.text_before()} {self.text_with_signs(text)} {self.text_after()}".strip()
 
     def text(self) -> str:
-        return extract_text(self.element)
+        text = extract_text(self.element)
+        if self.doc.reading_notes:
+            text, _ = parse_reading_notes(text)
+        return text
 
     def text_with_signs(self, text:str|None=None) -> str:
         text = self.text() if text is None else text
@@ -556,6 +587,7 @@ class Doc():
     apps: list[App] = field(default_factory=list)
     relation_types: dict[str,RelationType] = field(default_factory=dict)
     id_to_app: dict[str,App] = field(default_factory=dict)
+    reading_notes: bool = True
     
     def __post_init__(self):
         self.tree = read_tei(self.path)
@@ -766,8 +798,8 @@ class Doc():
     def clean(self, output:Path|None=None):
         """ Cleans a TEI XML file for common errors. """
 
-        # find all listRelation elements
-        list_relations = find_elements(self.tree, ".//listRelation")
+        # find all transcriptional listRelation elements (not suggestions or intrinsic relations)
+        list_relations = unique(find_elements(self.tree, ".//listRelation[@type='transcriptional']"))
         for list_relation in list_relations:
             relations_so_far = set()
             for relation in find_elements(list_relation, ".//relation"):

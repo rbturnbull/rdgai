@@ -256,8 +256,11 @@ def test_set_classification_writes_inverse_and_provenance(store, mark_path):
 
     # The file on disk has been updated
     relations = relations_in_file(mark_path, "Mark.1.1.12-16")
-    assert {"active": "a", "passive": "b", "ana": "#Minor_Omission", "resp": "#RT", "cert": "medium"} in relations
-    assert {"active": "b", "passive": "a", "ana": "#Minor_Addition", "resp": "#RT", "cert": "medium"} in relations
+    without_change = [{key: value for key, value in relation.items() if key != "change"} for relation in relations]
+    assert {"active": "a", "passive": "b", "ana": "#Minor_Omission", "resp": "#RT", "cert": "medium"} in without_change
+    assert {"active": "b", "passive": "a", "ana": "#Minor_Addition", "resp": "#RT", "cert": "medium"} in without_change
+    # each label points to the version of the definitions it was made under
+    assert all(relation["change"].startswith("#defs-") for relation in relations)
     assert len(relations) == 2
 
     # The annotator is declared in the header so @resp resolves
@@ -336,7 +339,9 @@ def test_clear_classification(store, mark_path):
 def test_read_only(mark_path):
     store = AnnotationStore(mark_path, annotator="RT", read_only=True)
     server = build_server(store)
-    assert list_tool_names(server) == ["get_definitions", "list_units", "get_unit", "category_counts", "list_category", "get_sample"]
+    assert list_tool_names(server) == [
+        "get_definitions", "list_units", "get_unit", "category_counts", "list_category", "get_sample", "get_suggestions",
+    ]
     with pytest.raises(ReadOnlyError):
         store.set_classification("Mark.1.1.10", "a", "b", "Major_Omission")
     with pytest.raises(ReadOnlyError):
@@ -345,9 +350,9 @@ def test_read_only(mark_path):
 
 def test_tool_list(store):
     assert list_tool_names(build_server(store)) == [
-        "get_definitions", "list_units", "get_unit", "category_counts", "list_category", "get_sample",
+        "get_definitions", "list_units", "get_unit", "category_counts", "list_category", "get_sample", "get_suggestions",
         "update_category", "add_category", "remove_category", "update_guidance",
-        "draw_sample", "set_classification", "clear_classification",
+        "draw_sample", "suggest_classification", "set_classification", "clear_classification",
     ]
 
 
@@ -375,7 +380,8 @@ def test_start_run_records_change(store, mark_path):
 
     provenance = store.get_unit("Mark.1.1.10").pairs[0].provenance
     assert provenance.resp == "#rdgai"
-    assert provenance.change == f"#{change_id}"
+    assert provenance.change.split()[0] == f"#{change_id}"
+    assert provenance.change.split()[1].startswith("#defs-")
     assert provenance.model == "test-model"
     assert provenance.when.endswith("Z")
 

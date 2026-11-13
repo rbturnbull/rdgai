@@ -156,6 +156,12 @@ A ``<respStmt>`` with that id is added to the TEI header. Use ``--read-only`` to
 Readings typed ``defective`` are not classified; orthographic readings are classified like any other reading.
 Change this with ``--ignore-type`` (repeatable), e.g. ``--ignore-type defective --ignore-type orthographic``.
 Use the same reading types with teiphy's ``-t`` option (e.g. ``teiphy -t defective``) so that the analysis matches what was classified.
+Text in parentheses inside a reading (e.g. ECM's ``θεου (cf. 24b)`` or ``om (cf. 27c)``) is treated as an editorial note, not as
+reading text; ``om`` on its own marks an omission. Cross-references such as ``cf. 8b`` or ``cf. 3/4-6`` are resolved to unit ids
+where possible. Use ``--no-reading-notes`` if parentheses are part of the reading text in your apparatus.
+
+Writes take an advisory lock on ``.doc.xml.lock`` next to the TEI file, and every write reloads the file first if another
+process has changed it, so two rdgai processes (e.g. the MCP server and the annotation GUI) never overwrite each other's work.
 
 The file is saved after every change. To add the server to Claude Code:
 
@@ -170,10 +176,12 @@ The tools are:
 
 - ``get_definitions``: the categories, their inverses, the guidance in the XML comment before the ``<interpGrp>`` (e.g. a decision order) and the direction convention.
 - ``list_units``: variation units, filtered by status (``unclassified``, ``partial``, ``classified``) or verse.
-- ``get_unit``: a unit's verse context, readings and every pair of substantive readings with its classification and provenance.
+- ``get_unit``: a unit's verse context, readings (with any notes) and every pair of substantive readings with its classification
+  and provenance. ``pair_order="attestation"`` orients each pair with the better-attested reading first.
 - ``set_classification``: sets the category of a pair (replacing any previous one) and the inverse category on the reverse pair.
 - ``clear_classification``: removes the classification of a pair and its reverse.
-
+- ``suggest_classification`` and ``get_suggestions``: record and read suggested categories (e.g. from Claude or the pipeline).
+  Suggestions are kept in ``<listRelation type="suggestion">``, which teiphy ignores, so they are never classifications.
 - ``category_counts`` and ``list_category``: how many pairs have each category, and the pairs in a category with their provenance.
 - ``update_category``, ``add_category``, ``remove_category`` and ``update_guidance``: edit the definitions. Renaming a category updates
   its inverse's ``@corresp`` and every classification that uses it; reciprocal categories are added and removed together; a category
@@ -199,18 +207,26 @@ Classifications are stored where teiphy reads them, with their provenance:
       ...
       <note>
         <listRelation type="transcriptional">
-          <relation active="a" passive="b" ana="#Minor_Omission" resp="#RT" cert="high">
-            <desc type="justification">Omits the article.</desc>
+          <relation active="a" passive="b" ana="#Minor_Omission" resp="#RT" cert="high" change="#defs-79e9afa6c1d2">
+            <desc type="justification">Omits the article.<date when="2026-11-13T04:01:37Z"/></desc>
           </relation>
-          <relation active="b" passive="a" ana="#Minor_Addition" resp="#RT" cert="high">
-            <desc type="justification">Inverse of a → b: Omits the article.</desc>
+          <relation active="b" passive="a" ana="#Minor_Addition" resp="#RT" cert="high" change="#defs-79e9afa6c1d2">
+            <desc type="justification">Inverse of a → b: Omits the article.<date when="2026-11-13T04:01:37Z"/></desc>
           </relation>
+        </listRelation>
+        <listRelation type="suggestion">
+          <relation active="a" passive="b" ana="#Minor_Omission" resp="#claude" change="#defs-79e9afa6c1d2">
+            <desc type="justification">The article is dropped.<date when="2026-11-13T03:58:12Z"/></desc>
+          </relation>
+          ...
         </listRelation>
       </note>
     </app>
 
-Classifications made by an automated run have ``resp="#rdgai"`` and a ``@change`` pointing to a ``<change>`` in the
-``<revisionDesc>`` that records when the run happened and which model it used.
+Each label records when it was saved (the ``<date>``) and the version of the category definitions it was made under:
+``@change`` points to a ``<change type="definitions">`` in the ``<revisionDesc>`` holding the definitions' SHA-256 hash.
+Classifications made by an automated run have ``resp="#rdgai"`` and also point to a ``<change>`` recording when the run
+happened and which model it used.
 
 
 Credits

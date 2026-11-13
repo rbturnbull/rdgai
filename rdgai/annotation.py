@@ -8,8 +8,10 @@ import os
 import re
 import json
 import hashlib
+import time
 import threading
 import tempfile
+from contextlib import contextmanager
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Literal
@@ -17,8 +19,14 @@ from typing import Literal
 from lxml import etree as ET
 from pydantic import BaseModel, Field
 
-from .apparatus import Doc, App, Pair, RelationType, tei_tag, unique
-from .tei import find_element, find_elements, extract_text
+from .apparatus import Doc, App, Pair, RelationType, tei_tag, unique, relation_provenance
+from .notes import resolve_references
+
+try:
+    import fcntl
+except ImportError:  # pragma: no cover (Windows)
+    fcntl = None
+from .tei import find_element, find_elements, extract_text, find_parent
 from . import sampling
 from .sampling import Sample, default_sample_path
 
@@ -49,6 +57,22 @@ class DefinitionsLockedError(AnnotationError):
     pass
 
 
+class ConflictError(AnnotationError):
+    """ A write was based on a stale view: the current categories differ from what the caller expected. """
+    def __init__(self, message:str, current:dict):
+        super().__init__(message)
+        self.current = current
+
+
+class _Unchecked:
+    def __repr__(self):
+        return "UNCHECKED"
+
+
+UNCHECKED = _Unchecked()
+SOURCE = re.compile(r"^(?P<name>[A-Za-z_][A-Za-z0-9_.\-]*)(?::(?P<model>\S+))?$")
+
+
 NC_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_.\-]*$")
 XML_ID = "{http://www.w3.org/XML/1998/namespace}id"
 
@@ -73,17 +97,21 @@ class Definitions(BaseModel):
 
 class DefinitionsChange(BaseModel):
     message: str
-    relations_updated: int = Field(description="Number of <relation> elements whose category was renamed or reassigned.")
-    definitions: Definitions
+    relations_updated: int = Field(description="Number of labelled <relation> elements whose category was renamed or reassigned.")
+    changed: list[Category] = Field(default_factory=list, description="Categories added or changed, as they now are.")
+    removed: list[str] = Field(default_factory=list, description="Names of categories that no longer exist (removed or renamed).")
+    guidance: str | None = Field(default=None, description="The new guidance, if it was changed.")
+    definitions_hash: str = Field(description="The hash of the definitions after the change.")
 
 
 class Provenance(BaseModel):
     resp: str = Field(default="", description="Who is responsible, e.g. '#RT' for a human annotator or '#rdgai' for the pipeline.")
     cert: str = Field(default="", description="Certainty: high, medium or low.")
     justification: str = ""
-    change: str = Field(default="", description="Pointer to the <change> recording the pipeline run that made this classification, if any.")
-    when: str = Field(default="", description="Timestamp of the pipeline run (from the <change> element), if any.")
-    model: str = Field(default="", description="The model used by the pipeline run, if any.")
+    change: str = Field(default="", description="Pointers to <change> elements: the pipeline run (if any) and the definitions version.")
+    when: str = Field(default="", description="When the label was saved (ISO 8601, UTC), if recorded.")
+    model: str = Field(default="", description="The model used, if any.")
+    definitions_hash: str = Field(default="", description="Hash of the category definitions in force when the label was saved, if recorded.")
 
 
 class PairInfo(BaseModel):
@@ -96,9 +124,21 @@ class PairInfo(BaseModel):
     provenance: Provenance | None = None
 
 
+class NoteReferenceInfo(BaseModel):
+    label: str
+    unit_id: str | None = Field(description="The unit referred to, if it could be found.")
+    reading: str | None = None
+
+
+class NoteInfo(BaseModel):
+    text: str
+    references: list[NoteReferenceInfo] = Field(default_factory=list)
+
+
 class ReadingInfo(BaseModel):
     id: str
-    text: str = Field(description="The reading text, or 'OMIT' for an empty reading (an omission).")
+    text: str = Field(description="The reading text, or 'OMIT' for an empty reading (an omission). Notes are not included.")
+    notes: list[NoteInfo] = Field(default_factory=list, description="Editorial notes found in the reading text (not part of the reading).")
     type: str = Field(default="", description="The reading's @type, e.g. orthographic or defective.")
     witness_count: int
     witnesses: list[str]
@@ -190,6 +230,29 @@ class SampleInfo(BaseModel):
     units: list[SampleUnitStatus] = Field(default_factory=list, description="The sampled units in document order.")
 
 
+class SuggestionInfo(BaseModel):
+    unit_id: str
+    active: str
+    passive: str
+    category: str
+    source: str = Field(description="Who made the suggestion, e.g. 'claude' or 'rdgai:<model>'.")
+    model: str = ""
+    justification: str = ""
+    cert: str = ""
+    when: str = ""
+    definitions_hash: str = ""
+
+
+class SuggestionResult(BaseModel):
+    unit_id: str
+    suggestion: SuggestionInfo
+    inverse: SuggestionInfo
+
+
+class SuggestionList(BaseModel):
+    suggestions: list[SuggestionInfo]
+
+
 class WriteResult(BaseModel):
     unit_id: str
     pair: PairInfo
@@ -227,6 +290,8 @@ class AnnotationStore:
         ignore_types: Readings with these @type values are excluded from pairs (teiphy collapses them).
         sample_path: The sidecar YAML file holding the sample of units (default: <file>.sample.yaml).
         check_sample: Check on loading that an existing sample was drawn with the same ignore_types.
+        reading_notes: Split notes in parentheses off reading texts (see rdgai.notes).
+        lock_timeout: Seconds to wait for another process's write lock on the file.
     """
     def __init__(
         self,
@@ -238,11 +303,17 @@ class AnnotationStore:
         ignore_types:tuple[str,...]|list[str]=DEFAULT_IGNORE_TYPES,
         sample_path:Path|str|None=None,
         check_sample:bool=True,
+        reading_notes:bool=True,
+        lock_timeout:float=10.0,
     ):
         self.path = Path(path)
         if not self.path.exists():
             raise FileNotFoundError(self.path)
         self.sample_path = Path(sample_path) if sample_path else default_sample_path(self.path)
+        self.lock_path = self.path.with_name(f".{self.path.name}.lock")
+        self.reading_notes = reading_notes
+        self.lock_timeout = lock_timeout
+        self._write_depth = 0
         self.annotator = annotator.lstrip("#") if annotator else None
         self.annotator_name = annotator_name
         self.read_only = read_only
@@ -250,23 +321,64 @@ class AnnotationStore:
         self.ignore_types = set(ignore_types)
         self.lock = threading.RLock()
         self.doc: Doc
-        self._mtime: float = 0.0
+        self._file_id = None
         self.load()
         if check_sample:
             self.load_sample()  # fails early if the sample was drawn with different settings
 
     # -- loading and saving --------------------------------------------------
 
+    def file_id(self) -> tuple:
+        """ Identifies the file's current version (a replaced file has a new inode even if its mtime is unchanged). """
+        stat = self.path.stat()
+        return (stat.st_ino, stat.st_mtime_ns, stat.st_size)
+
     def load(self):
         with self.lock:
-            self.doc = Doc(self.path)
-            self._mtime = self.path.stat().st_mtime
+            self.doc = Doc(self.path, reading_notes=self.reading_notes)
+            self._file_id = self.file_id()
 
     def refresh(self):
-        """ Reloads the file if it has been changed by another program (e.g. the rdgai GUI). """
+        """ Reloads the file if it has been changed by another program (e.g. a second rdgai process). """
         with self.lock:
-            if self.path.stat().st_mtime != self._mtime:
+            if self.file_id() != self._file_id:
                 self.load()
+
+    @contextmanager
+    def writing(self):
+        """
+        Holds this store's lock and an advisory lock on the lock file next to the TEI file, so that only one
+        process writes at a time. Writers reload the file inside the lock, so no other process's work is lost.
+        """
+        with self.lock:
+            if self._write_depth > 0 or fcntl is None:
+                self._write_depth += 1
+                try:
+                    yield
+                finally:
+                    self._write_depth -= 1
+                return
+            handle = open(self.lock_path, "a")
+            try:
+                deadline = time.monotonic() + self.lock_timeout
+                while True:
+                    try:
+                        fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                        break
+                    except BlockingIOError:
+                        if time.monotonic() >= deadline:
+                            raise AnnotationError(
+                                f"{self.path.name} is locked by another process that is writing to it. Try again shortly."
+                            )
+                        time.sleep(0.05)
+                self._write_depth += 1
+                try:
+                    yield
+                finally:
+                    self._write_depth -= 1
+                    fcntl.flock(handle, fcntl.LOCK_UN)
+            finally:
+                handle.close()
 
     def save(self):
         with self.lock:
@@ -278,7 +390,7 @@ class AnnotationStore:
             finally:
                 if os.path.exists(tmp):
                     os.remove(tmp)
-            self._mtime = self.path.stat().st_mtime
+            self._file_id = self.file_id()
 
     def check_writable(self):
         if self.read_only:
@@ -342,16 +454,48 @@ class AnnotationStore:
             return "classified"
         return "partial"
 
+    def changes_by_id(self) -> dict:
+        return {
+            element.attrib.get(XML_ID): element
+            for element in unique(find_elements(self.doc.tree, ".//revisionDesc/change"))
+        }
+
     def change_info(self, change:str) -> dict:
-        """ Looks up the <change> element referenced by a relation's @change attribute. """
-        change_id = change.lstrip("#").split()[0] if change else ""
-        if not change_id:
-            return {}
-        for element in unique(find_elements(self.doc.tree, ".//revisionDesc/change")):
-            if element.attrib.get("{http://www.w3.org/XML/1998/namespace}id") == change_id:
-                model = next((extract_text(name, include_tail=False) for name in unique(find_elements(element, ".//name[@type='model']"))), "")
-                return dict(when=element.attrib.get("when", ""), model=model)
-        return {}
+        """
+        Looks up the <change> elements referenced by a relation's @change attribute: a pipeline run or model
+        (giving the model and the run's time) and the definitions version (giving the definitions hash).
+        """
+        info = dict(run_when="", model="", definitions_hash="")
+        if not change:
+            return info
+        changes = self.changes_by_id()
+        for token in change.split():
+            element = changes.get(token.lstrip("#"))
+            if element is None:
+                continue
+            if element.attrib.get("type") == "definitions":
+                idno = next(iter(unique(find_elements(element, ".//idno"))), None)
+                info["definitions_hash"] = (idno.text or "").strip() if idno is not None else ""
+                continue
+            model = next((extract_text(name, include_tail=False) for name in unique(find_elements(element, ".//name[@type='model']"))), "")
+            if model:
+                info["model"] = model
+            if element.attrib.get("when") and element.attrib.get("type") != "model":
+                info["run_when"] = element.attrib["when"]
+        return info
+
+    def provenance_from_relation(self, relation) -> Provenance:
+        data = relation_provenance(relation)
+        info = self.change_info(data["change"])
+        return Provenance(
+            resp=data["resp"],
+            cert=data["cert"],
+            justification=data["justification"],
+            change=data["change"],
+            when=data["when"] or info["run_when"],
+            model=info["model"],
+            definitions_hash=info["definitions_hash"],
+        )
 
     # -- serialisation -----------------------------------------------------------
 
@@ -359,9 +503,9 @@ class AnnotationStore:
         category = sorted(pair.relation_type_names())
         inverse_category = sorted(pair.get_inverse().relation_type_names())
         provenance = None
-        if pair.relation_element() is not None:
-            data = pair.provenance()
-            provenance = Provenance(**data, **self.change_info(data.get("change", "")))
+        relation = pair.relation_element()
+        if relation is not None:
+            provenance = self.provenance_from_relation(relation)
         return PairInfo(
             active=pair.active.n,
             passive=pair.passive.n,
@@ -388,24 +532,32 @@ class AnnotationStore:
 
     # -- read operations -----------------------------------------------------------
 
+    def categories(self) -> list[Category]:
+        return [
+            Category(name=relation_type.name, description=relation_type.description, inverse=relation_type.get_inverse().name)
+            for relation_type in self.doc.relation_types.values()
+        ]
+
+    def definitions_hash(self) -> str:
+        """ SHA-256 of the guidance and the categories (name, description, inverse) in the loaded document. """
+        canonical = json.dumps(
+            dict(
+                guidance=self.doc.get_definitions_comment(),
+                categories=[[category.name, category.description, category.inverse] for category in self.categories()],
+            ),
+            ensure_ascii=False,
+        )
+        return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
     def definitions(self) -> Definitions:
         with self.lock:
             self.refresh()
-            categories = [
-                Category(name=relation_type.name, description=relation_type.description, inverse=relation_type.get_inverse().name)
-                for relation_type in self.doc.relation_types.values()
-            ]
-            guidance = self.doc.get_definitions_comment()
-            canonical = json.dumps(
-                dict(guidance=guidance, categories=[[c.name, c.description, c.inverse] for c in categories]),
-                ensure_ascii=False,
-            )
             return Definitions(
                 language=self.doc.language,
-                guidance=guidance,
+                guidance=self.doc.get_definitions_comment(),
                 direction_convention=DIRECTION_CONVENTION,
-                categories=categories,
-                definitions_hash=hashlib.sha256(canonical.encode("utf-8")).hexdigest(),
+                categories=self.categories(),
+                definitions_hash=self.definitions_hash(),
             )
 
     def list_units(
@@ -439,14 +591,37 @@ class AnnotationStore:
                 units=[self.unit_summary(app) for app in apps[offset:offset+limit]],
             )
 
-    def get_unit(self, unit_id:str) -> UnitDetail:
+    def note_info(self, app:App, note:str) -> NoteInfo:
+        references = resolve_references(note, str(app), self.doc.id_to_app.keys())
+        return NoteInfo(
+            text=note,
+            references=[NoteReferenceInfo(label=ref.label, unit_id=ref.unit_id, reading=ref.reading) for ref in references],
+        )
+
+    def ordered_pairs(self, app:App) -> list[Pair]:
+        """
+        The unordered pairs of substantive readings, each oriented with the better-attested reading first
+        (ties in document order), sorted by the attestation rank of their readings.
+        """
+        readings = [reading for reading in app.readings if not self.is_excluded(reading)]
+        ranked = sorted(readings, key=lambda reading: (-len(reading.witnesses), app.readings.index(reading)))
+        directed = {(pair.active.n, pair.passive.n): pair for pair in app.pairs}
+        return [
+            directed[(ranked[i].n, ranked[j].n)]
+            for i in range(len(ranked))
+            for j in range(i + 1, len(ranked))
+        ]
+
+    def get_unit(self, unit_id:str, pair_order:Literal["document", "attestation"]="document") -> UnitDetail:
         with self.lock:
             self.refresh()
             app = self.get_app(unit_id)
+            pairs = self.ordered_pairs(app) if pair_order == "attestation" else self.substantive_pairs(app)
             readings = [
                 ReadingInfo(
                     id=reading.n,
                     text=str(reading),
+                    notes=[self.note_info(app, note) for note in reading.notes],
                     type=reading.type,
                     witness_count=len(reading.witnesses),
                     witnesses=reading.witnesses,
@@ -462,7 +637,7 @@ class AnnotationStore:
                 context_after=app.text_after(),
                 readings=readings,
                 lacunose_witnesses=app.lacunae(),
-                pairs=[self.pair_info(pair) for pair in self.substantive_pairs(app)],
+                pairs=[self.pair_info(pair) for pair in pairs],
                 status=self.status(app),
                 sample_role=self.sample_role(str(app)),
             )
@@ -543,32 +718,38 @@ class AnnotationStore:
             if isinstance(element.tag, str) and element.attrib.get(XML_ID) == name:
                 raise AnnotationError(f"'{name}' is already used as an xml:id in the document.")
 
-    def transcriptional_relations(self) -> list:
+    def category_relations(self, list_type:str="transcriptional") -> list:
+        """ The <relation> elements in all <listRelation type="..."> lists (labels or suggestions). """
         relations = []
-        for list_relation in unique(find_elements(self.doc.tree, ".//listRelation[@type='transcriptional']")):
+        for list_relation in unique(find_elements(self.doc.tree, f".//listRelation[@type='{list_type}']")):
             relations.extend(unique(find_elements(list_relation, ".//relation")))
         return relations
 
-    def relations_using(self, names:set[str]) -> list:
+    def relations_using(self, names:set[str], list_type:str="transcriptional") -> list:
         pointers = {f"#{name}" for name in names}
         return [
-            relation for relation in self.transcriptional_relations()
+            relation for relation in self.category_relations(list_type)
             if pointers & set(relation.attrib.get("ana", "").split())
         ]
 
     def rename_in_relations(self, mapping:dict[str, str]) -> int:
-        """ Replaces category pointers in @ana (old name -> new name). Returns the number of relations changed. """
+        """
+        Replaces category pointers in @ana (old name -> new name) in labels and suggestions.
+        Returns the number of labels changed.
+        """
         pointers = {f"#{old}": f"#{new}" for old, new in mapping.items()}
-        changed = 0
-        for relation in self.relations_using(set(mapping)):
-            tokens = []
-            for token in relation.attrib.get("ana", "").split():
-                token = pointers.get(token, token)
-                if token not in tokens:
-                    tokens.append(token)
-            relation.set("ana", " ".join(tokens))
-            changed += 1
-        return changed
+        labels_changed = 0
+        for list_type in ("transcriptional", "suggestion"):
+            for relation in self.relations_using(set(mapping), list_type):
+                tokens = []
+                for token in relation.attrib.get("ana", "").split():
+                    token = pointers.get(token, token)
+                    if token not in tokens:
+                        tokens.append(token)
+                relation.set("ana", " ".join(tokens))
+                if list_type == "transcriptional":
+                    labels_changed += 1
+        return labels_changed
 
     @staticmethod
     def set_interp_text(interp, text:str):
@@ -576,22 +757,41 @@ class AnnotationStore:
             interp.remove(child)
         interp.text = text
 
-    def commit_definitions(self, message:str, relations_updated:int=0) -> DefinitionsChange:
-        """ Saves the file and reloads it so that categories and pairs are rebuilt from the TEI. """
+    def commit_definitions(
+        self,
+        message:str,
+        relations_updated:int=0,
+        changed:list[str]|None=None,
+        removed:list[str]|None=None,
+        guidance:str|None=None,
+    ) -> DefinitionsChange:
+        """
+        Saves the file and reloads it so that categories and pairs are rebuilt from the TEI.
+        Returns only what changed and the new hash (not the full definitions).
+        """
         self.save()
         self.load()
-        return DefinitionsChange(message=message, relations_updated=relations_updated, definitions=self.definitions())
+        categories = {category.name: category for category in self.categories()}
+        return DefinitionsChange(
+            message=message,
+            relations_updated=relations_updated,
+            changed=[categories[name] for name in (changed or []) if name in categories],
+            removed=list(removed or []),
+            guidance=guidance,
+            definitions_hash=self.definitions_hash(),
+        )
 
     def update_category(self, name:str, description:str|None=None, new_name:str|None=None) -> DefinitionsChange:
         """
         Changes the description and/or the name of a category.
-        Renaming also updates the inverse's @corresp and every classification that uses the category.
+        Renaming also updates the inverse's @corresp and every classification and suggestion that uses the category.
         """
-        with self.lock:
+        with self.writing():
             self.check_definitions_editable()
             self.refresh()
             relation_type = self.get_relation_type(name)
             name = relation_type.name
+            inverse_name = relation_type.get_inverse().name
             renaming = new_name is not None and new_name != name
             if description is None and not renaming:
                 raise AnnotationError("Nothing to change: give a new description or a new name.")
@@ -612,7 +812,12 @@ class AnnotationStore:
             message = f"Renamed '{name}' to '{new_name}'." if renaming else f"Updated the description of '{name}'."
             if renaming and description is not None:
                 message = f"Renamed '{name}' to '{new_name}' and updated its description."
-            return self.commit_definitions(message, relations_updated)
+            changed = [new_name if renaming else name]
+            if renaming and inverse_name != name:
+                changed.append(inverse_name)
+            return self.commit_definitions(
+                message, relations_updated, changed=changed, removed=[name] if renaming else [],
+            )
 
     def add_category(
         self,
@@ -625,7 +830,7 @@ class AnnotationStore:
         Adds a category. Without inverse_name it is its own inverse; with inverse_name a reciprocal pair
         of categories is added, linked with @corresp.
         """
-        with self.lock:
+        with self.writing():
             self.check_definitions_editable()
             self.refresh()
             self.check_new_category_name(name)
@@ -648,15 +853,16 @@ class AnnotationStore:
             ET.SubElement(interp_group, tag, attrib=attrib).text = description
             if inverse_name:
                 ET.SubElement(interp_group, tag, attrib={XML_ID: inverse_name, "corresp": f"#{name}"}).text = inverse_description
-                return self.commit_definitions(f"Added '{name}' and its inverse '{inverse_name}'.")
-            return self.commit_definitions(f"Added '{name}' (its own inverse).")
+                return self.commit_definitions(f"Added '{name}' and its inverse '{inverse_name}'.", changed=[name, inverse_name])
+            return self.commit_definitions(f"Added '{name}' (its own inverse).", changed=[name])
 
     def remove_category(self, name:str, reassign_to:str|None=None) -> DefinitionsChange:
         """
-        Removes a category together with its inverse. If any pairs use them, reassign_to must name a
-        category with a corresponding inverse (the pairs' labels are moved to it, keeping their provenance).
+        Removes a category together with its inverse. If any pairs are labelled with them, reassign_to must name a
+        category with a corresponding inverse (the labels and suggestions are moved to it, keeping their provenance).
+        Without reassign_to, suggestions that use the removed categories are deleted.
         """
-        with self.lock:
+        with self.writing():
             self.check_definitions_editable()
             self.refresh()
             relation_type = self.get_relation_type(name)
@@ -665,6 +871,7 @@ class AnnotationStore:
             removed_text = f"'{relation_type.name}'" + (f" and its inverse '{inverse.name}'" if inverse is not relation_type else "")
 
             relations_updated = 0
+            dropped_suggestions = 0
             if reassign_to is not None:
                 target = self.get_relation_type(reassign_to)
                 if target.name in removed:
@@ -684,6 +891,13 @@ class AnnotationStore:
                         f"Cannot remove {removed_text}: used by {in_use} pairs. "
                         "Pass reassign_to to move these classifications to another category."
                     )
+                suggestions = self.relations_using(removed, "suggestion")
+                dropped_suggestions = len({
+                    (find_parent(relation, "app").get(XML_ID), frozenset((relation.get("active"), relation.get("passive"))), relation.get("resp"), relation.get("change"))
+                    for relation in suggestions
+                })
+                for relation in suggestions:
+                    relation.getparent().remove(relation)
 
             for removed_name in removed:
                 element = self.doc.relation_types[removed_name].element
@@ -692,11 +906,13 @@ class AnnotationStore:
             message = f"Removed {removed_text}."
             if reassign_to is not None:
                 message += f" Reassigned {relations_updated} pairs to '{target.name}'."
-            return self.commit_definitions(message, relations_updated)
+            if dropped_suggestions:
+                message += f" Deleted {dropped_suggestions} suggestion{'s' if dropped_suggestions != 1 else ''} that used it."
+            return self.commit_definitions(message, relations_updated, removed=sorted(removed))
 
     def update_guidance(self, guidance:str) -> DefinitionsChange:
         """ Replaces the guidance comment (e.g. the decision order) placed before the category definitions. """
-        with self.lock:
+        with self.writing():
             self.check_definitions_editable()
             self.refresh()
             guidance = (guidance or "").strip()
@@ -709,7 +925,7 @@ class AnnotationStore:
                 sibling.getparent().remove(sibling)
             if guidance:
                 interp_group.addprevious(ET.Comment(f"\n{guidance}\n"))
-            return self.commit_definitions("Updated the guidance.")
+            return self.commit_definitions("Updated the guidance.", guidance=guidance)
 
     # -- sampling -----------------------------------------------------------------------
 
@@ -806,7 +1022,7 @@ class AnnotationStore:
         Draws a reproducible random sample of units and splits it into example and test units.
         The sample is saved to the sidecar file. An existing sample is only replaced if overwrite is True.
         """
-        with self.lock:
+        with self.writing():
             self.check_writable()
             self.refresh()
             if self.sample_path.exists() and not overwrite:
@@ -845,14 +1061,150 @@ class AnnotationStore:
         """ Adds <respStmt xml:id="..."> to the titleStmt so that @resp pointers resolve. """
         tree = self.doc.tree
         for resp_stmt in unique(find_elements(tree, ".//respStmt")):
-            if resp_stmt.attrib.get("{http://www.w3.org/XML/1998/namespace}id") == xml_id:
+            if resp_stmt.attrib.get(XML_ID) == xml_id:
                 return
         title_stmt = find_element(tree, ".//teiHeader/fileDesc/titleStmt")
         if title_stmt is None:
             return
-        resp_stmt = ET.SubElement(title_stmt, tei_tag(title_stmt, "respStmt"), attrib={"{http://www.w3.org/XML/1998/namespace}id": xml_id})
+        resp_stmt = ET.SubElement(title_stmt, tei_tag(title_stmt, "respStmt"), attrib={XML_ID: xml_id})
         ET.SubElement(resp_stmt, tei_tag(title_stmt, "resp")).text = resp
         ET.SubElement(resp_stmt, tei_tag(title_stmt, "name")).text = name
+
+    def revision_desc(self):
+        header = find_element(self.doc.tree, ".//teiHeader")
+        revision_desc = find_element(header, ".//revisionDesc")
+        if revision_desc is None:
+            revision_desc = ET.SubElement(header, tei_tag(header, "revisionDesc"))
+        return revision_desc
+
+    @staticmethod
+    def now() -> str:
+        return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+    def ensure_definitions_change(self) -> str:
+        """
+        Returns the xml:id of the <change type="definitions"> recording the current definitions version,
+        adding it to the revisionDesc if it is not there yet.
+        """
+        definitions_hash = self.definitions_hash()
+        change_id = f"defs-{definitions_hash[:12]}"
+        if change_id not in self.changes_by_id():
+            revision_desc = self.revision_desc()
+            change = ET.SubElement(
+                revision_desc, tei_tag(revision_desc, "change"),
+                attrib={XML_ID: change_id, "type": "definitions", "when": self.now()},
+            )
+            change.text = "Category definitions version "
+            idno = ET.SubElement(change, tei_tag(revision_desc, "idno"), attrib={"type": "sha256"})
+            idno.text = definitions_hash
+            idno.tail = "."
+        return change_id
+
+    def ensure_model_change(self, model:str) -> str:
+        """ Returns the xml:id of a <change type="model"> naming a model, adding it if necessary. """
+        slug = re.sub(r"[^A-Za-z0-9_.\-]", "-", model)
+        change_id = f"model-{slug}"
+        if change_id not in self.changes_by_id():
+            revision_desc = self.revision_desc()
+            change = ET.SubElement(revision_desc, tei_tag(revision_desc, "change"), attrib={XML_ID: change_id, "type": "model"})
+            change.text = "Suggestions made with "
+            name = ET.SubElement(change, tei_tag(revision_desc, "name"), attrib={"type": "model"})
+            name.text = model
+            name.tail = "."
+        return change_id
+
+    @staticmethod
+    def change_pointers(*change_ids:str|None) -> str:
+        return " ".join(f"#{change_id.lstrip('#')}" for change_id in change_ids if change_id)
+
+    def resolve_resp(self, resp:str|None) -> str:
+        resp = (resp or self.annotator or "").lstrip("#")
+        if not resp:
+            raise AnnotationError("No annotator is set: start the server with --annotator.")
+        if resp == RDGAI_RESP:
+            self.ensure_resp_stmt(RDGAI_RESP, "rdgai", "automatic classification")
+        elif resp == self.annotator:
+            self.ensure_resp_stmt(resp, self.annotator_name or resp, "classification of transcriptional changes")
+        return resp
+
+    @staticmethod
+    def check_cert(cert:str|None, optional:bool=False):
+        if optional and cert is None:
+            return
+        if cert not in CERTAINTY_VALUES:
+            raise AnnotationError(f"cert must be one of {', '.join(CERTAINTY_VALUES)}.")
+
+    def current_category(self, pair:Pair) -> str|None:
+        return " ".join(sorted(pair.relation_type_names())) or None
+
+    def check_expected(self, pairs:list[Pair], expected:dict):
+        """ Raises ConflictError if any pair's current category differs from what the caller expected. """
+        current = {}
+        for pair in pairs:
+            key = (pair.active.n, pair.passive.n)
+            if key not in expected or expected[key] is UNCHECKED:
+                continue
+            want = expected[key].lstrip("#") if expected[key] else None
+            have = self.current_category(pair)
+            if want != have:
+                current[key] = have
+        if current:
+            details = ", ".join(f"{active}→{passive} is now {category or 'unclassified'}" for (active, passive), category in current.items())
+            raise ConflictError(f"The classification changed since it was read: {details}. Reload and try again.", current)
+
+    def write_results(self, app:App, pairs:list[Pair]) -> list[WriteResult]:
+        return [
+            WriteResult(unit_id=str(app), pair=self.pair_info(pair), inverse=self.pair_info(pair.get_inverse()), saved_to=str(self.path))
+            for pair in pairs
+        ]
+
+    def set_classifications(
+        self,
+        unit_id:str,
+        pairs:list[tuple[str, str]],
+        category:str,
+        justification:str="",
+        cert:str="high",
+        resp:str|None=None,
+        change:str|None=None,
+        expected:dict|None=None,
+    ) -> list[WriteResult]:
+        """
+        Sets the same category on several pairs of a unit (each from its active to its passive reading),
+        replacing existing categories and setting the inverses. All pairs are checked before anything is
+        written, and the file is saved once.
+
+        expected: optional {(active, passive): category or None}. If any pair's current category differs,
+        ConflictError is raised and nothing is written.
+        """
+        with self.writing():
+            self.check_writable()
+            self.refresh()
+            if not pairs:
+                raise AnnotationError("No pairs given.")
+            self.check_cert(cert)
+            app = self.get_app(unit_id)
+            pair_objects = [self.get_pair(app, active, passive) for active, passive in pairs]
+            relation_type = self.get_relation_type(category)
+            self.check_expected(pair_objects, expected or {})
+            resp = self.resolve_resp(resp)
+
+            change_attr = self.change_pointers(change, self.ensure_definitions_change())
+            when = self.now()
+            justification = (justification or "").strip()
+            for pair in pair_objects:
+                inverse_justification = f"Inverse of {pair.active.n} → {pair.passive.n}: {justification}" if justification else ""
+                pair.set_type_with_inverse(
+                    relation_type,
+                    responsible=f"#{resp}",
+                    cert=cert,
+                    description=justification,
+                    inverse_description=inverse_justification,
+                    change=change_attr,
+                    when=when,
+                )
+            self.save()
+            return self.write_results(app, pair_objects)
 
     def set_classification(
         self,
@@ -864,85 +1216,88 @@ class AnnotationStore:
         cert:str="high",
         resp:str|None=None,
         change:str|None=None,
+        expected_category=UNCHECKED,
     ) -> WriteResult:
         """
         Sets the category for the change from the active reading to the passive reading.
         Replaces any existing category, sets the inverse on the reverse pair and saves the file.
+        The label records when it was saved and the definitions version in force.
 
-        resp defaults to the store's annotator.
+        resp defaults to the store's annotator. If expected_category is given (a category, or None for
+        'unclassified') and the pair's current category differs, ConflictError is raised.
         """
-        with self.lock:
+        return self.set_classifications(
+            unit_id, [(active, passive)], category, justification=justification, cert=cert, resp=resp, change=change,
+            expected={(active, passive): expected_category},
+        )[0]
+
+    def set_certainty(self, unit_id:str, pairs:list[tuple[str, str]], cert:str) -> list[WriteResult]:
+        """
+        Changes the certainty of labelled pairs (and their inverses) without changing their categories or
+        justifications. The annotator becomes responsible, and the time and definitions version are updated.
+        """
+        with self.writing():
             self.check_writable()
             self.refresh()
-            if cert not in CERTAINTY_VALUES:
-                raise AnnotationError(f"cert must be one of {', '.join(CERTAINTY_VALUES)}.")
-            resp = (resp or self.annotator or "").lstrip("#")
-            if not resp:
-                raise AnnotationError("No annotator is set: start the server with --annotator.")
-
+            if not pairs:
+                raise AnnotationError("No pairs given.")
+            self.check_cert(cert)
             app = self.get_app(unit_id)
-            pair = self.get_pair(app, active, passive)
-            relation_type = self.get_relation_type(category)
-
-            if resp == RDGAI_RESP:
-                self.ensure_resp_stmt(RDGAI_RESP, "rdgai", "automatic classification")
-            elif resp == self.annotator:
-                self.ensure_resp_stmt(resp, self.annotator_name or resp, "classification of transcriptional changes")
-
-            justification = (justification or "").strip()
-            inverse_justification = f"Inverse of {active} → {passive}: {justification}" if justification else ""
-            pair.set_type_with_inverse(
-                relation_type,
-                responsible=f"#{resp}",
-                cert=cert,
-                description=justification,
-                inverse_description=inverse_justification,
-                change=f"#{change.lstrip('#')}" if change else None,
-            )
+            pair_objects = [self.get_pair(app, active, passive) for active, passive in pairs]
+            unlabelled = [f"{pair.active.n}→{pair.passive.n}" for pair in pair_objects if pair.relation_element() is None]
+            if unlabelled:
+                raise AnnotationError(f"Pairs not classified, so their certainty cannot be set: {', '.join(unlabelled)}.")
+            resp = self.resolve_resp(None)
+            definitions_change = self.ensure_definitions_change()
+            when = self.now()
+            for pair in pair_objects:
+                for directed in (pair, pair.get_inverse()):
+                    relation = directed.relation_element()
+                    if relation is None:
+                        continue
+                    relation.set("resp", f"#{resp}")
+                    relation.set("cert", cert)
+                    tokens = [token for token in relation.attrib.get("change", "").split() if not token.startswith("#defs-")]
+                    relation.set("change", self.change_pointers(*tokens, definitions_change))
+                    self.stamp(relation, when)
             self.save()
-            return WriteResult(
-                unit_id=str(app),
-                pair=self.pair_info(pair),
-                inverse=self.pair_info(pair.get_inverse()),
-                saved_to=str(self.path),
-            )
+            return self.write_results(app, pair_objects)
 
-    def clear_classification(self, unit_id:str, active:str, passive:str) -> WriteResult:
+    @staticmethod
+    def stamp(relation, when:str):
+        """ Sets the <date when> inside the relation's justification <desc>, creating them if necessary. """
+        desc = next((child for child in relation if isinstance(child.tag, str) and ET.QName(child).localname == "desc"), None)
+        if desc is None:
+            desc = ET.SubElement(relation, tei_tag(relation, "desc"), attrib={"type": "justification"})
+        date = next((child for child in desc if isinstance(child.tag, str) and ET.QName(child).localname == "date"), None)
+        if date is None:
+            date = ET.SubElement(desc, tei_tag(relation, "date"))
+        date.set("when", when)
+
+    def clear_classification(self, unit_id:str, active:str, passive:str, expected_category=UNCHECKED) -> WriteResult:
         """ Removes the classification of a pair and its inverse and saves the file. """
-        with self.lock:
+        with self.writing():
             self.check_writable()
             self.refresh()
             app = self.get_app(unit_id)
             pair = self.get_pair(app, active, passive)
+            self.check_expected([pair], {(active, passive): expected_category})
             pair.clear_types_with_inverse()
             self.save()
-            return WriteResult(
-                unit_id=str(app),
-                pair=self.pair_info(pair),
-                inverse=self.pair_info(pair.get_inverse()),
-                saved_to=str(self.path),
-            )
+            return self.write_results(app, [pair])[0]
 
     def start_run(self, model:str, description:str="") -> str:
         """
         Records a pipeline run as a <change> in the revisionDesc and returns its xml:id.
         Relations written during the run point to it with @change.
         """
-        with self.lock:
+        with self.writing():
             self.check_writable()
             self.refresh()
-            tree = self.doc.tree
-            root = tree.getroot()
-            header = find_element(tree, ".//teiHeader")
-            revision_desc = find_element(header, ".//revisionDesc")
-            if revision_desc is None:
-                revision_desc = ET.SubElement(header, tei_tag(header, "revisionDesc"))
+            revision_desc = self.revision_desc()
             now = datetime.now(timezone.utc).replace(microsecond=0)
             change_id = f"rdgai-run-{now.strftime('%Y%m%dT%H%M%SZ')}"
-            existing = {
-                element.attrib.get("{http://www.w3.org/XML/1998/namespace}id")
-                for element in unique(find_elements(root, ".//revisionDesc/change"))
-            }
+            existing = set(self.changes_by_id())
             suffix = 1
             base = change_id
             while change_id in existing:
@@ -951,16 +1306,178 @@ class AnnotationStore:
             self.ensure_resp_stmt(RDGAI_RESP, "rdgai", "automatic classification")
             change = ET.SubElement(
                 revision_desc,
-                tei_tag(header, "change"),
-                attrib={
-                    "{http://www.w3.org/XML/1998/namespace}id": change_id,
-                    "when": now.isoformat().replace("+00:00", "Z"),
-                    "who": f"#{RDGAI_RESP}",
-                },
+                tei_tag(revision_desc, "change"),
+                attrib={XML_ID: change_id, "when": now.isoformat().replace("+00:00", "Z"), "who": f"#{RDGAI_RESP}"},
             )
             change.text = (description.strip() + " " if description.strip() else "") + "Classification by rdgai using "
-            model_name = ET.SubElement(change, tei_tag(header, "name"), attrib={"type": "model"})
+            model_name = ET.SubElement(change, tei_tag(revision_desc, "name"), attrib={"type": "model"})
             model_name.text = model
             model_name.tail = "."
             self.save()
             return change_id
+
+    # -- suggestions -------------------------------------------------------------------
+
+    @staticmethod
+    def parse_source(source:str) -> tuple[str, str]:
+        match = SOURCE.match((source or "").strip().lstrip("#"))
+        if not match:
+            raise AnnotationError(
+                f"Invalid source '{source}': use a name such as 'claude', optionally with a model, e.g. 'rdgai:gpt-4o'."
+            )
+        return match["name"], match["model"] or ""
+
+    def suggestion_list(self, app:App, create:bool=False):
+        list_relation = find_element(app.element, ".//listRelation[@type='suggestion']")
+        if list_relation is None and create:
+            note = ET.SubElement(app.element, tei_tag(app.element, "note"))
+            list_relation = ET.SubElement(note, tei_tag(app.element, "listRelation"), attrib={"type": "suggestion"})
+        return list_relation
+
+    def suggestion_relations(self, app:App) -> list:
+        list_relation = self.suggestion_list(app)
+        if list_relation is None:
+            return []
+        return unique(find_elements(list_relation, "./relation"))
+
+    def suggestion_info(self, app:App, relation) -> SuggestionInfo:
+        provenance = self.provenance_from_relation(relation)
+        name = provenance.resp.lstrip("#")
+        return SuggestionInfo(
+            unit_id=str(app),
+            active=relation.get("active"),
+            passive=relation.get("passive"),
+            category=" ".join(token.lstrip("#") for token in relation.get("ana", "").split()),
+            source=f"{name}:{provenance.model}" if provenance.model else name,
+            model=provenance.model,
+            justification=provenance.justification,
+            cert=provenance.cert,
+            when=provenance.when,
+            definitions_hash=provenance.definitions_hash,
+        )
+
+    def remove_suggestion_relations(self, app:App, readings:set[str], source:str|None=None):
+        for relation in self.suggestion_relations(app):
+            if {relation.get("active"), relation.get("passive")} != readings:
+                continue
+            if source is not None and self.suggestion_info(app, relation).source != source:
+                continue
+            relation.getparent().remove(relation)
+        list_relation = self.suggestion_list(app)
+        if list_relation is not None and len(list_relation) == 0:
+            note = list_relation.getparent()
+            note.remove(list_relation)
+            if len(note) == 0 and not (note.text or "").strip():
+                note.getparent().remove(note)
+
+    def suggest_classification(
+        self,
+        unit_id:str,
+        active:str,
+        passive:str,
+        category:str,
+        justification:str="",
+        source:str="claude",
+        cert:str|None=None,
+        change:str|None=None,
+    ) -> SuggestionResult:
+        """
+        Records a suggested category for the change from the active to the passive reading (and the inverse
+        for the reverse pair). Suggestions are kept in <listRelation type="suggestion">, separate from labels,
+        and replace earlier suggestions from the same source for the pair.
+        """
+        with self.writing():
+            self.check_writable()
+            self.refresh()
+            name, model = self.parse_source(source)
+            source = f"{name}:{model}" if model else name
+            self.check_cert(cert, optional=True)
+            app = self.get_app(unit_id)
+            pair = self.get_pair(app, active, passive)
+            relation_type = self.get_relation_type(category)
+
+            if name == RDGAI_RESP:
+                self.ensure_resp_stmt(RDGAI_RESP, "rdgai", "automatic classification")
+            elif name == "claude":
+                self.ensure_resp_stmt("claude", "Claude", "suggested classifications")
+            else:
+                self.ensure_resp_stmt(name, name, "suggested classifications")
+
+            self.remove_suggestion_relations(app, {active, passive}, source=source)
+            change_attr = self.change_pointers(change, self.ensure_model_change(model) if model else None, self.ensure_definitions_change())
+            when = self.now()
+            justification = (justification or "").strip()
+            list_relation = self.suggestion_list(app, create=True)
+            created = []
+            for (first, second, relation_type_, text) in (
+                (active, passive, relation_type, justification),
+                (passive, active, relation_type.get_inverse(), f"Inverse of {active} → {passive}: {justification}" if justification else ""),
+            ):
+                attrib = {"active": first, "passive": second, "ana": f"#{relation_type_.name}", "resp": f"#{name}"}
+                if cert:
+                    attrib["cert"] = cert
+                attrib["change"] = change_attr
+                relation = ET.SubElement(list_relation, tei_tag(list_relation, "relation"), attrib=attrib)
+                desc = ET.SubElement(relation, tei_tag(relation, "desc"), attrib={"type": "justification"})
+                desc.text = text or None
+                ET.SubElement(desc, tei_tag(relation, "date"), attrib={"when": when})
+                created.append(relation)
+            self.save()
+            return SuggestionResult(
+                unit_id=str(app),
+                suggestion=self.suggestion_info(app, created[0]),
+                inverse=self.suggestion_info(app, created[1]),
+            )
+
+    def get_suggestions(
+        self,
+        unit_id:str|None=None,
+        active:str|None=None,
+        passive:str|None=None,
+        source:str|None=None,
+    ) -> list[SuggestionInfo]:
+        """
+        Returns suggestions, optionally for one unit, one pair (in the direction given) and/or one source.
+        Without a pair, each suggestion is given once, for the pair in document order.
+        """
+        with self.lock:
+            self.refresh()
+            apps = [self.get_app(unit_id)] if unit_id else self.doc.apps
+            if source is not None:
+                name, model = self.parse_source(source)
+                source = f"{name}:{model}" if model else name
+            results = []
+            for app in apps:
+                order = {reading.n: index for index, reading in enumerate(app.readings)}
+                for relation in self.suggestion_relations(app):
+                    first, second = relation.get("active"), relation.get("passive")
+                    if active is not None or passive is not None:
+                        if (first, second) != (active, passive):
+                            continue
+                    elif order.get(first, 0) > order.get(second, 0):
+                        continue
+                    info = self.suggestion_info(app, relation)
+                    if source is not None and info.source != source:
+                        continue
+                    results.append(info)
+            return results
+
+    def suggestions_for(self, app:App, pair:Pair) -> list[SuggestionInfo]:
+        """ Suggestions for a pair in its direction (no file refresh; for use while rendering a unit). """
+        return [
+            self.suggestion_info(app, relation) for relation in self.suggestion_relations(app)
+            if (relation.get("active"), relation.get("passive")) == (pair.active.n, pair.passive.n)
+        ]
+
+    def clear_suggestions(self, unit_id:str, active:str, passive:str, source:str|None=None):
+        """ Removes the suggestions for a pair (both directions), from one source or from all. """
+        with self.writing():
+            self.check_writable()
+            self.refresh()
+            app = self.get_app(unit_id)
+            self.get_pair(app, active, passive)
+            if source is not None:
+                name, model = self.parse_source(source)
+                source = f"{name}:{model}" if model else name
+            self.remove_suggestion_relations(app, {active, passive}, source=source)
+            self.save()

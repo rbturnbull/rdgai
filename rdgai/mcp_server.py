@@ -18,6 +18,8 @@ from .annotation import (
     DefinitionsChange,
     SampleFilter,
     SampleInfo,
+    SuggestionList,
+    SuggestionResult,
     CategoryPairList,
     Definitions,
     UnitList,
@@ -88,14 +90,19 @@ def build_server(store:AnnotationStore) -> MCPServer:
     @server.tool(annotations=read_only)
     def get_unit(
         unit_id: Annotated[str, Field(description="The variation unit's id, e.g. 'Mark.1.1.12-16'.")],
+        pair_order: Annotated[Literal["document", "attestation"], Field(
+            description="'document': pairs in document order of their readings. 'attestation': each pair oriented "
+                        "with the better-attested reading first, as the annotation GUI shows them."
+        )] = "document",
     ) -> UnitDetail:
         """
-        Returns a variation unit: the verse with the unit marked ⸂…⸃, the readings (OMIT is an omission),
+        Returns a variation unit: the verse with the unit marked ⸂…⸃, the readings (OMIT is an omission;
+        editorial notes found in a reading's text are listed separately and are not part of the reading),
         lacunose witnesses, and each unordered pair of substantive readings with its current category
-        and provenance (who classified it, certainty and justification).
+        and provenance (who classified it, when, certainty, justification and definitions version).
         """
         with tool_errors():
-            return store.get_unit(unit_id)
+            return store.get_unit(unit_id, pair_order=pair_order)
 
     @server.tool(annotations=read_only)
     def category_counts() -> CategoryCounts:
@@ -129,6 +136,20 @@ def build_server(store:AnnotationStore) -> MCPServer:
         """
         with tool_errors():
             return store.sample_info()
+
+    @server.tool(annotations=read_only)
+    def get_suggestions(
+        unit_id: Annotated[str | None, Field(description="Only suggestions for this unit.")] = None,
+        active: Annotated[str | None, Field(description="With passive: only suggestions for this pair, in this direction.")] = None,
+        passive: Annotated[str | None, Field(description="With active: only suggestions for this pair, in this direction.")] = None,
+        source: Annotated[str | None, Field(description="Only suggestions from this source, e.g. 'claude' or 'rdgai:<model>'.")] = None,
+    ) -> SuggestionList:
+        """
+        Returns suggested classifications (kept separately from labels; they are not classifications).
+        Without a pair, each suggestion is given once, for the pair in document order.
+        """
+        with tool_errors():
+            return SuggestionList(suggestions=store.get_suggestions(unit_id, active, passive, source))
 
     if not store.read_only and not store.lock_definitions:
         @server.tool(annotations=write)
@@ -198,6 +219,24 @@ def build_server(store:AnnotationStore) -> MCPServer:
             """
             with tool_errors():
                 return store.draw_sample(size=size, seed=seed, test_fraction=test_fraction, max_pairs=max_pairs, overwrite=overwrite)
+
+        @server.tool(annotations=write)
+        def suggest_classification(
+            unit_id: Annotated[str, Field(description="The variation unit's id.")],
+            active: Annotated[str, Field(description="Id of the active (first) reading.")],
+            passive: Annotated[str, Field(description="Id of the passive (second) reading.")],
+            category: Annotated[str, Field(description="Suggested category for the change from the active to the passive reading.")],
+            justification: Annotated[str, Field(description="A short reason for the suggestion.")] = "",
+            source: Annotated[str, Field(description="Who is suggesting: 'claude', or e.g. 'rdgai:<model>'.")] = "claude",
+        ) -> SuggestionResult:
+            """
+            Records a suggested category for a pair without classifying it. Suggestions are shown to the
+            annotator in the GUI (in bold, with the justification) and are stored separately from labels,
+            so they never affect the phylogenetic analysis. A new suggestion from the same source replaces
+            the previous one for the pair. Use this to propose labels for the annotator to review.
+            """
+            with tool_errors():
+                return store.suggest_classification(unit_id, active, passive, category, justification=justification, source=source)
 
         @server.tool(annotations=write)
         def set_classification(
