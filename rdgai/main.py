@@ -227,16 +227,23 @@ def serve_mcp(
     annotator:str=typer.Option(None, help="xml:id of the human annotator responsible for classifications set through this server, e.g. 'RT'."),
     annotator_name:str=typer.Option(None, help="Full name of the annotator (used in the <respStmt> added to the TEI header)."),
     read_only:bool=typer.Option(False, help="Disable all tools that change the file."),
-    ignore_types:list[str]=typer.Option(["orthographic", "defective"], "--ignore-type", help="Readings of this @type are not classified (repeatable)."),
+    ignore_types:list[str]=typer.Option(["defective"], "--ignore-type", help="Readings of this @type are not classified (repeatable). Defaults to defective."),
+    sample_file:Path=typer.Option(None, help="Sidecar YAML file for the sample of units (default: <doc>.sample.yaml)."),
 ):
     """ Serves an MCP server for querying and classifying the reading pairs in a TEI document. """
-    from .annotation import AnnotationStore
+    from .annotation import AnnotationStore, AnnotationError
     from .mcp_server import build_server
 
     if not read_only and not annotator:
         raise typer.BadParameter("Provide --annotator (the xml:id of the person responsible) or use --read-only.")
 
-    store = AnnotationStore(doc, annotator=annotator, annotator_name=annotator_name, read_only=read_only, ignore_types=ignore_types)
+    try:
+        store = AnnotationStore(
+            doc, annotator=annotator, annotator_name=annotator_name, read_only=read_only, ignore_types=ignore_types, sample_path=sample_file,
+        )
+    except AnnotationError as error:
+        error_console.print(str(error))
+        raise typer.Exit(code=1)
     server = build_server(store)
     if transport == "stdio":
         server.run("stdio")
@@ -244,3 +251,29 @@ def serve_mcp(
         server.run("streamable-http", host=host, port=port)
     else:
         raise typer.BadParameter("transport must be 'stdio' or 'http'.")
+
+
+@app.command()
+def sample(
+    doc:Path=typer.Argument(..., help="The TEI XML document."),
+    size:int=typer.Option(..., "--size", "-n", help="Number of units to sample."),
+    seed:int=typer.Option(..., help="Random seed. The same seed and settings give the same sample."),
+    test_fraction:float=typer.Option(0.5, help="Fraction of the sampled units held out as test units."),
+    max_pairs:int=typer.Option(None, help="Exclude units with more pairs than this."),
+    ignore_types:list[str]=typer.Option(["defective"], "--ignore-type", help="Readings of this @type are not classified (repeatable). Defaults to defective."),
+    sample_file:Path=typer.Option(None, help="Sidecar YAML file to write (default: <doc>.sample.yaml)."),
+    overwrite:bool=typer.Option(False, help="Replace an existing sample file."),
+):
+    """ Draws a reproducible random sample of variation units, split into example and test units. """
+    from .annotation import AnnotationStore, AnnotationError
+
+    try:
+        store = AnnotationStore(doc, ignore_types=ignore_types, sample_path=sample_file, check_sample=not overwrite)
+        info = store.draw_sample(size=size, seed=seed, test_fraction=test_fraction, max_pairs=max_pairs, overwrite=overwrite)
+    except AnnotationError as error:
+        error_console.print(str(error))
+        raise typer.Exit(code=1)
+
+    console.print(f"Sampled {info.size} of {info.eligible_count} eligible units (seed {info.seed}) -> {info.path}")
+    for progress in info.progress:
+        console.print(f"  {progress.role}: {progress.units} units, {progress.pairs} pairs")

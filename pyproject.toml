@@ -34,6 +34,7 @@ llmloader = ">=0.1.6"
 kmedoids = ">=0.5.3.1"
 levenshtein = ">=0.26.1"
 mcp = ">=2.3.0"
+pyyaml = ">=6.0"
 
 
 [tool.poetry.group.dev.dependencies]

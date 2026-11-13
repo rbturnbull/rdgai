@@ -153,7 +153,9 @@ Rdgai can serve a TEI XML file over the `Model Context Protocol <https://modelco
 
 ``--annotator`` is the ``xml:id`` of the person responsible for the classifications set through the server.
 A ``<respStmt>`` with that id is added to the TEI header. Use ``--read-only`` to serve a file without allowing changes.
-Readings typed ``orthographic`` or ``defective`` are not classified (change this with ``--ignore-type``).
+Readings typed ``defective`` are not classified; orthographic readings are classified like any other reading.
+Change this with ``--ignore-type`` (repeatable), e.g. ``--ignore-type defective --ignore-type orthographic``.
+Use the same reading types with teiphy's ``-t`` option (e.g. ``teiphy -t defective``) so that the analysis matches what was classified.
 
 The file is saved after every change. To add the server to Claude Code:
 
@@ -171,6 +173,19 @@ The tools are:
 - ``get_unit``: a unit's verse context, readings and every pair of substantive readings with its classification and provenance.
 - ``set_classification``: sets the category of a pair (replacing any previous one) and the inverse category on the reverse pair.
 - ``clear_classification``: removes the classification of a pair and its reverse.
+
+- ``category_counts`` and ``list_category``: how many pairs have each category, and the pairs in a category with their provenance.
+- ``draw_sample`` and ``get_sample``: a reproducible random sample of units, split into example and test units, and progress in annotating it.
+
+To draw a sample of 200 units, half of them held out for testing:
+
+.. code-block:: bash
+
+    rdgai sample doc.xml -n 200 --seed 42
+
+The sample is saved to ``doc.sample.yaml`` next to the TEI file (the TEI file is not changed).
+Use ``--max-pairs`` to leave out units with very many readings. ``list_units`` with ``sample="sampled"`` and
+``status="unclassified"`` lists the sampled units still to annotate.
 
 Classifications are stored where teiphy reads them, with their provenance:
 

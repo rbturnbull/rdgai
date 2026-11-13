@@ -15,6 +15,8 @@ from .annotation import (
     AnnotationError,
     AnnotationStore,
     CategoryCounts,
+    SampleFilter,
+    SampleInfo,
     CategoryPairList,
     Definitions,
     UnitList,
@@ -35,8 +37,12 @@ Workflow:
 4. Use set_classification to record a category for a pair. Its inverse is set automatically, so classify
    each unordered pair once. A new classification replaces the old one.
 
-When working with a human annotator, propose categories and only call set_classification for the
-labels the annotator has agreed to, with the certainty they choose.
+Annotating the sample: get_sample shows progress; list_units(sample='sampled', status='unclassified')
+gives the next units in document order. Work through one unit at a time.
+
+When working with a human annotator, propose a category with a brief reason for each pair of the unit,
+and only call set_classification for the labels the annotator has agreed to, with the certainty they
+choose (high, medium or low). Record the annotator's reasoning as the justification.
 """
 
 
@@ -67,6 +73,7 @@ def build_server(store:AnnotationStore) -> MCPServer:
     def list_units(
         status: Annotated[UnitStatus, Field(description="Filter by classification status of the unit's pairs.")] = "all",
         verse: Annotated[str, Field(description="Only units in this verse or chapter, e.g. 'Mark.1.2' or 'Mark.1'.")] = "",
+        sample: Annotated[SampleFilter, Field(description="Only units in the sample ('sampled'), in its example or test set, or not in the sample.")] = "all",
         offset: Annotated[int, Field(ge=0)] = 0,
         limit: Annotated[int, Field(ge=1, le=500)] = 50,
     ) -> UnitList:
@@ -75,7 +82,7 @@ def build_server(store:AnnotationStore) -> MCPServer:
         Units with no substantive pairs have status 'nothing_to_classify'.
         """
         with tool_errors():
-            return store.list_units(status=status, verse=verse, offset=offset, limit=limit)
+            return store.list_units(status=status, verse=verse, sample=sample, offset=offset, limit=limit)
 
     @server.tool(annotations=read_only)
     def get_unit(
@@ -112,7 +119,33 @@ def build_server(store:AnnotationStore) -> MCPServer:
         with tool_errors():
             return store.list_category(category, source=source, offset=offset, limit=limit)
 
+    @server.tool(annotations=read_only)
+    def get_sample() -> SampleInfo:
+        """
+        Returns the random sample of units (if one has been drawn): its seed and settings, each sampled
+        unit with its role (example or test) and status, and progress overall and by role.
+        To annotate the sample in order, use list_units with sample='sampled' and status='unclassified'.
+        """
+        with tool_errors():
+            return store.sample_info()
+
     if not store.read_only:
+        @server.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, idempotentHint=True, openWorldHint=False))
+        def draw_sample(
+            size: Annotated[int, Field(ge=1, description="Number of units to sample.")],
+            seed: Annotated[int, Field(description="Random seed; the same seed and settings give the same sample.")],
+            test_fraction: Annotated[float, Field(ge=0.0, le=1.0, description="Fraction of the sampled units held out as test units.")] = 0.5,
+            max_pairs: Annotated[int | None, Field(ge=1, description="Exclude units with more pairs than this from the sample.")] = None,
+            overwrite: Annotated[bool, Field(description="Replace an existing sample. Only do this if the user explicitly asks.")] = False,
+        ) -> SampleInfo:
+            """
+            Draws a reproducible random sample of variation units (those with at least one pair to classify)
+            and splits it into example and test units. The sample is saved in a sidecar YAML file.
+            Refuses to replace an existing sample unless overwrite is true.
+            """
+            with tool_errors():
+                return store.draw_sample(size=size, seed=seed, test_fraction=test_fraction, max_pairs=max_pairs, overwrite=overwrite)
+
         @server.tool(annotations=write)
         def set_classification(
             unit_id: Annotated[str, Field(description="The variation unit's id.")],

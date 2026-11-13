@@ -16,9 +16,11 @@ from pydantic import BaseModel, Field
 
 from .apparatus import Doc, App, Pair, RelationType, tei_tag, unique
 from .tei import find_element, find_elements, extract_text
+from . import sampling
+from .sampling import Sample, default_sample_path
 
 
-DEFAULT_IGNORE_TYPES = ("orthographic", "defective")
+DEFAULT_IGNORE_TYPES = ("defective",)
 CERTAINTY_VALUES = ("high", "medium", "low")
 RDGAI_RESP = "rdgai"
 
@@ -29,6 +31,7 @@ DIRECTION_CONVENTION = (
 )
 
 UnitStatus = Literal["unclassified", "partial", "classified", "all"]
+SampleFilter = Literal["all", "sampled", "example", "test", "unsampled"]
 
 
 class AnnotationError(Exception):
@@ -81,7 +84,7 @@ class ReadingInfo(BaseModel):
     type: str = Field(default="", description="The reading's @type, e.g. orthographic or defective.")
     witness_count: int
     witnesses: list[str]
-    excluded: bool = Field(description="True if pairs with this reading are not classified (e.g. orthographic or defective readings).")
+    excluded: bool = Field(description="True if pairs with this reading are not classified (by default, defective readings).")
 
 
 class UnitSummary(BaseModel):
@@ -92,6 +95,7 @@ class UnitSummary(BaseModel):
     pair_count: int = Field(description="Number of unordered pairs of substantive readings to classify.")
     classified_count: int
     status: str
+    sample_role: str | None = Field(default=None, description="'example' or 'test' if the unit is in the sample.")
 
 
 class UnitDetail(BaseModel):
@@ -104,6 +108,7 @@ class UnitDetail(BaseModel):
     lacunose_witnesses: list[str]
     pairs: list[PairInfo] = Field(description="Each unordered pair of substantive readings, once.")
     status: str
+    sample_role: str | None = Field(default=None, description="'example' or 'test' if the unit is in the sample.")
 
 
 class UnitList(BaseModel):
@@ -136,6 +141,35 @@ class CategoryPairList(BaseModel):
     total: int
     offset: int
     pairs: list[CategoryPair]
+
+
+class SampleProgress(BaseModel):
+    role: str
+    units: int
+    units_classified: int = Field(description="Units whose pairs are all classified.")
+    pairs: int
+    pairs_classified: int
+
+
+class SampleUnitStatus(BaseModel):
+    id: str
+    role: str
+    status: str
+    pair_count: int
+    classified_count: int
+
+
+class SampleInfo(BaseModel):
+    exists: bool
+    path: str
+    seed: int | None = None
+    size: int | None = None
+    test_fraction: float | None = None
+    max_pairs: int | None = None
+    eligible_count: int | None = None
+    created: str | None = None
+    progress: list[SampleProgress] = Field(default_factory=list, description="Progress for all sampled units and by role.")
+    units: list[SampleUnitStatus] = Field(default_factory=list, description="The sampled units in document order.")
 
 
 class WriteResult(BaseModel):
@@ -172,6 +206,8 @@ class AnnotationStore:
         annotator_name: Optional full name, used when adding a <respStmt> for the annotator.
         read_only: If True, all writes raise ReadOnlyError.
         ignore_types: Readings with these @type values are excluded from pairs (teiphy collapses them).
+        sample_path: The sidecar YAML file holding the sample of units (default: <file>.sample.yaml).
+        check_sample: Check on loading that an existing sample was drawn with the same ignore_types.
     """
     def __init__(
         self,
@@ -180,10 +216,13 @@ class AnnotationStore:
         annotator_name:str|None=None,
         read_only:bool=False,
         ignore_types:tuple[str,...]|list[str]=DEFAULT_IGNORE_TYPES,
+        sample_path:Path|str|None=None,
+        check_sample:bool=True,
     ):
         self.path = Path(path)
         if not self.path.exists():
             raise FileNotFoundError(self.path)
+        self.sample_path = Path(sample_path) if sample_path else default_sample_path(self.path)
         self.annotator = annotator.lstrip("#") if annotator else None
         self.annotator_name = annotator_name
         self.read_only = read_only
@@ -192,6 +231,8 @@ class AnnotationStore:
         self.doc: Doc
         self._mtime: float = 0.0
         self.load()
+        if check_sample:
+            self.load_sample()  # fails early if the sample was drawn with different settings
 
     # -- loading and saving --------------------------------------------------
 
@@ -321,6 +362,7 @@ class AnnotationStore:
             pair_count=len(pairs),
             classified_count=sum(self.is_classified(pair) for pair in pairs),
             status=self.status(app),
+            sample_role=self.sample_role(str(app)),
         )
 
     # -- read operations -----------------------------------------------------------
@@ -339,10 +381,25 @@ class AnnotationStore:
                 categories=categories,
             )
 
-    def list_units(self, status:UnitStatus="all", verse:str="", offset:int=0, limit:int=50) -> UnitList:
+    def list_units(
+        self,
+        status:UnitStatus="all",
+        verse:str="",
+        sample:SampleFilter="all",
+        offset:int=0,
+        limit:int=50,
+    ) -> UnitList:
         with self.lock:
             self.refresh()
             apps = self.doc.apps
+            if sample != "all":
+                roles = self.sample_roles()
+                if sample == "sampled":
+                    apps = [app for app in apps if str(app) in roles]
+                elif sample == "unsampled":
+                    apps = [app for app in apps if str(app) not in roles]
+                else:
+                    apps = [app for app in apps if roles.get(str(app)) == sample]
             if verse:
                 apps = [app for app in apps if matches_verse(str(app), verse)]
             if status != "all":
@@ -380,6 +437,7 @@ class AnnotationStore:
                 lacunose_witnesses=app.lacunae(),
                 pairs=[self.pair_info(pair) for pair in self.substantive_pairs(app)],
                 status=self.status(app),
+                sample_role=self.sample_role(str(app)),
             )
 
     def directed_pairs(self):
@@ -439,6 +497,134 @@ class AnnotationStore:
                     for pair in pairs[offset:offset+limit]
                 ],
             )
+
+    # -- sampling -----------------------------------------------------------------------
+
+    def load_sample(self) -> Sample|None:
+        """ Loads the sample from the sidecar file (cached until the file changes). """
+        try:
+            mtime = self.sample_path.stat().st_mtime_ns
+        except FileNotFoundError:
+            return None
+        if getattr(self, "_sample_cache", (None, None))[0] != mtime:
+            sample = sampling.load_sample(self.sample_path)
+            if sorted(sample.ignore_types) != sorted(self.ignore_types):
+                raise AnnotationError(
+                    f"The sample in {self.sample_path.name} was drawn ignoring reading types "
+                    f"{sorted(sample.ignore_types)}, but this server ignores {sorted(self.ignore_types)}. "
+                    "Use the same --ignore-type options, or draw a new sample."
+                )
+            self._sample_cache = (mtime, sample)
+        return self._sample_cache[1]
+
+    def sample_roles(self) -> dict[str, str]:
+        sample = self.load_sample()
+        return {unit.id: unit.role for unit in sample.units} if sample else {}
+
+    def sample_role(self, unit_id:str) -> str|None:
+        return self.sample_roles().get(unit_id)
+
+    def eligible_units(self, max_pairs:int|None=None) -> list[App]:
+        """ Units with at least one pair to classify (and at most max_pairs pairs, if given). """
+        eligible = []
+        for app in self.doc.apps:
+            pair_count = len(self.substantive_pairs(app))
+            if pair_count == 0:
+                continue
+            if max_pairs is not None and pair_count > max_pairs:
+                continue
+            eligible.append(app)
+        return eligible
+
+    def sample_info(self) -> SampleInfo:
+        with self.lock:
+            self.refresh()
+            sample = self.load_sample()
+            if sample is None:
+                return SampleInfo(exists=False, path=str(self.sample_path))
+
+            units = []
+            for unit in sample.units:
+                if unit.id not in self.doc.id_to_app:
+                    raise AnnotationError(f"Sampled unit '{unit.id}' is not in {self.path.name}.")
+                app = self.doc[unit.id]
+                pairs = self.substantive_pairs(app)
+                units.append(SampleUnitStatus(
+                    id=unit.id,
+                    role=unit.role,
+                    status=self.status(app),
+                    pair_count=len(pairs),
+                    classified_count=sum(self.is_classified(pair) for pair in pairs),
+                ))
+
+            progress = []
+            for role in ("all", "example", "test"):
+                members = [unit for unit in units if role == "all" or unit.role == role]
+                progress.append(SampleProgress(
+                    role=role,
+                    units=len(members),
+                    units_classified=sum(unit.status == "classified" for unit in members),
+                    pairs=sum(unit.pair_count for unit in members),
+                    pairs_classified=sum(unit.classified_count for unit in members),
+                ))
+
+            return SampleInfo(
+                exists=True,
+                path=str(self.sample_path),
+                seed=sample.seed,
+                size=sample.size,
+                test_fraction=sample.test_fraction,
+                max_pairs=sample.max_pairs,
+                eligible_count=sample.eligible_count,
+                created=sample.created,
+                progress=progress,
+                units=units,
+            )
+
+    def draw_sample(
+        self,
+        size:int,
+        seed:int,
+        test_fraction:float=0.5,
+        max_pairs:int|None=None,
+        overwrite:bool=False,
+    ) -> SampleInfo:
+        """
+        Draws a reproducible random sample of units and splits it into example and test units.
+        The sample is saved to the sidecar file. An existing sample is only replaced if overwrite is True.
+        """
+        with self.lock:
+            self.check_writable()
+            self.refresh()
+            if self.sample_path.exists() and not overwrite:
+                raise AnnotationError(
+                    f"A sample already exists in {self.sample_path.name}. Pass overwrite=True to replace it."
+                )
+            eligible = self.eligible_units(max_pairs=max_pairs)
+            try:
+                units = sampling.draw(
+                    [str(app) for app in eligible],
+                    size=size,
+                    seed=seed,
+                    test_fraction=test_fraction,
+                    document_order=[str(app) for app in self.doc.apps],
+                )
+            except ValueError as error:
+                raise AnnotationError(str(error))
+
+            sample = Sample(
+                seed=seed,
+                size=size,
+                test_fraction=test_fraction,
+                max_pairs=max_pairs,
+                ignore_types=sorted(self.ignore_types),
+                eligible_count=len(eligible),
+                created=sampling.now(),
+                source=self.path.name,
+                units=units,
+            )
+            sampling.save_sample(sample, self.sample_path)
+            return self.sample_info()
 
     # -- write operations -----------------------------------------------------------
 
