@@ -23,6 +23,7 @@ def classify_pair(
     examples:int=10,
     console:Console|None=None,
     examples_doc:Doc|None=None,
+    justification_language:str="English",
 ):
     """
     Classifies relations for a pair of readings.
@@ -31,7 +32,12 @@ def classify_pair(
 
     console = console or Console()
 
-    template = build_template(pair, examples=examples, examples_doc=examples_doc)
+    template = build_template(
+        pair,
+        examples=examples,
+        examples_doc=examples_doc,
+        justification_language=justification_language,
+    )
     if verbose or prompt_only:
         template.pretty_print()
         if prompt_only:
@@ -76,6 +82,7 @@ def classify(
     examples:int=10,
     console:Console|None=None,
     examples_doc:Doc|None=None,
+    justification_language:str="English",
 ):
     """
     Classifies relations in TEI documents.
@@ -97,6 +104,7 @@ def classify(
             examples=examples, 
             console=console,
             examples_doc=examples_doc,
+            justification_language=justification_language,
         )
         
         

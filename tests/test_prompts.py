@@ -25,6 +25,7 @@ def test_build_template_minimal(minimal):
     assert "Human: I am analyzing textual variants in a document written in Arabic." in response
     assert "category1: Description 1" in response
     assert "Respond with one of these categories: category1, category2, category3" in response
+    assert "provide a justification in English" in response
     assert "AI: Certainly, the category for changing from ⸂Reading 1⸃ to ⸂Reading 2⸃ is:" in response
 
 
@@ -42,6 +43,12 @@ def test_build_template_arb(arb):
 
     assert "Respond with one of these categories: Orthography, Single_Minor_Word_Change, Single_Major_Word_Change, Multiple_Word_Changes" in response
     assert "AI: Certainly, the category for changing from ⸂OMIT⸃ to ⸂قال الرب  للذين اتوا اليه من اليهود⸃ is:" in response
+
+
+def test_build_template_justification_language(minimal):
+    pair = minimal.apps[0].pairs[0]
+    response = build_template(pair=pair, justification_language="French").invoke({}).to_string()
+    assert "provide a justification in French" in response
 
 
 def test_select_spaced_elements_basic():

@@ -89,7 +89,7 @@ def build_system_message(doc:Doc) -> str:
     return f"You are an academic who is an expert in textual criticism in {doc.language}."
 
 
-def build_preamble(doc:Doc, examples:int=10) -> str:
+def build_preamble(doc:Doc, examples:int=10, justification_language:str="English") -> str:
     relation_categories = doc.relation_types.values()
     human_message = (
         f"I am analyzing textual variants in a document written in {doc.language}.\n"
@@ -115,18 +115,27 @@ def build_preamble(doc:Doc, examples:int=10) -> str:
     human_message += "\n"
     human_message += "I will give you a two variant readings. On the first line of your response, provide the correct category name for changing from the first reading to the second reading.\n"
     human_message += "Do not provide any other text than the name of the category on the first line.\n"
-    human_message += "Then on a second line, give a justification of your decision according the definitions of the categories provided and similar examples.\n"
+    human_message += f"Then on a second line, give a justification in {justification_language} of your decision according the definitions of the categories provided and similar examples.\n"
     human_message += f"When you are finished, output 5 hyphens: '-----'.\n"
 
     return human_message
 
 
-def build_template(pair:Pair, examples:int=10, examples_doc:Doc|None=None) -> ChatPromptTemplate:
+def build_template(
+    pair:Pair,
+    examples:int=10,
+    examples_doc:Doc|None=None,
+    justification_language:str="English",
+) -> ChatPromptTemplate:
     app = pair.app
     examples_doc = examples_doc or app.doc
 
     system_message = build_system_message(examples_doc)
-    human_message = build_preamble(examples_doc, examples)    
+    human_message = build_preamble(
+        examples_doc,
+        examples,
+        justification_language=justification_language,
+    )
 
     human_message += f"\nThe variation unit you need to classify is marked as {app.text_with_signs(pair.active.text)} in this text:\n"
     human_message += f"{app.text_in_context(pair.active.text)}\n"
@@ -138,7 +147,7 @@ def build_template(pair:Pair, examples:int=10, examples_doc:Doc|None=None) -> Ch
     relation_categories = examples_doc.relation_types.values()
     relation_categories_list = ", ".join(str(category) for category in relation_categories)
     human_message += f"Respond with one of these categories: {relation_categories_list}\n"
-    human_message += f"On the second line, provide a justification for your decision."
+    human_message += f"On the second line, provide a justification in {justification_language} for your decision."
 
     ai_message = f"Certainly, the category for changing from {active_reading_text} to {passive_reading_text} is:"
 

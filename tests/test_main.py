@@ -30,6 +30,22 @@ def test_main_classify(tmp_path):
     assert '<desc>c.f. Reading 1 ➞ Reading 2</desc>' in result
 
 
+@patch("llmloader.load", lambda *args, **kwargs: mock_llm)
+def test_main_classify_justification_language(tmp_path):
+    output = tmp_path / "output.xml"
+    result = runner.invoke(app, [
+        "classify",
+        str(TEST_DATA_DIR / "minimal.xml"),
+        str(output),
+        "--verbose",
+        "--justification-language",
+        "French",
+    ])
+
+    assert result.exit_code == 0
+    assert "provide a justification in French" in result.stdout
+
+
 @patch("llmloader.load", lambda *args, **kwargs: mock_llm_validation)
 def test_main_validate(tmp_path):
     output = tmp_path / "output.xml"

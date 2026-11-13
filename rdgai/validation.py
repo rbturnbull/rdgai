@@ -23,6 +23,7 @@ def validate(
     confusion_matrix:Path|None=None,
     confusion_matrix_plot:Path|None=None,
     report:Path|None=None,
+    justification_language:str="English",
 ):
     """
     Partitions the classified pairs in the document and uses a proportion for examples and the remainder for classification.
@@ -53,6 +54,7 @@ def validate(
         llm=llm,
         examples=examples,
         console=console,
+        justification_language=justification_language,
     )
 
     # Evaluate classifications
@@ -66,4 +68,3 @@ def validate(
         examples=examples,
         llm=llm,
     )
-

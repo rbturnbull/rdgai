@@ -48,7 +48,8 @@ def classify(
     temperature:float=typer.Option(0.1, help="Temperature for sampling from the language model."),
     prompt_only:bool=typer.Option(False, help="Only print the prompt and not classify."),
     examples:int=typer.Option(10, help="Number of examples to include in the prompt."),
-    examples_doc:Path=typer.Option(None, help="The path to a TEI XML document to use for examples.")
+    examples_doc:Path=typer.Option(None, help="The path to a TEI XML document to use for examples."),
+    justification_language:str=typer.Option("English", help="Language to use for classification justifications."),
 ):
     """
     Classifies relations in TEI documents.
@@ -68,6 +69,7 @@ def classify(
         examples=examples, 
         console=console,
         examples_doc=examples_doc,
+        justification_language=justification_language,
     )
 
 
@@ -135,6 +137,7 @@ def validate(
     confusion_matrix_plot:Path=typer.Option(None, help="Path to write the confusion matrix plot as an HTML file."),
     seed:int=typer.Option(42, help="Seed for random sampling of validation pairs."),
     report:Path=typer.Option(None, help="Path to write the report."),
+    justification_language:str=typer.Option("English", help="Language to use for classification justifications."),
 ):
     """ Takes a ground truth document, chooses a proportion of classified pairs to validate against and outputs a report. """
     ground_truth = Doc(ground_truth)
@@ -151,6 +154,7 @@ def validate(
         confusion_matrix=confusion_matrix, 
         confusion_matrix_plot=confusion_matrix_plot, 
         report=report,
+        justification_language=justification_language,
     )
 
 
@@ -206,8 +210,9 @@ def import_classifications(
 def prompt_preamble(
     doc:Path=typer.Argument(..., help="The path to the TEI XML document to classify."),
     examples:int=typer.Option(10, help="Number of examples to include in the prompt."),
+    justification_language:str=typer.Option("English", help="Language to use for classification justifications."),
 ):
     """ Prints the prompt preamble for a TEI document for a given number of examples. """
     doc = Doc(doc)
-    template = build_preamble(doc, examples)
+    template = build_preamble(doc, examples, justification_language=justification_language)
     print(template)
