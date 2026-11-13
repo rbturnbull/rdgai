@@ -141,6 +141,59 @@ More information about making automated classifications using Rdgai can be found
 .. end-quickstart
 
 
+MCP server
+==================================
+
+Rdgai can serve a TEI XML file over the `Model Context Protocol <https://modelcontextprotocol.io>`_ so that an AI assistant
+(for example Claude) can read the category definitions, browse variation units and record classifications with you:
+
+.. code-block:: bash
+
+    rdgai serve-mcp doc.xml --annotator RT --annotator-name "Your Name"
+
+``--annotator`` is the ``xml:id`` of the person responsible for the classifications set through the server.
+A ``<respStmt>`` with that id is added to the TEI header. Use ``--read-only`` to serve a file without allowing changes.
+Readings typed ``orthographic`` or ``defective`` are not classified (change this with ``--ignore-type``).
+
+The file is saved after every change. To add the server to Claude Code:
+
+.. code-block:: bash
+
+    claude mcp add rdgai -- rdgai serve-mcp /path/to/doc.xml --annotator RT
+
+To serve over streamable HTTP instead of stdio (e.g. for a remote connector), use ``--transport http --port 8000``;
+the endpoint is ``http://HOST:PORT/mcp``.
+
+The tools are:
+
+- ``get_definitions``: the categories, their inverses, the guidance in the XML comment before the ``<interpGrp>`` (e.g. a decision order) and the direction convention.
+- ``list_units``: variation units, filtered by status (``unclassified``, ``partial``, ``classified``) or verse.
+- ``get_unit``: a unit's verse context, readings and every pair of substantive readings with its classification and provenance.
+- ``set_classification``: sets the category of a pair (replacing any previous one) and the inverse category on the reverse pair.
+- ``clear_classification``: removes the classification of a pair and its reverse.
+
+Classifications are stored where teiphy reads them, with their provenance:
+
+.. code-block:: xml
+
+    <app xml:id="Mark.1.1.12-16">
+      ...
+      <note>
+        <listRelation type="transcriptional">
+          <relation active="a" passive="b" ana="#Minor_Omission" resp="#RT" cert="high">
+            <desc type="justification">Omits the article.</desc>
+          </relation>
+          <relation active="b" passive="a" ana="#Minor_Addition" resp="#RT" cert="high">
+            <desc type="justification">Inverse of a → b: Omits the article.</desc>
+          </relation>
+        </listRelation>
+      </note>
+    </app>
+
+Classifications made by an automated run have ``resp="#rdgai"`` and a ``@change`` pointing to a ``<change>`` in the
+``<revisionDesc>`` that records when the run happened and which model it used.
+
+
 Credits
 ==================================
 

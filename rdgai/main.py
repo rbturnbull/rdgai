@@ -216,3 +216,31 @@ def prompt_preamble(
     doc = Doc(doc)
     template = build_preamble(doc, examples, justification_language=justification_language)
     print(template)
+
+
+@app.command()
+def serve_mcp(
+    doc:Path=typer.Argument(..., help="The TEI XML document. It is modified in place when classifications are set."),
+    transport:str=typer.Option("stdio", help="Transport: 'stdio' or 'http' (streamable HTTP)."),
+    host:str=typer.Option("127.0.0.1", help="Host for the HTTP transport."),
+    port:int=typer.Option(8000, help="Port for the HTTP transport."),
+    annotator:str=typer.Option(None, help="xml:id of the human annotator responsible for classifications set through this server, e.g. 'RT'."),
+    annotator_name:str=typer.Option(None, help="Full name of the annotator (used in the <respStmt> added to the TEI header)."),
+    read_only:bool=typer.Option(False, help="Disable all tools that change the file."),
+    ignore_types:list[str]=typer.Option(["orthographic", "defective"], "--ignore-type", help="Readings of this @type are not classified (repeatable)."),
+):
+    """ Serves an MCP server for querying and classifying the reading pairs in a TEI document. """
+    from .annotation import AnnotationStore
+    from .mcp_server import build_server
+
+    if not read_only and not annotator:
+        raise typer.BadParameter("Provide --annotator (the xml:id of the person responsible) or use --read-only.")
+
+    store = AnnotationStore(doc, annotator=annotator, annotator_name=annotator_name, read_only=read_only, ignore_types=ignore_types)
+    server = build_server(store)
+    if transport == "stdio":
+        server.run("stdio")
+    elif transport == "http":
+        server.run("streamable-http", host=host, port=port)
+    else:
+        raise typer.BadParameter("transport must be 'stdio' or 'http'.")

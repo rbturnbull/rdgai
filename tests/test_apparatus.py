@@ -169,7 +169,9 @@ def test_pair_add_type(minimal):
     assert relation_element.tag.endswith("relation")
     assert relation_element.attrib == {'active': '1', 'passive': '2', 'ana': '#category1'}
     assert relation_element.getparent().tag.endswith("listRelation")
-    assert minimal.apps[0].element == relation_element.getparent().getparent()
+    # <listRelation> is not allowed directly in <app>, so it is wrapped in a <note>
+    assert relation_element.getparent().getparent().tag.endswith("note")
+    assert minimal.apps[0].element == relation_element.getparent().getparent().getparent()
 
     assert relation_type in pair.types
 
