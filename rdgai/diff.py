@@ -16,7 +16,7 @@ OMISSION_WORDS = {"omission", "omissions", "omit", "omits", "deletion", "deletio
 
 @dataclass
 class ChangeDescription:
-    kind: str          # identical, addition, omission, reordering or substitution
+    kind: str          # identical, addition, omission, reordering or changed (never named after a category)
     text: str
     added: list[str] = field(default_factory=list)
     removed: list[str] = field(default_factory=list)
@@ -48,7 +48,8 @@ def describe_change(first:str, second:str) -> ChangeDescription:
     if removed and not added:
         return ChangeDescription("omission", f"second reading omits: {_segments(a, removed_spans)}", added, removed)
     return ChangeDescription(
-        "substitution", f"different words: {_segments(a, removed_spans)} → {_segments(b, added_spans)}", added, removed,
+        # neutral wording: a different form of the same word (εξηλθεν → εξηλθον) is not a Substitution
+        "changed", f"changed: {_segments(a, removed_spans)} → {_segments(b, added_spans)}", added, removed,
     )
 
 

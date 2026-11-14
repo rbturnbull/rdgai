@@ -1,6 +1,6 @@
 // The rdgai annotation GUI. Talks to the JSON API in rdgai/gui/__init__.py; pure logic lives in logic.js.
 import { keyAction, categoryClick, targetPairs, pairKey, labelRequest, certaintyRequest, visiblePairs, progressText, ruleText, refreshAction, justificationSource,
-  isCompact, groupByFirst, sameSuggestion, sameChange, parseRoute, routeHash, QUEUE_FILTERS, pageInfo, expectedFor, diffWords, markedParts, showsOverview, headerUser } from "./logic.js";
+  isCompact, groupByFirst, sameSuggestion, sameChange, parseRoute, routeHash, QUEUE_FILTERS, pageInfo, expectedFor, diffWords, markedParts, showsOverview, headerUser, changeParts } from "./logic.js";
 
 const state = {
   config: null,
@@ -91,12 +91,20 @@ function pairReadingRow(pair, which) {
   );
 }
 
+// The computed change between the two readings, as a badge: what changes, then the words in bold.
+function changeBadge(text) {
+  const { label, words } = changeParts(text);
+  return el("div", { class: "change-badge", title: "Computed from the words of the two readings; a reading aid, not a label" },
+    el("span", { class: "change-label" }, label),
+    words ? el("span", { class: "change-words" }, words) : null);
+}
+
 function pairReadings(pair) {
   return el("div", { class: "pair-readings" },
     pairReadingRow(pair, "first"),
     el("div", { class: "pair-change" },
       el("div", { class: "down-arrow", "aria-hidden": "true" }, "↓"),
-      el("div", { class: "change", title: "Computed from the words of the two readings; a reading aid, not a label" }, pair.change ? pair.change.text : "")),
+      pair.change ? changeBadge(pair.change.text) : null),
     pairReadingRow(pair, "second"));
 }
 
@@ -390,16 +398,21 @@ function pairView(pair, index) {
   return compactMode() && !state.expanded.has(pairKey(pair)) ? compactRow(pair, index) : pairPanel(pair, index);
 }
 
-function readingLabel(unit, id) {
+// The heading of a group of compact rows: the first reading they all start from.
+function groupHeading(unit, id) {
   const reading = unit.readings.find((candidate) => candidate.id === id);
-  return reading ? `${id}: ${reading.text} (${reading.witness_count} witnesses)` : id;
+  return el("h3", { class: "group-head" },
+    el("span", { class: "group-from" }, "From"),
+    el("span", { class: "group-id" }, id),
+    el("span", { class: "group-text" }, reading ? reading.text || "OMIT" : id),
+    reading ? el("span", { class: "group-witnesses" }, `${reading.witness_count} witness${reading.witness_count === 1 ? "" : "es"}`) : null);
 }
 
 function pairViews(unit, pairs, offset) {
   if (!compactMode()) return pairs.map((pair, index) => pairView(pair, offset + index));
   let index = offset;
   return groupByFirst(pairs).map((group) => el("section", { class: "group" },
-    el("h3", { class: "group-head" }, `From ${readingLabel(unit, group.first)}`),
+    groupHeading(unit, group.first),
     ...group.pairs.map((pair) => pairView(pair, index++)),
   ));
 }

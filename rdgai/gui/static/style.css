@@ -561,3 +561,37 @@ main { padding-top: 16px; }
 .profile { width: min(420px, calc(100vw - 32px)); bottom: auto; }
 .profile-form { display: flex; flex-direction: column; gap: 4px; }
 .profile-form .field input { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; }
+
+/* the change between the two readings: a badge that stands out from the verse around it */
+.pair-change { justify-items: center; }
+.pair-change .down-arrow { justify-self: stretch; }
+.change-badge {
+  display: inline-flex; align-items: baseline; flex-wrap: wrap; justify-content: center; gap: 4px 10px;
+  margin: 6px 0; padding: 6px 16px; border-radius: 999px;
+  background: rgba(148, 0, 0, 0.08); border: 1px solid rgba(148, 0, 0, 0.35);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+.change-badge .change-label {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 12px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--brand);
+}
+.change-badge .change-words { font-family: var(--text-font); font-size: 22px; font-weight: 700; color: var(--brand); }
+@media (prefers-color-scheme: dark) {
+  .change-badge { background: rgba(196, 58, 58, 0.18); border-color: rgba(196, 58, 58, 0.5); }
+  .change-badge .change-label, .change-badge .change-words { color: #ff9b9b; }
+}
+
+/* compact mode: each group's heading, the first reading its rows start from */
+.group-head {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px;
+  margin: 18px 0 6px; padding: 8px 12px;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-weight: 400;
+  background: var(--panel); border-left: 4px solid var(--brand); border-radius: 6px;
+}
+.group-head .group-from { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.group-head .group-id {
+  display: inline-grid; place-items: center; min-width: 30px; height: 30px; padding: 0 8px; border-radius: 6px;
+  background: #373a3c; color: #fff; font-size: 15px; font-weight: 700;
+}
+.group-head .group-text { font-family: var(--text-font); font-size: 24px; font-weight: 600; }
+.group-head .group-witnesses { font-size: 13px; color: var(--muted); }

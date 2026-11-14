@@ -19,9 +19,11 @@ from .test_mcp import call, mark_path, store  # noqa: F401 (fixtures)
     ("υιου του θεου", "υιου θεου", "omission", "second reading omits: του"),
     ("υιου θεου", "του υιου του θεου", "addition", "second reading adds: του … του"),
     ("και εδησεν αυτον εν φυλακη", "εν φυλακη και εδησεν αυτον", "reordering", "same words, reordered"),
-    ("και εδησεν αυτον εν φυλακη", "και εδησεν αυτον εις φυλακην", "substitution", "different words: εν φυλακη → εις φυλακην"),
-    ("καθως", "ως", "substitution", "different words: καθως → ως"),
-    ("εξηλθεν και απηλθεν", "εξελθων απηλθεν", "substitution", "different words: εξηλθεν και → εξελθων"),
+    # neutral wording: a different form of the same word is not a Substitution, so nothing here suggests one
+    ("και εδησεν αυτον εν φυλακη", "και εδησεν αυτον εις φυλακην", "changed", "changed: εν φυλακη → εις φυλακην"),
+    ("καθως", "ως", "changed", "changed: καθως → ως"),
+    ("εξηλθεν και απηλθεν", "εξελθων απηλθεν", "changed", "changed: εξηλθεν και → εξελθων"),
+    ("εξηλθεν", "εξηλθον", "changed", "changed: εξηλθεν → εξηλθον"),
     ("λεγει αυτω", "λεγει αυτω", "identical", "readings are identical"),
     ("", "", "identical", "readings are identical"),
 ])
@@ -46,7 +48,7 @@ def test_describe_change_lists_the_words():
     ("Minor_Addition", "μετανοιας", "", True),
     ("Major_Omission", "μετανοιας", "", False),
     ("Minor_Substitution", "", "και", False),  # other categories are not checked
-    ("Minor_Omission", "καθως", "ως", False),  # a substitution: no clear contradiction
+    ("Minor_Omission", "καθως", "ως", False),  # changed words: no clear contradiction
     ("Deletion", "", "και", True),             # other wording for the same idea
     ("Insertion", "μετανοιας", "", True),
     (None, "", "και", False),
@@ -89,7 +91,7 @@ def test_gui_describes_pairs_in_display_order(store):
     # b = ησαια τω προφητη, a = τω ησαια τω προφητη, e = τοις προφηταις
     pairs = {(pair["first"], pair["second"]): pair for pair in client.get("/api/unit/Mark.1.2.8-14").json()["pairs"]}
     assert pairs[("b", "a")]["change"]["text"] == "second reading adds: τω"
-    assert pairs[("e", "b")]["change"]["kind"] == "substitution"
+    assert pairs[("e", "b")]["change"]["kind"] == "changed"
     assert pairs[("b", "a")]["warning"] is None
 
 
@@ -100,3 +102,11 @@ def test_gui_warning_after_saving_a_contradicting_label(store):
     pair = response.json()["pairs"][0]
     assert pair["category"] == "Minor_Omission"
     assert pair["warning"] == "Minor_Omission is for an omission, but the second reading adds: τω."
+
+
+def test_change_descriptions_never_name_a_category(store):
+    """ The reading aid must not point towards a category (e.g. "substitution" for a different form of the same word). """
+    for unit in store.list_units(limit=500).units:
+        for pair in store.get_unit(unit.id).pairs:
+            assert "substitut" not in pair.change.text.lower() and "substitut" not in pair.change.kind.lower()
+            assert "different words" not in pair.change.text

@@ -125,7 +125,7 @@ class Provenance(BaseModel):
 
 
 class ChangeInfo(BaseModel):
-    kind: str = Field(description="identical, addition, omission, reordering or substitution (from a word-level diff).")
+    kind: str = Field(description="identical, addition, omission, reordering or changed (from a word-level diff; a reading aid, not a category).")
     text: str = Field(description="E.g. 'second reading adds: και'. A reading aid only, never a label.")
 
 

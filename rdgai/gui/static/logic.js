@@ -254,3 +254,10 @@ export function headerUser(profile) {
   const name = profile.name && profile.name !== short ? profile.name : null;
   return { name, short };
 }
+
+// "second reading omits: και" -> { label: "second reading omits", words: "και" }, so the words can stand out.
+export function changeParts(text) {
+  const index = (text || "").indexOf(": ");
+  if (index < 0) return { label: text || "", words: "" };
+  return { label: text.slice(0, index), words: text.slice(index + 2) };
+}
