@@ -1,8 +1,8 @@
 """
 Evaluating the pipeline against the human labels of the sample's test units.
 
-The evaluation runs on a stripped working copy: the test units' labels and suggestions (and labels copied from them
-by subreading rules) are removed before the pipeline runs, so nothing about them can reach the model. The pipeline
+The evaluation runs on a stripped working copy: the test units' labels and suggestions (including their rule
+labels, which are written again) are removed before the pipeline runs, so nothing about them can reach the model. The pipeline
 drafts the test units, its predictions are recorded, the review rounds run and the predictions are recorded again,
 and both are compared with the gold labels in the original file, which is never modified.
 """

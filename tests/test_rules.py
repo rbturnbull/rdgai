@@ -3,7 +3,7 @@ Rule-based labels for typed subreadings (e.g. ECM orthographic readings 'ao', 'a
 
 Rule 1: subreading <-> parent gets the mapped category.
 Rule 2: two subreadings of the same parent and type get the mapped category.
-Rule 3: subreading <-> anything else copies the label of the corresponding pair of parents.
+Any other pair with a subreading (e.g. ao-b) is an ordinary pair, for an annotator or the pipeline.
 """
 import shutil
 import subprocess
@@ -63,7 +63,10 @@ def category(store, unit_id, active, passive):
 
 
 def counts(report):
-    return {count.rule: (count.covered, count.written, count.unchanged, count.waiting) for count in report.counts}
+    return {count.rule: (count.covered, count.written, count.unchanged) for count in report.counts}
+
+
+OTHER_SUBREADING_PAIRS = [("ao1", "b"), ("ao1", "bo"), ("a", "bo"), ("ao2", "c"), ("bo", "c")]
 
 
 # ---------------------------------------------------------------------------
@@ -96,7 +99,7 @@ def test_suffix_is_configurable(store):
 
 
 # ---------------------------------------------------------------------------
-# the three rules
+# the two rules
 # ---------------------------------------------------------------------------
 
 def test_rule_1_subreading_and_parent(ruled):
@@ -115,58 +118,47 @@ def test_rule_2_sibling_subreadings(ruled):
     assert category(ruled, "Mark.1.1.2", "ao2", "ao1") == "Orthography"
 
 
-def test_rule_3_waits_for_the_parent_pair(ruled):
-    for active, passive in [("ao1", "b"), ("ao1", "bo"), ("a", "bo"), ("ao2", "c"), ("bo", "c")]:
+def test_other_subreading_pairs_are_not_covered(ruled):
+    """ A subreading only determines its pair with its parent (and its siblings): ao-b is an ordinary pair. """
+    app = ruled.get_app("Mark.1.1.2")
+    for active, passive in OTHER_SUBREADING_PAIRS:
+        assert ruled.coverage_for(ruled.get_pair(app, active, passive)) is None, (active, passive)
         assert category(ruled, "Mark.1.1.2", active, passive) is None
 
 
-def test_rule_3_copies_the_parent_pair(ruled):
-    ruled.set_classification("Mark.1.1.2", "a", "b", "Minor_Substitution", justification="different verb")
-    # the store re-applies the rules to the unit after every save
-    for active, passive in [("ao1", "b"), ("ao2", "b"), ("ao1", "bo"), ("ao2", "bo"), ("a", "bo")]:
-        assert category(ruled, "Mark.1.1.2", active, passive) == "Minor_Substitution"
-    assert label(ruled, "Mark.1.1.2", "ao1", "bo") == (
-        "Minor_Substitution", "#rule-orthographic", "high", "Same as a → b; spelling difference ignored.",
-    )
-
-
-def test_rule_3_sets_the_inverse(ruled):
-    ruled.set_classification("Mark.1.1.2", "a", "c", "Major_Omission")
-    assert category(ruled, "Mark.1.1.2", "ao1", "c") == "Major_Omission"
-    assert category(ruled, "Mark.1.1.2", "c", "ao1") == "Major_Addition"
-    ruled.set_classification("Mark.1.1.2", "c", "b", "Major_Addition")
-    assert category(ruled, "Mark.1.1.2", "bo", "c") == "Major_Omission"
-    assert category(ruled, "Mark.1.1.2", "c", "bo") == "Major_Addition"
-
-
-def test_rule_3_follows_parent_changes(ruled):
+def test_labelling_the_parents_pair_writes_nothing_on_subreading_pairs(ruled):
     ruled.set_classification("Mark.1.1.2", "a", "b", "Minor_Substitution")
-    ruled.set_classification("Mark.1.1.2", "a", "b", "Major_Substitution")
-    assert category(ruled, "Mark.1.1.2", "ao1", "b") == "Major_Substitution"
-    ruled.clear_classification("Mark.1.1.2", "a", "b")
-    assert category(ruled, "Mark.1.1.2", "ao1", "b") is None
+    for active, passive in OTHER_SUBREADING_PAIRS:
+        assert category(ruled, "Mark.1.1.2", active, passive) is None, (active, passive)
+    assert category(ruled, "Mark.1.1.2", "a", "ao1") == "Orthography"   # rule labels are untouched
 
 
-def test_rule_3_follows_bulk_and_certainty_changes(ruled):
-    ruled.set_classifications("Mark.1.1.2", [("a", "b"), ("a", "c")], "Major_Substitution", cert="medium")
-    assert label(ruled, "Mark.1.1.2", "ao1", "c")[2] == "medium"
-    ruled.set_certainty("Mark.1.1.2", [("a", "c")], cert="low")
-    assert label(ruled, "Mark.1.1.2", "ao1", "c")[2] == "low"
-
-
-def test_rule_3_from_a_tentative_parent_is_tentative(ruled):
+def test_rule_labels_are_never_tentative(ruled):
     run = ruled.start_run(model="test-model")
     ruled.set_classification("Mark.1.1.2", "a", "b", "Minor_Substitution", resp="rdgai", cert="medium", change=run)
     app = ruled.get_app("Mark.1.1.2")
-    derived = ruled.get_pair(app, "ao1", "b")
-    assert ruled.label_source(derived) == "rule"
-    assert ruled.is_tentative(derived)
-    provenance = ruled.provenance_from_relation(derived.relation_element())
-    assert provenance.cert == "medium"
-    assert provenance.model == "test-model"
+    assert not ruled.is_tentative(ruled.get_pair(app, "a", "ao1"))
+    assert ruled.is_tentative(ruled.get_pair(app, "a", "b"))
 
-    ruled.set_classification("Mark.1.1.2", "a", "b", "Minor_Substitution")
-    assert not ruled.is_tentative(ruled.get_pair(ruled.get_app("Mark.1.1.2"), "ao1", "b"))
+
+def test_leftover_rule_3_labels_are_removed(ruled, path):
+    """ Labels written by the old rule 3 (resp #rule-..., on a pair no rule covers) are removed and counted. """
+    ruled.set_classification("Mark.1.1.2", "ao1", "b", "Minor_Substitution", resp="rule-orthographic")
+    ruled.set_classification("Mark.1.1.2", "ao1", "bo", "Minor_Substitution", resp="rule-orthographic")
+    ruled.set_classification("Mark.1.1.2", "ao2", "c", "Major_Omission")          # human: kept
+    ruled.set_classification("Mark.1.1.2", "a", "bo", "Minor_Substitution", resp="rdgai", cert="low")  # pipeline: kept
+
+    dry = ruled.apply_rules(dry_run=True)
+    assert dry.removed == 2
+    assert category(ruled, "Mark.1.1.2", "ao1", "b") == "Minor_Substitution"   # a dry run removes nothing
+
+    report = ruled.apply_rules()
+    assert report.removed == 2
+    for active, passive in [("ao1", "b"), ("b", "ao1"), ("ao1", "bo"), ("bo", "ao1")]:
+        assert category(ruled, "Mark.1.1.2", active, passive) is None
+    assert label(ruled, "Mark.1.1.2", "ao2", "c")[:2] == ("Major_Omission", "#RT")
+    assert label(ruled, "Mark.1.1.2", "a", "bo")[:2] == ("Minor_Substitution", "#rdgai")
+    assert ruled.apply_rules().removed == 0
 
 
 # ---------------------------------------------------------------------------
@@ -182,16 +174,6 @@ def test_human_label_is_never_overwritten_and_conflict_is_reported(store):
     assert [(c.unit_id, c.active, c.passive, c.label, c.rule_label, c.rule) for c in report.conflicts] == [
         ("Mark.1.1.2", "ao1", "ao2", "Major_Substitution", "Orthography", 2),
     ]
-
-
-def test_human_override_of_a_derived_label_survives_parent_changes(ruled):
-    ruled.set_classification("Mark.1.1.2", "a", "b", "Minor_Substitution")
-    ruled.set_classification("Mark.1.1.2", "ao1", "b", "Major_Substitution")  # annotator overrides the rule
-    ruled.set_classification("Mark.1.1.2", "a", "b", "Minor_Omission")
-    assert label(ruled, "Mark.1.1.2", "ao1", "b")[:2] == ("Major_Substitution", "#RT")
-    assert category(ruled, "Mark.1.1.2", "ao2", "b") == "Minor_Omission"
-    report = ruled.apply_rules()
-    assert ("ao1", "b") in [(c.active, c.passive) for c in report.conflicts]
 
 
 def test_clearing_a_human_override_restores_the_rule_label(ruled):
@@ -214,10 +196,10 @@ def test_pipeline_labels_on_rule_pairs_are_overwritten(store):
 def test_report(store):
     report = store.apply_rules(rules=[ORTHOGRAPHIC])
     assert counts(report) == {
-        1: (4, 4, 0, 0),  # a-ao1, a-ao2, b-bo, and a-ao in Mark.1.1.8
-        2: (1, 1, 0, 0),  # ao1-ao2
-        3: (9, 0, 0, 9),  # all waiting for their parent pair
+        1: (4, 4, 0),  # a-ao1, a-ao2, b-bo, and a-ao in Mark.1.1.8
+        2: (1, 1, 0),  # ao1-ao2
     }
+    assert report.removed == 0
     assert [(item.unit_id, item.reading) for item in report.unresolved] == [("Mark.1.1.6", "ax")]
     assert [(item.unit_id, item.reading, item.parent) for item in report.nested] == [("Mark.1.1.8", "aoo1", "ao")]
     assert report.conflicts == []
@@ -230,15 +212,14 @@ def test_second_run_changes_nothing(store, path):
     before = path.read_bytes()
     report = store.apply_rules()
     assert path.read_bytes() == before
-    assert counts(report)[1] == (4, 0, 4, 0)
-    assert counts(report)[3] == (9, 0, 5, 4)
+    assert counts(report) == {1: (4, 0, 4), 2: (1, 0, 1)}
 
 
 def test_dry_run_changes_nothing(store, path):
     before = path.read_bytes()
     report = store.apply_rules(rules=[ORTHOGRAPHIC], dry_run=True)
     assert report.dry_run is True
-    assert counts(report)[1] == (4, 4, 0, 0)
+    assert counts(report)[1] == (4, 4, 0)
     assert path.read_bytes() == before
 
 
@@ -254,6 +235,29 @@ def test_rules_are_saved_in_the_file(ruled, path):
 
     reloaded = AnnotationStore(path, annotator="RT")
     assert reloaded.rules == [ORTHOGRAPHIC]
+
+
+def test_rule_description_has_no_rule_3():
+    text = ORTHOGRAPHIC.description()
+    assert "corresponding pair of parents" not in text
+    assert "are labelled Orthography" in text
+
+
+def test_outdated_rule_description_is_updated(ruled, path):
+    """ Files written before rule 3 was removed describe it; apply_rules brings the description up to date. """
+    old = ORTHOGRAPHIC.description() + " Any other pair with a subreading has the label of the corresponding pair of parents."
+    text = path.read_text(encoding="utf-8").replace(ORTHOGRAPHIC.description(), old)
+    path.write_text(text, encoding="utf-8")
+    store = AnnotationStore(path, annotator="RT")
+
+    report = store.apply_rules(dry_run=True)
+    assert report.descriptions_updated == ["rule-orthographic"]
+    assert "corresponding pair of parents" in path.read_text(encoding="utf-8")
+
+    report = store.apply_rules()
+    assert report.descriptions_updated == ["rule-orthographic"]
+    assert "corresponding pair of parents" not in path.read_text(encoding="utf-8")
+    assert store.apply_rules().descriptions_updated == []
 
 
 def test_no_rules_configured(store):
@@ -278,7 +282,7 @@ def test_defective_rule_with_its_own_suffix(path):
     store.apply_rules(rules=[ORTHOGRAPHIC, defective])
     assert label(store, "Mark.1.1.10", "b", "bf")[:2] == ("Orthography", "#rule-defective")
     store.set_classification("Mark.1.1.10", "a", "b", "Minor_Substitution")
-    assert category(store, "Mark.1.1.10", "a", "bf") == "Minor_Substitution"
+    assert category(store, "Mark.1.1.10", "a", "bf") is None   # an ordinary pair now
 
 
 def test_renaming_a_category_updates_the_rules(ruled):
@@ -298,11 +302,15 @@ def test_removing_a_category_used_by_a_rule(ruled):
 
 def test_rule_pairs_are_not_work(ruled):
     units = {unit.id: unit for unit in ruled.list_units(limit=500).units}
-    assert (units["Mark.1.1.2"].pair_count, units["Mark.1.1.2"].rule_pair_count) == (3, 12)
-    assert (units["Mark.1.1.8"].pair_count, units["Mark.1.1.8"].rule_pair_count) == (4, 2)  # aoo1 is not covered
+    assert (units["Mark.1.1.2"].pair_count, units["Mark.1.1.2"].rule_pair_count) == (11, 4)
+    assert (units["Mark.1.1.8"].pair_count, units["Mark.1.1.8"].rule_pair_count) == (5, 1)  # only a-ao is covered
     assert (units["Mark.1.1.6"].pair_count, units["Mark.1.1.6"].rule_pair_count) == (3, 0)  # ax is not covered
 
-    ruled.set_classifications("Mark.1.1.2", [("a", "b"), ("a", "c"), ("b", "c")], "Major_Substitution")
+    work = [(pair.active.n, pair.passive.n) for pair in ruled.work_pairs(ruled.get_app("Mark.1.1.2"))]
+    assert len(work) == 11
+    ruled.set_classifications("Mark.1.1.2", work[:3], "Major_Substitution")
+    assert ruled.get_unit("Mark.1.1.2").status == "partial"
+    ruled.set_classifications("Mark.1.1.2", work[3:], "Major_Substitution")
     assert ruled.get_unit("Mark.1.1.2").status == "classified"
     assert "Mark.1.1.2" not in [unit.id for unit in ruled.list_units(status="unclassified").units]
 
@@ -313,8 +321,8 @@ def test_get_unit_reports_label_sources(ruled):
     assert pairs[("a", "b")].source == "human"
     assert pairs[("a", "ao1")].source == "rule"
     assert pairs[("a", "ao1")].rule == 1
-    assert pairs[("ao1", "b")].rule == 3
-    assert pairs[("ao1", "b")].rule_parent == ["a", "b"]
+    assert pairs[("ao1", "b")].rule is None
+    assert pairs[("ao1", "b")].source is None
     assert pairs[("a", "c")].source is None
     assert pairs[("a", "c")].rule is None
 
@@ -323,8 +331,8 @@ def test_sample_progress_excludes_rule_pairs(ruled):
     before = ruled.eligible_units()
     info = ruled.draw_sample(size=5, seed=0)
     progress = {item.role: item for item in info.progress}
-    assert progress["all"].pairs == 3 + 4 + 3 + 1 + 1  # work pairs only (bf is defective, so excluded)
-    assert progress["all"].rule_pairs == 12 + 2
+    assert progress["all"].pairs == 11 + 5 + 3 + 1 + 1  # work pairs only (bf is defective, so excluded)
+    assert progress["all"].rule_pairs == 4 + 1
     # sampling eligibility does not depend on the rules, so existing samples stay reproducible
     assert [str(app) for app in ruled.eligible_units()] == [str(app) for app in before]
 
@@ -335,10 +343,10 @@ def test_category_counts_have_a_rule_source(ruled):
     assert counts_["Orthography"].rule == 10  # 5 unordered pairs, both directions
     assert counts_["Orthography"].human == 0
     assert counts_["Minor_Substitution"].human == 2
-    assert counts_["Minor_Substitution"].rule == 10
+    assert counts_["Minor_Substitution"].rule == 0
     totals = ruled.category_counts()
-    assert totals.rule_pairs == 14
-    assert totals.pairs_to_classify == 3 + 4 + 3 + 1 + 1
+    assert totals.rule_pairs == 5
+    assert totals.pairs_to_classify == 11 + 5 + 3 + 1 + 1
 
 
 # ---------------------------------------------------------------------------
@@ -348,11 +356,12 @@ def test_category_counts_have_a_rule_source(ruled):
 def test_evaluation_excludes_rule_labelled_pairs(ruled, path):
     """ Rule-covered pairs are not decisions: they are left out of the gold set and the scores. """
     from rdgai.evaluate import gold_labels, metrics
-    ruled.set_classification("Mark.1.1.2", "a", "b", "Minor_Substitution")  # human; rule 3 copies it to ao1-b, ...
+    ruled.set_classification("Mark.1.1.2", "a", "b", "Minor_Substitution")
+    ruled.set_classification("Mark.1.1.2", "ao1", "b", "Minor_Substitution")   # a former rule-3 pair: now a decision
     gold = gold_labels(ruled, ["Mark.1.1.2"])
-    assert gold == {("Mark.1.1.2", "a", "b"): "Minor_Substitution"}
-    assert len(ruled.rule_pairs(ruled.get_app("Mark.1.1.2"))) == 12
-    assert metrics(gold, gold, ["Minor_Substitution"]).n == 1
+    assert gold == {("Mark.1.1.2", "a", "b"): "Minor_Substitution", ("Mark.1.1.2", "ao1", "b"): "Minor_Substitution"}
+    assert len(ruled.rule_pairs(ruled.get_app("Mark.1.1.2"))) == 4
+    assert metrics(gold, gold, ["Minor_Substitution"]).n == 2
 
 
 # ---------------------------------------------------------------------------
@@ -363,14 +372,18 @@ def test_gui_separates_rule_pairs(ruled):
     client = TestClient(create_app(ruled))
     ruled.set_classification("Mark.1.1.2", "a", "b", "Minor_Substitution")
     data = client.get("/api/unit/Mark.1.1.2").json()
-    assert [(pair["first"], pair["second"]) for pair in data["pairs"]] == [("a", "b"), ("a", "c"), ("b", "c")]
-    assert len(data["rule_pairs"]) == 12
-    assert data["progress"] == {"pairs_done": 1, "pairs_total": 3, "rule_pairs": 12}
+    shown = {frozenset((pair["first"], pair["second"])) for pair in data["pairs"]}
+    assert len(shown) == 11
+    assert frozenset(("ao1", "b")) in shown and frozenset(("bo", "c")) in shown   # former rule-3 pairs are work
+    assert len(data["rule_pairs"]) == 4
+    assert data["progress"] == {"pairs_done": 1, "pairs_total": 11, "rule_pairs": 4}
     rule_pairs = {(pair["first"], pair["second"]): pair for pair in data["rule_pairs"]}
     assert rule_pairs[("a", "ao1")]["source"] == "rule"
     assert rule_pairs[("a", "ao1")]["category"] == "Orthography"
-    assert rule_pairs[("ao1", "b")]["rule"] == {"rule": 3, "parent": ["a", "b"], "waiting": False}
-    assert rule_pairs[("ao1", "c")]["rule"] == {"rule": 3, "parent": ["a", "c"], "waiting": True}
+    assert rule_pairs[("a", "ao1")]["rule"] == {"rule": 1}
+    assert rule_pairs[("ao1", "ao2")]["rule"] == {"rule": 2}
+    former = next(pair for pair in data["pairs"] if frozenset((pair["first"], pair["second"])) == frozenset(("ao1", "b")))
+    assert former["rule"] is None and former["change"]
     assert data["pairs"][0]["source"] == "human"
 
 
@@ -397,7 +410,8 @@ def test_mcp_apply_rules(store, path):
     assert result.structured_content["dry_run"] is True
     result = call(server, "apply_rules", rules={"orthographic": "Orthography"})
     report = result.structured_content
-    assert {count["rule"]: count["written"] for count in report["counts"]} == {1: 4, 2: 1, 3: 0}
+    assert {count["rule"]: count["written"] for count in report["counts"]} == {1: 4, 2: 1}
+    assert report["removed"] == 0
     assert call(server, "apply_rules").structured_content["counts"][0]["unchanged"] == 4
 
     unit = call(server, "get_unit", unit_id="Mark.1.1.2").structured_content

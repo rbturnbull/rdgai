@@ -184,8 +184,9 @@ def apply_rules(
 ):
     """
     Labels the pairs formed by typed subreadings (e.g. ECM orthographic readings 'ao', 'ao1' of reading 'a') by rule:
-    subreading-parent and sibling subreadings get the mapped category; other pairs copy their parents' pair.
-    Human labels are never changed. Running it again changes nothing.
+    a subreading and its parent, and two subreadings of the same parent, get the mapped category. Other pairs with a
+    subreading (e.g. ao-b) are ordinary pairs, for an annotator or the pipeline; rule labels left on them (from the
+    former rule 3) are removed. Human labels are never changed. Running it again changes nothing.
     """
     import shutil
     from .annotation import AnnotationStore, AnnotationError
@@ -209,19 +210,19 @@ def apply_rules(
         error_console.print(str(error))
         raise typer.Exit(code=1)
 
-    names = {1: "subreading ↔ parent", 2: "sibling subreadings", 3: "copies the parents' pair"}
+    names = {1: "subreading ↔ parent", 2: "sibling subreadings"}
     if dry_run:
         typer.echo("Dry run: nothing was saved.")
     typer.echo("Rules: " + ", ".join(f"{item.reading_type} → {item.category} (suffix '{item.suffix}')" for item in report.rules))
     for count in report.counts:
         line = f"Rule {count.rule} ({names[count.rule]}): {count.covered} pairs: {count.written} written, {count.unchanged} unchanged"
-        if count.rule == 3:
-            line += f", {count.waiting} waiting for their parents' pair"
         if count.human:
             line += f", {count.human} kept (labelled by a human)"
         typer.echo(line)
-    if report.cleared:
-        typer.echo(f"Stale rule labels removed: {report.cleared}")
+    if report.removed:
+        typer.echo(f"Leftover rule labels removed (pairs no rule covers): {report.removed}")
+    if report.descriptions_updated:
+        typer.echo("Rule descriptions updated: " + ", ".join(report.descriptions_updated))
     if report.unresolved:
         typer.echo("Unresolved parents: " + "; ".join(f"{item.unit_id} {item.reading}" for item in report.unresolved))
     if report.nested:

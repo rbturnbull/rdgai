@@ -195,11 +195,13 @@ def test_draft_skips_rule_pairs(tmp_path):
     store.apply_rules(rules=[SubreadingRule("orthographic", "Orthography", "o")])
     asked = []
     draft(store, answering(log=asked), toolsets=[], unit_ids=["Mark.1.1.2"])
-    assert sorted(asked[0]) == [("a", "b"), ("a", "c"), ("b", "c")]
-    # labels copied by rule 3 follow the drafted parents
+    asked_pairs = {frozenset(pair) for pair in asked[0]}
+    assert len(asked_pairs) == 11
+    # pairs covered by rules 1 and 2 are not asked; other pairs with a subreading are
+    assert not asked_pairs & {frozenset(("a", "ao1")), frozenset(("a", "ao2")), frozenset(("b", "bo")), frozenset(("ao1", "ao2"))}
+    assert frozenset(("ao1", "b")) in asked_pairs
     pairs = {(pair.active, pair.passive): pair for pair in store.get_unit("Mark.1.1.2").pairs}
-    assert pairs[("ao1", "b")].category == "Major_Substitution"
-    assert pairs[("ao1", "b")].source == "rule"
+    assert pairs[("ao1", "b")].source == "pipeline"
 
 
 def test_draft_records_usage(store):

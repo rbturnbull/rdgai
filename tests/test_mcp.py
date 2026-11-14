@@ -194,7 +194,6 @@ def test_get_unit(store):
         "provenance": None,
         "source": None,
         "rule": None,
-        "rule_parent": None,
         "change": {"kind": "omission", "text": "second reading omits: του"},
         "warning": None,
     }
@@ -347,7 +346,7 @@ def test_read_only(mark_path):
     server = build_server(store)
     assert list_tool_names(server) == [
         "get_definitions", "list_units", "get_unit", "category_counts", "list_category", "get_sample", "get_suggestions",
-        "search_similar",
+        "search_similar", "get_current_unit", "list_untranslated",
     ]
     with pytest.raises(ReadOnlyError):
         store.set_classification("Mark.1.1.10", "a", "b", "Major_Omission")
@@ -360,7 +359,7 @@ def test_tool_list(store):
         "get_definitions", "list_units", "get_unit", "category_counts", "list_category", "get_sample", "get_suggestions",
         "search_similar",
         "update_category", "add_category", "remove_category", "update_guidance",
-        "draw_sample", "apply_rules", "suggest_classification", "set_classification", "clear_classification",
+        "draw_sample", "apply_rules", "get_current_unit", "list_untranslated", "set_translations", "suggest_classification", "set_classification", "clear_classification",
     ]
 
 

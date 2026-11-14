@@ -29,6 +29,7 @@ from ..annotation import (
 )
 
 from . import views
+from .display import display_path, load_display, save_display, initials
 
 STATIC = Path(__file__).parent / "static"
 INVERSE_PREFIX = re.compile(r"^Inverse of (\S+) → (\S+):\s*")
@@ -229,14 +230,8 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None, compact_thr
             info.provenance.justification = display_justification(info.provenance.justification)
         # the reason box holds the annotator's own reason only: it starts empty (suggestions are shown separately)
         reason = info.provenance.justification if info.provenance is not None else ""
-        rule = None
-        if info.rule is not None:
-            waiting = False
-            if info.rule == 3:
-                parent = store.get_pair(app, *info.rule_parent)
-                # in evaluation mode, whether the parents' pair is labelled is not revealed for test units
-                waiting = store.hides(app) or (parent.relation_element() is None and parent.get_inverse().relation_element() is None)
-            rule = dict(rule=info.rule, parent=info.rule_parent, waiting=waiting)
+        rule = dict(rule=info.rule) if info.rule is not None else None
+        translations = store.translations_for(app)
         return dict(
             first=pair.active.n,
             second=pair.passive.n,
@@ -251,6 +246,8 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None, compact_thr
             warning=info.warning,
             suggestions=suggestions,
             reason=reason,
+            first_translation=translations.get(pair.active.n),
+            second_translation=translations.get(pair.passive.n),
         )
 
     def progress(app) -> dict:
@@ -271,7 +268,7 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None, compact_thr
         return None
 
     def current_version() -> str:
-        return file_version(store.path, store.sample_path)
+        return file_version(store.path, store.sample_path, store.translations_path)
 
     def version(request:Request):
         return JSONResponse(dict(version=current_version()))
@@ -293,6 +290,9 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None, compact_thr
                 buttons=[button.model_dump() for button in buttons],
                 certainty=list(CERTAINTY_VALUES),
                 annotator=store.annotator,
+                annotator_name=store.annotator_full_name(),
+                profile=profile(),
+                title=load_display(display_path(store.path)).get("title") or None,
                 read_only=store.read_only,
                 definitions_editable=not store.read_only and not store.lock_definitions,
                 evaluation=store.evaluation,
@@ -346,6 +346,7 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None, compact_thr
                     context=dict(before=app.text_before(), lemma=app.text(), after=app.text_after()),
                     readings=[reading.model_dump() for reading in detail.readings],
                     lacunose_witnesses=detail.lacunose_witnesses,
+                    translations=detail.translations,
                     pairs=[pair_payload(app, pair, role) for pair in ordered if store.coverage_for(pair) is None],
                     rule_pairs=[pair_payload(app, pair, role) for pair in ordered if store.coverage_for(pair) is not None],
                     filters=filters,
@@ -383,6 +384,63 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None, compact_thr
             return write_response(unit_id, pairs)
         except AnnotationError as error:
             return error_response(error)
+
+    def profile() -> dict:
+        if not store.annotator:
+            return dict(id=None, name=None, short_name=None, editable=False)
+        name = store.annotator_full_name()
+        saved = (load_display(display_path(store.path)).get("annotators") or {}).get(store.annotator) or {}
+        return dict(
+            id=store.annotator,
+            name=name,
+            short_name=saved.get("short_name") or initials(name) or store.annotator,
+            editable=not store.read_only,
+        )
+
+    async def edit_profile(request:Request):
+        data = await request.json()
+
+        def run():
+            try:
+                if store.read_only:
+                    raise ReadOnlyError("This server is read-only.")
+                if ("name" in data or "short_name" in data) and not store.annotator:
+                    raise AnnotationError("No annotator is set on this server (start it with --annotator, e.g. --annotator RT).")
+                if (data.get("name") or "").strip() and data["name"].strip() != store.annotator_full_name():
+                    store.set_annotator_name(data["name"])
+                path = display_path(store.path)
+                display = load_display(path)
+                if "title" in data:
+                    title = (data.get("title") or "").strip()
+                    if title:
+                        display["title"] = title
+                    else:
+                        display.pop("title", None)
+                if "short_name" in data:
+                    annotators = display.setdefault("annotators", {})
+                    short_name = (data.get("short_name") or "").strip()
+                    if short_name:
+                        annotators.setdefault(store.annotator, {})["short_name"] = short_name
+                    else:
+                        annotators.pop(store.annotator, None)
+                    if not annotators:
+                        display.pop("annotators")
+                save_display(display, path)
+                return JSONResponse(dict(profile=profile(), title=display.get("title")))
+            except AnnotationError as error:
+                return error_response(error)
+        return await run_in_threadpool(run)
+
+    async def viewing(request:Request):
+        data = await request.json()
+
+        def run():
+            try:
+                store.set_viewing(data.get("unit_id", ""))
+                return JSONResponse(dict(unit_id=store.viewing().unit_id))
+            except AnnotationError as error:
+                return error_response(error)
+        return await run_in_threadpool(run)
 
     async def certainty(request:Request):
         return await run_in_threadpool(certainty_sync, await request.json())
@@ -469,6 +527,8 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None, compact_thr
         Route("/api/unit/{unit_id:path}", unit),
         Route("/api/label", label, methods=["POST"]),
         Route("/api/certainty", certainty, methods=["POST"]),
+        Route("/api/viewing", viewing, methods=["POST"]),
+        Route("/api/profile", edit_profile, methods=["POST"]),
         Route("/api/categories", categories),
         Route("/api/category/{name}", category),
         Route("/api/agreement", agreement),

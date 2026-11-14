@@ -55,3 +55,11 @@ test("annotation keys are off outside the unit view, but help still works", () =
   assert.deepEqual(keyAction({ ...press("?"), view: "category" }, []), { type: "help" });
   assert.deepEqual(keyAction({ ...press("j"), view: "unit" }, []), { type: "move", delta: 1 });
 });
+
+import { showsOverview } from "../../rdgai/gui/static/logic.js";
+
+test("the verse and readings overview is shown only for compact units (whose rows do not show them)", () => {
+  const unit = (pairs) => ({ pairs: Array.from({ length: pairs }, (_, index) => ({ first: "a", second: String(index) })), rule_pairs: [] });
+  assert.equal(showsOverview(unit(3), 10), false);
+  assert.equal(showsOverview(unit(11), 10), true);
+});

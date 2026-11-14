@@ -1,6 +1,6 @@
 // The rdgai annotation GUI. Talks to the JSON API in rdgai/gui/__init__.py; pure logic lives in logic.js.
 import { keyAction, categoryClick, targetPairs, pairKey, labelRequest, certaintyRequest, visiblePairs, progressText, ruleText, refreshAction, justificationSource,
-  isCompact, groupByFirst, sameSuggestion, sameChange, parseRoute, routeHash, QUEUE_FILTERS, pageInfo, expectedFor } from "./logic.js";
+  isCompact, groupByFirst, sameSuggestion, sameChange, parseRoute, routeHash, QUEUE_FILTERS, pageInfo, expectedFor, diffWords, markedParts, showsOverview, headerUser } from "./logic.js";
 
 const state = {
   config: null,
@@ -19,18 +19,92 @@ const state = {
   category: null,    // the category view: {params, data, counts}
   agreement: null,   // the agreement view: {params, data}
   editing: null,     // the definition being edited in the definitions panel: {kind, name}
-  look: readLook(),  // how readings are shown: "cards" (the original rdgai look) or "table"
+  look: readPreference("rdgai.look", "cards"),  // how readings are shown: "cards" (the original rdgai look) or "table"
+  showTranslation: readPreference("rdgai.translation", "on") === "on",  // contextual translations under each pair
 };
 
-function readLook() {
-  try { return localStorage.getItem("rdgai.look") || "cards"; } catch { return "cards"; }
+function readPreference(name, fallback) {
+  try { return localStorage.getItem(name) || fallback; } catch { return fallback; }
+}
+
+function savePreference(name, value) {
+  try { localStorage.setItem(name, value); } catch { /* kept for this page only */ }
+}
+
+function toggleTranslation() {
+  state.showTranslation = !state.showTranslation;
+  savePreference("rdgai.translation", state.showTranslation ? "on" : "off");
+  syncTranslationToggle();
+  if (state.view === "unit") render();
+  else if (state.view === "category" && state.category) renderCategory();
+}
+
+function syncTranslationToggle() {
+  $("translation-toggle").checked = state.showTranslation;
+}
+
+const stripMarks = (text) => (text || "").replace(/[⸂⸃⸆]/g, "");
+
+// A translation with the words that render the reading highlighted: the span Claude marked ⸂…⸃ (⸆ for an omission),
+// or, in a translation without marks, the words that differ from the other reading's translation.
+function translationParts(own, other, ownIsFirst) {
+  if (!own) return [el("span", { class: "muted" }, "Not translated yet.")];
+  const marked = markedParts(own);
+  if (marked) return marked.map((part) => (part.marked ? el("mark", { class: part.omission ? "omission" : null }, part.text) : part.text));
+  if (!other) return [own];
+  const { first, second } = ownIsFirst ? diffWords(own, stripMarks(other)) : diffWords(stripMarks(other), own);
+  return (ownIsFirst ? first : second).map((part) => (part.changed ? el("mark", {}, part.text) : part.text));
+}
+
+// The verse translated with each reading of the pair in place (for the By category view).
+function translationBlock(pair) {
+  if (!state.showTranslation || (!pair.first_translation && !pair.second_translation)) return null;
+  const line = (id, own, other, isFirst) => el("div", { class: "translation-line" },
+    el("span", { class: "ids" }, id), el("span", {}, translationParts(own, other, isFirst)));
+  return el("div", { class: "translation", title: "The verse translated with each reading in place (by Claude)" },
+    line(pair.first, pair.first_translation, pair.second_translation, true),
+    line(pair.second, pair.second_translation, pair.first_translation, false));
+}
+
+// One reading of a pair: its card, then the verse with the reading in place, its translation and its witnesses.
+function pairReadingRow(pair, which) {
+  const isFirst = which === "first";
+  const id = isFirst ? pair.first : pair.second;
+  const text = isFirst ? pair.first_text : pair.second_text;
+  const reading = state.unit?.readings.find((candidate) => candidate.id === id);
+  const omitted = !reading?.text || text === "OMIT";
+  const { before, after } = state.unit.context;
+  const own = isFirst ? pair.first_translation : pair.second_translation;
+  const other = isFirst ? pair.second_translation : pair.first_translation;
+  return el("div", { class: "pair-reading" },
+    el("div", { class: `reading-card${reading?.excluded ? " excluded" : ""}` },
+      el("div", { class: "reading-id" }, id, reading?.type ? ` · ${reading.type}` : ""),
+      el("div", { class: "reading-text" }, text, ...(reading ? renderNotes(reading.notes) : []))),
+    el("div", { class: "reading-detail" },
+      el("p", { class: "greek" }, before ? `${before} ` : "",
+        el("mark", { class: omitted ? "omission" : null, title: omitted ? "This reading omits the words" : null }, omitted ? "⸆" : text),
+        after ? ` ${after}` : ""),
+      state.showTranslation ? el("p", { class: "english" }, translationParts(own, other, isFirst)) : null,
+      reading ? el("details", { class: "witnesses" },
+        el("summary", {}, `${reading.witness_count} witness${reading.witness_count === 1 ? "" : "es"}`),
+        el("div", {}, reading.witnesses.join(" "))) : null),
+  );
+}
+
+function pairReadings(pair) {
+  return el("div", { class: "pair-readings" },
+    pairReadingRow(pair, "first"),
+    el("div", { class: "pair-change" },
+      el("div", { class: "down-arrow", "aria-hidden": "true" }, "↓"),
+      el("div", { class: "change", title: "Computed from the words of the two readings; a reading aid, not a label" }, pair.change ? pair.change.text : "")),
+    pairReadingRow(pair, "second"));
 }
 
 function setLook(look) {
   state.look = look;
-  try { localStorage.setItem("rdgai.look", look); } catch { /* the choice is kept for this page only */ }
+  savePreference("rdgai.look", look);
   document.body.classList.toggle("look-cards", look === "cards");
-  if (state.unit) renderReadings(state.unit);
+  if (state.unit && !$("readings").hidden) renderReadings(state.unit);
 }
 
 const POLL_MILLISECONDS = 3000;
@@ -104,6 +178,11 @@ function showView(view) {
   $("view-category").hidden = view !== "category";
   $("view-agreement").hidden = view !== "agreement";
   $("queue-filters").hidden = view !== "unit";
+  if (view !== "unit") {
+    $("header-unit").replaceChildren(el("div", { class: "unit-title" }, el("span", { class: "view-title" }, view === "category" ? "By category" : "Agreement")));
+  } else if (state.unit) {
+    renderHeader(state.unit);
+  }
   for (const button of document.querySelectorAll("[data-view]")) {
     button.classList.toggle("active", button.dataset.view === (view === "unit" ? "annotate" : view));
   }
@@ -125,9 +204,10 @@ async function goToQueueStart() {
   const queue = await api(`/api/queue${filterQuery()}`);
   state.filters = queue.filters;
   syncFilterControls();
+  showQueueCount(queue.total);
   if (!queue.units.length) {
     state.unit = null;
-    $("unit-header").replaceChildren(el("p", { class: "muted" }, "No units match these filters."));
+    $("header-unit").replaceChildren(el("span", { class: "muted" }, "No units match these filters."));
     for (const id of ["context", "readings", "pairs"]) $(id).replaceChildren();
     $("bulk-bar").hidden = true;
     return;
@@ -143,6 +223,8 @@ async function loadUnit(unitId, { keepFocus = false } = {}) {
     const previousId = state.unit?.id;
     state.unit = unit;
     state.lastUnitId = unit.id;
+    // tell the server which unit is open, so Claude can act on "the verse I'm on" (get_current_unit)
+    if (previousId !== unit.id) api("/api/viewing", { unit_id: unit.id }).catch(() => {});
     state.version = unit.version;
     state.filters = unit.filters;
     if (!keepFocus || previousId !== unit.id) {
@@ -156,6 +238,7 @@ async function loadUnit(unitId, { keepFocus = false } = {}) {
     }
     state.focused = Math.min(state.focused, Math.max(visible().length - 1, 0));
     syncFilterControls();
+    showQueueCount(unit.position ? unit.position.total : null);
     const scroll = window.scrollY;
     render();
     window.scrollTo({ top: keepFocus && previousId === unit.id ? scroll : 0 });
@@ -172,20 +255,28 @@ function render() {
   const unit = state.unit;
   if (!unit) return;
   renderHeader(unit);
-  renderContext(unit);
-  renderReadings(unit);
+  // the pair rows show the verse and the readings; the overview is only needed for compact rows
+  const overview = showsOverview(unit, state.config.compact_threshold);
+  $("context").hidden = !overview;
+  $("readings").hidden = !overview;
+  if (overview) {
+    renderContext(unit);
+    renderReadings(unit);
+  }
   renderBulkBar();
   renderPairs(unit);
 }
 
 function renderHeader(unit) {
   const position = unit.position ? `${unit.position.index + 1} of ${unit.position.total}` : "not in this queue";
-  $("unit-header").replaceChildren(
+  $("header-unit").replaceChildren(
     el("div", { class: "unit-title" },
       el("h1", {}, unit.id),
       unit.sample_role ? el("span", { class: "badge" }, unit.sample_role) : null,
-      el("span", { class: "muted" }, position),
-      el("span", { class: "muted" }, progressText(unit.progress)),
+    ),
+    el("div", { class: "unit-progress" },
+      el("span", {}, position),
+      el("span", {}, progressText(unit.progress)),
     ),
     el("div", { class: "nav" },
       el("button", { type: "button", disabled: !unit.prev, onclick: () => goToUnit(unit.prev) }, "← Prev"),
@@ -228,15 +319,9 @@ function readingCard(reading) {
   );
 }
 
-function lookToggle() {
-  const other = state.look === "cards" ? "table" : "cards";
-  return el("button", { type: "button", class: "look-toggle", title: `Show the readings as ${other === "cards" ? "cards (the original rdgai look)" : "a table"}`,
-    onclick: () => setLook(other) }, other === "cards" ? "Cards" : "Table");
-}
-
 function renderReadings(unit) {
   if (state.look === "cards") {
-    $("readings").replaceChildren(lookToggle(), el("div", { class: "reading-cards" }, unit.readings.map(readingCard)));
+    $("readings").replaceChildren(el("div", { class: "reading-cards" }, unit.readings.map(readingCard)));
     return;
   }
   const rows = unit.readings.map((reading) => el("tr", { class: reading.excluded ? "excluded" : "" },
@@ -246,7 +331,7 @@ function renderReadings(unit) {
     el("td", {}, String(reading.witness_count)),
     el("td", {}, el("details", {}, el("summary", {}, "witnesses"), el("div", { class: "witnesses" }, reading.witnesses.join(" ")))),
   ));
-  $("readings").replaceChildren(lookToggle(), el("table", {},
+  $("readings").replaceChildren(el("table", {},
     el("thead", {}, el("tr", {}, ...["", "Reading", "Type", "Witnesses", ""].map((heading) => el("th", {}, heading)))),
     el("tbody", {}, rows),
   ));
@@ -257,8 +342,8 @@ function renderBulkBar() {
   bar.hidden = state.ticked.size === 0;
   if (bar.hidden) return;
   bar.replaceChildren(
-    `${state.ticked.size} pairs ticked: categories and certainty apply to all of them. `,
-    el("button", { type: "button", onclick: () => { state.ticked.clear(); render(); } }, "Untick all"),
+    `${state.ticked.size} pairs selected: categories and certainty apply to all of them. `,
+    el("button", { type: "button", onclick: () => { state.ticked.clear(); render(); } }, "Clear selection"),
   );
 }
 
@@ -332,7 +417,7 @@ function updateCompactTools(box = document.getElementById("compact-tools")) {
   const bySuggestion = focused ? sameSuggestion(pairs, focused) : [];
   const byChange = focused ? sameChange(pairs, focused) : [];
   box.replaceChildren(
-    el("span", { class: "muted" }, "Tick all pairs like the focused one: "),
+    el("span", { class: "muted" }, "Select all pairs like the focused one: "),
     el("button", { type: "button", disabled: !bySuggestion.length, "data-tick-keys": bySuggestion.join(" "),
       title: focused?.suggestions[0] ? `Suggested ${focused.suggestions[0].category}` : "The focused pair has no suggestion" },
       `same suggestion (${bySuggestion.length})`),
@@ -346,6 +431,15 @@ function renderPairs(unit) {
   $("main").classList.toggle("wide", compactMode());
   const rulePairs = unit.rule_pairs || [];
   const children = compactMode() ? [compactTools()] : [];
+  if (state.showTranslation && unit.pairs.length && !Object.keys(unit.translations || {}).length) {
+    const request = "Translate the verse I'm on.";
+    children.unshift(el("div", { class: "translation-hint" },
+      el("span", { class: "muted" }, "No translation yet. Ask Claude in Desktop: "),
+      el("q", {}, request),
+      el("button", { type: "button", class: "copy-request", title: "Copy this request to paste into Claude Desktop",
+        onclick: () => navigator.clipboard?.writeText(request).then(() => showStatus("Copied: paste it into Claude Desktop"), () => {}) }, "Copy"),
+      el("span", { class: "muted" }, " The translation appears here by itself once Claude has saved it.")));
+  }
   children.push(...pairViews(unit, unit.pairs, 0));
   if (rulePairs.length) {
     const details = el("details", { class: "rule-section", open: state.showRules },
@@ -369,9 +463,9 @@ function compactRow(pair, index) {
   const suggested = new Set(pair.suggestions.map((item) => item.category));
   const byRule = pair.source === "rule" || (pair.rule && !pair.source);
   const label = pair.category || (pair.rule ? ruleText(pair.rule).replace("By rule: ", "rule: ") : "—");
-  return el("article", { class: `pair compact${index === state.focused ? " focused" : ""}${byRule ? " rule-pair" : ""}`, "data-index": String(index) },
-    el("input", { type: "checkbox", title: "Tick (x)", checked: state.ticked.has(key), disabled: readOnly, "data-tick": key }),
-    el("span", { class: "ids" }, `${pair.first} → ${pair.second}`),
+  return el("article", { class: `pair compact${index === state.focused ? " focused" : ""}${byRule ? " rule-pair" : ""}${state.ticked.has(key) ? " ticked" : ""}`, "data-index": String(index) },
+    el("button", { type: "button", class: "ids select", "aria-pressed": String(state.ticked.has(key)), disabled: readOnly,
+      title: "Select this pair, to label several at once (x)", "data-tick": key }, `${pair.first} → ${pair.second}`),
     el("div", { class: "row-main" },
       // the first reading is in the group heading ("From a: …"), so the row shows where it goes to
       el("div", { class: "texts", title: `${pair.first_text} → ${pair.second_text}` }, el("span", { class: "arrow" }, "➜"), pair.second_text),
@@ -421,15 +515,12 @@ function pairPanel(pair, index) {
 
   const cert = certaintyOf(pair);
   const byRule = pair.source === "rule" || (pair.rule && !pair.source);
-  return el("article", { class: `pair${index === state.focused ? " focused" : ""}${byRule ? " rule-pair" : ""}`, "data-index": String(index) },
-    el("div", { class: "pair-head" },
-      el("input", { type: "checkbox", title: "Tick (x)", checked: state.ticked.has(key), disabled: readOnly, "data-tick": key }),
-      el("span", { class: "ids" }, `${pair.first} → ${pair.second}`),
-      el("span", { class: "texts" }, pair.first_text, el("span", { class: "arrow" }, "➜"), pair.second_text),
-      pair.source === "pipeline" ? pipelineMark() : null,
-      compactMode() ? el("button", { type: "button", class: "expand", title: "Back to a compact row (Enter)", "data-expand": key }, "Less") : null,
-    ),
-    pair.change ? el("div", { class: "change", title: "Computed from the words of the two readings; a reading aid, not a label" }, pair.change.text) : null,
+  // the readings (cards, verse, translation, witnesses) above; the decision in the box below, outlined when focused
+  return el("article", { class: `pair full${index === state.focused ? " focused" : ""}${byRule ? " rule-pair" : ""}${state.ticked.has(key) ? " ticked" : ""}`, "data-index": String(index) },
+    pairReadings(pair),
+    el("div", { class: "decision" },
+    compactMode() ? el("div", { class: "pair-head" },
+      el("button", { type: "button", class: "expand", title: "Back to a compact row (Enter)", "data-expand": key }, "Less")) : null,
     el("div", { class: "categories" }, buttons),
     pair.warning ? el("div", { class: "warning", role: "note" }, `Check: ${pair.warning}`) : null,
     suggestions,
@@ -438,7 +529,9 @@ function pairPanel(pair, index) {
         type: "button", class: value === cert ? "selected" : "", disabled: readOnly, title: value[0], "data-cert": value,
       }, value))),
       el("textarea", { class: "reason", rows: "1", placeholder: "Reason (saved as the justification)", disabled: readOnly, "data-reason": key }, reasonOf(pair)),
-      el("div", { class: "provenance" }, pair.rule ? `${ruleText(pair.rule)}${pair.source === "human" ? " (overridden by a human)" : ""} · ${provenanceText(pair)}` : provenanceText(pair)),
+      el("div", { class: "provenance" }, pair.source === "pipeline" ? pipelineMark() : null,
+        pair.rule ? `${ruleText(pair.rule)}${pair.source === "human" ? " (overridden by a human)" : ""} · ${provenanceText(pair)}` : provenanceText(pair)),
+    ),
     ),
   );
 }
@@ -619,6 +712,7 @@ function categoryRow(pair, index) {
       el("span", { class: "unit-text" }, pair.context.lemma || "⸆"), pair.context.after ? ` ${pair.context.after}` : ""),
     el("p", { class: "relation" }, pair.first_text, el("span", { class: "arrow" }, "➜"), pair.second_text),
     pair.change ? el("div", { class: "change" }, pair.change.text) : null,
+    translationBlock(pair),
     pair.warning ? el("div", { class: "warning" }, `Check: ${pair.warning}`) : null,
     pair.reason ? el("p", { class: "reason-text" }, `“${pair.reason}”`) : null,
     el("div", { class: "provenance" }, pair.rule ? `${ruleText(pair.rule)} · ${provenanceText(pair)}` : provenanceText(pair)),
@@ -679,8 +773,7 @@ function renderAgreement() {
   const scopes = state.config.has_sample
     ? [["example", "Example units"], ["sampled", "Example and test units"], ["test", "Test units"], ["all", "All units"]]
     : [["all", "All units"]];
-  const head = el("div", { class: "view-head" },
-    el("h1", {}, "Agreement"),
+  const head = el("div", { class: "view-head" },  // the view's name is in the header
     el("select", { title: "Which units to compare", onchange: (event) => { location.hash = agreementHash({ scope: event.target.value }); } },
       scopes.map(([value, label]) => el("option", { value, selected: value === data.scope }, label))),
     data.sources.length ? el("select", { title: "Whose suggestions", onchange: (event) => { location.hash = agreementHash({ source: event.target.value }); } },
@@ -746,6 +839,65 @@ function syncFilterControls() {
   $("queue-cert").value = state.filters.cert || "";
   $("queue-source").value = state.filters.source || "";
   $("queue-disagreement").checked = Boolean(state.filters.disagreement);
+}
+
+// ---------------------------------------------------------------------------
+// the header's right side (title or file, annotator) and the profile form
+// ---------------------------------------------------------------------------
+
+function renderHeaderRight() {
+  const config = state.config;
+  $("header-file").replaceChildren(...[
+    el("div", { class: "file-text" },
+      el("span", { class: "file-name", title: config.file }, config.title || config.file),
+      config.title ? el("span", { class: "file-sub" }, config.file) : null),
+    config.read_only ? el("span", { class: "mode" }, "read-only") : null,
+    config.evaluation ? el("span", { class: "mode", title: "Evaluation mode: the test units' labels are hidden" }, "evaluation") : null,
+  ].filter(Boolean));
+  const user = headerUser(config.profile);
+  $("header-user").replaceChildren(el("button", { type: "button", class: "user", title: "Your name and the header's details", onclick: () => togglePanel("profile") },
+    ...(user
+      ? [user.name ? el("span", { class: "user-name" }, user.name) : null, el("span", { class: "avatar" }, user.short)].filter(Boolean)
+      : [el("span", { class: "user-name" }, "No annotator set")])));
+}
+
+function renderProfile() {
+  const config = state.config;
+  const profile = config.profile;
+  const editable = !config.read_only;
+  const field = (label, name, value, help, attrs = {}) => el("label", { class: "field" }, label,
+    el("input", { name, value: value || "", disabled: !editable, ...attrs }), help ? el("span", { class: "side-help" }, help) : null);
+  $("profile").replaceChildren(el("form", { class: "profile-form", onsubmit: saveProfile },
+    el("h2", {}, "Profile and header"),
+    profile.id
+      ? el("p", { class: "muted" }, "Labels are saved as ", el("code", {}, `#${profile.id}`), " (set when the server starts, with --annotator).")
+      : el("p", { class: "muted" }, "No annotator is set: start the server with --annotator (e.g. --annotator RT) to record who saves labels."),
+    profile.id ? field("Full name", "name", profile.name, "Recorded in the TEI header, as the name for this annotator.") : null,
+    profile.id ? field("Short name", "short_name", profile.short_name, "Shown in the circle at the top right. Leave empty for your initials.", { maxlength: "6" }) : null,
+    field("Header title", "title", config.title, `Shown at the top right instead of the file name (${config.file}). Leave empty for the file name.`),
+    el("div", { class: "definition-actions" },
+      el("button", { type: "submit", class: "primary", disabled: !editable }, "Save"),
+      el("button", { type: "button", onclick: () => togglePanel("profile") }, "Close")),
+    !editable ? el("p", { class: "muted" }, "This server is read-only.") : null,
+  ));
+}
+
+async function saveProfile(event) {
+  event.preventDefault();
+  const values = Object.fromEntries(new FormData(event.target));
+  try {
+    await api("/api/profile", values);
+    state.config = await api("/api/config");
+    renderHeaderRight();
+    renderProfile();
+    showStatus("Saved");
+  } catch (error) {
+    showStatus(error.message, true);
+  }
+}
+
+function showQueueCount(total) {
+  $("queue-count").textContent = total === null ? "This unit is not in these units." : `${total} unit${total === 1 ? "" : "s"} match.`;
 }
 
 function fillCategoryFilter() {
@@ -872,9 +1024,10 @@ function toggleTick(key) {
 function togglePanel(id) {
   const panel = $(id);
   const show = panel.hidden;
-  for (const other of ["help", "definitions"]) $(other).hidden = true;
+  for (const other of ["help", "definitions", "profile"]) $(other).hidden = true;
   panel.hidden = !show;
   if (id === "definitions" && show) renderDefinitions();
+  if (id === "profile" && show) renderProfile();
 }
 
 // ---------------------------------------------------------------------------
@@ -892,6 +1045,8 @@ function setUpEvents() {
     if (!panel) return;
     const index = Number(panel.dataset.index);
     if (index !== state.focused) moveFocus(index - state.focused);
+    const selectButton = event.target.closest("[data-tick]");
+    if (selectButton) return toggleTick(selectButton.dataset.tick);
     const categoryButton = event.target.closest("[data-category]");
     if (categoryButton) return chooseCategory(categoryButton.dataset.category);
     const certButton = event.target.closest("[data-cert]");
@@ -900,9 +1055,6 @@ function setUpEvents() {
     if (copyButton) return copyReason(index, Number(copyButton.dataset.copyReason));
     const expandButton = event.target.closest("[data-expand]");
     if (expandButton) return toggleExpanded(expandButton.dataset.expand);
-  });
-  $("pairs").addEventListener("change", (event) => {
-    if (event.target.dataset.tick) toggleTick(event.target.dataset.tick);
   });
   $("pairs").addEventListener("input", (event) => {
     if (event.target.dataset.reason) state.reasons[event.target.dataset.reason] = event.target.value;
@@ -933,6 +1085,7 @@ function setUpEvents() {
         return pair && compactMode() && toggleExpanded(pairKey(pair));
       }
       case "help": return togglePanel("help");
+      case "translation": return toggleTranslation();
       case "leave_text": return document.activeElement?.blur();
     }
   });
@@ -954,6 +1107,13 @@ function setUpEvents() {
   $("definitions").addEventListener("click", onDefinitionsClick);
   $("definitions").addEventListener("submit", onDefinitionsSubmit);
   $("help-toggle").addEventListener("click", () => togglePanel("help"));
+  $("translation-toggle").addEventListener("change", toggleTranslation);
+  $("look").addEventListener("change", (event) => setLook(event.target.value));
+  $("queue-reset").addEventListener("click", () => {
+    state.filters = {};
+    state.lastUnitId = null;
+    location.hash = routeHash({ view: "queue", filters: {} });
+  });
   $("definitions-toggle").addEventListener("click", () => togglePanel("definitions"));
   window.addEventListener("hashchange", route);
   window.addEventListener("focus", reloadCurrentUnit);
@@ -993,12 +1153,14 @@ function reloadCurrentUnit() {
 
 async function start() {
   state.config = await api("/api/config");
-  $("file").textContent = state.config.file + (state.config.read_only ? " (read-only)" : "") + (state.config.evaluation ? " · evaluation mode: test units hidden" : "");
+  renderHeaderRight();
   document.title = `rdgai annotate · ${state.config.file}`;
   if (!state.config.has_sample) {
     for (const value of ["sampled", "example", "test"]) $("queue-sample").querySelector(`option[value="${value}"]`).hidden = true;
   }
   document.body.classList.toggle("look-cards", state.look === "cards");
+  syncTranslationToggle();
+  $("look").value = state.look;
   fillCategoryFilter();
   setUpEvents();
   await route();

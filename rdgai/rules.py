@@ -3,12 +3,13 @@ Rule-based labels for typed subreadings.
 
 ECM apparatuses type some readings as subreadings of another reading: e.g. orthographic readings ``ao``,
 ``ao1``, ``ao2`` are spellings of reading ``a``. Given a mapping from reading type to category
-(e.g. orthographic → Orthography), the pairs these readings form are labelled by rule:
+(e.g. orthographic → Orthography), the pairs these readings form with their parent are labelled by rule:
 
 1. subreading ↔ its parent: the mapped category;
-2. two subreadings of the same parent and type: the mapped category;
-3. subreading ↔ anything else: the label of the corresponding pair of parents (e.g. ``ao``–``b`` copies ``a``–``b``),
-   because the categories ignore differences of spelling. If the parent pair is unlabelled, the pair waits.
+2. two subreadings of the same parent and type: the mapped category.
+
+Any other pair with a subreading (e.g. ``ao``–``b`` or ``ao``–``bo``) is an ordinary pair, classified by an annotator
+or the pipeline like any other.
 
 A subreading's parent is found by removing the rule's suffix and any digits after it from the reading's id
 (``ao2`` → ``a``). Readings whose parent cannot be found, and subreadings of subreadings, are reported, never guessed.
@@ -43,8 +44,7 @@ class SubreadingRule:
         return (
             f"Readings of type '{self.reading_type}' are subreadings of the reading whose id is theirs without the suffix "
             f"'{self.suffix}' and any digits after it. A subreading and its parent, and two such subreadings of the same "
-            f"parent, are labelled {self.category}; any other pair with a subreading has the label of the corresponding "
-            "pair of parents."
+            f"parent, are labelled {self.category}."
         )
 
 
@@ -62,9 +62,8 @@ class Parents:
 
 @dataclass
 class Coverage:
-    rule: int                       # 1, 2 or 3
+    rule: int          # 1 (subreading and parent) or 2 (sibling subreadings)
     reading_type: str
-    parent: tuple[str, str] | None  # for rule 3: the parents' pair, in the same direction as the pair
 
 
 def find_parents(app, rules:list[SubreadingRule]) -> Parents:
@@ -99,15 +98,15 @@ def coverage(active:str, passive:str, parents:Parents) -> Coverage | None:
     passive_parent = parents.parents.get(passive, passive)
     active_type = parents.types.get(active)
     passive_type = parents.types.get(passive)
-    if active_parent == passive_parent:
-        if active == active_parent:
-            return Coverage(1, passive_type, None)
-        if passive == passive_parent:
-            return Coverage(1, active_type, None)
-        if active_type == passive_type:
-            return Coverage(2, active_type, None)
-        return None  # subreadings of the same parent but of different types: no rule
-    return Coverage(3, active_type or passive_type, (active_parent, passive_parent))
+    if active_parent != passive_parent:
+        return None  # a subreading and another reading (or another reading's subreading): an ordinary pair
+    if active == active_parent:
+        return Coverage(1, passive_type)
+    if passive == passive_parent:
+        return Coverage(1, active_type)
+    if active_type == passive_type:
+        return Coverage(2, active_type)
+    return None  # subreadings of the same parent but of different types: no rule
 
 
 def build_rules(stored:list[SubreadingRule], rules:dict[str, str]|None=None, suffixes:dict[str, str]|None=None) -> list[SubreadingRule] | None:

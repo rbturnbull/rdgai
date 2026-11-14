@@ -10,6 +10,7 @@ export function keyAction(event, buttons) {
   }
   if (event.ctrlKey || event.metaKey || event.altKey) return null;
   // annotation keys act on the unit being annotated; the other views are used with the mouse
+  if (event.key === "t" && !event.shiftKey) return { type: "translation" };
   if (event.view && event.view !== "unit") return event.key === "?" ? { type: "help" } : null;
 
   const digit = /^Digit([0-9])$/.exec(event.code || "");
@@ -84,9 +85,7 @@ export function progressText(progress) {
 // Where a rule pair's label comes from.
 export function ruleText(rule) {
   if (rule.rule === 1) return "By rule: subreading and parent";
-  if (rule.rule === 2) return "By rule: subreadings of the same reading";
-  const parent = `${rule.parent[0]} → ${rule.parent[1]}`;
-  return rule.waiting ? `By rule: waiting for ${parent} to be labelled` : `By rule: same as ${parent}`;
+  return "By rule: subreadings of the same reading";
 }
 
 // What to do when the file's version token has been checked: reload the unit if the file changed, but never while
@@ -183,4 +182,75 @@ export function pageInfo(total, offset, limit) {
     prev: offset > 0 ? Math.max(offset - limit, 0) : null,
     next: offset + limit < total ? offset + limit : null,
   };
+}
+
+// ---------------------------------------------------------------------------
+// translations: the words in which the translations of two readings differ
+// ---------------------------------------------------------------------------
+
+// Splits a text into words and the spaces between them; words are compared without case or punctuation.
+function wordParts(text) {
+  return (text || "").split(/(\s+)/).filter((part) => part !== "").map((part) => ({ text: part, word: /\S/.test(part) }));
+}
+
+const wordKey = (text) => text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
+
+// Marks the words of each translation that are not in their longest common subsequence.
+export function diffWords(firstText, secondText) {
+  const first = wordParts(firstText);
+  const second = wordParts(secondText);
+  const a = first.filter((part) => part.word);
+  const b = second.filter((part) => part.word);
+  const lengths = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0));
+  for (let i = a.length - 1; i >= 0; i--) {
+    for (let j = b.length - 1; j >= 0; j--) {
+      lengths[i][j] = wordKey(a[i].text) === wordKey(b[j].text) ? lengths[i + 1][j + 1] + 1 : Math.max(lengths[i + 1][j], lengths[i][j + 1]);
+    }
+  }
+  const keptA = new Set();
+  const keptB = new Set();
+  for (let i = 0, j = 0; i < a.length && j < b.length;) {
+    if (wordKey(a[i].text) === wordKey(b[j].text)) { keptA.add(i++); keptB.add(j++); }
+    else if (lengths[i + 1][j] >= lengths[i][j + 1]) i++;
+    else j++;
+  }
+  const mark = (parts, kept) => {
+    let index = -1;
+    return parts.map((part) => {
+      if (!part.word) return { text: part.text, changed: false };
+      index += 1;
+      return { text: part.text, changed: !kept.has(index) };
+    });
+  };
+  return { first: mark(first, keptA), second: mark(second, keptB) };
+}
+
+// The parts of a translation with the words that render the reading marked ⸂…⸃ (and ⸆ where an omission falls);
+// null if the translation has no marks.
+export function markedParts(text) {
+  if (!text || !/[⸂⸃⸆]/.test(text)) return null;
+  const parts = [];
+  let marked = false;
+  for (const piece of text.split(/([⸂⸃⸆])/)) {
+    if (piece === "⸂") marked = true;
+    else if (piece === "⸃") marked = false;
+    else if (piece === "⸆") parts.push({ text: "⸆", marked: true, omission: true });
+    else if (piece) parts.push({ text: piece, marked });
+  }
+  return parts;
+}
+
+// Each pair's rows show the verse and both readings, so the overview above the pairs is shown only for compact units,
+// whose one-line rows do not.
+export function showsOverview(unit, threshold) {
+  return isCompact(unit, threshold);
+}
+
+// What the header shows for the annotator: the short name in the circle, and the full name beside it unless it is
+// the same (so "RT" is not shown twice).
+export function headerUser(profile) {
+  if (!profile || !profile.id) return null;
+  const short = profile.short_name || profile.id;
+  const name = profile.name && profile.name !== short ? profile.name : null;
+  return { name, short };
 }

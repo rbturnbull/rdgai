@@ -32,6 +32,7 @@ except ImportError:  # pragma: no cover (Windows)
 from .tei import find_element, find_elements, extract_text, find_parent
 from . import sampling
 from .sampling import Sample, default_sample_path
+from . import translations as translation_files
 
 
 DEFAULT_IGNORE_TYPES = ("defective",)
@@ -138,7 +139,6 @@ class PairInfo(BaseModel):
     provenance: Provenance | None = None
     source: Literal["human", "pipeline", "rule"] | None = Field(default=None, description="Who made the current label, if any.")
     rule: int | None = Field(default=None, description="If a subreading rule covers this pair: 1 (subreading-parent), 2 (sibling subreadings) or 3 (copies the parents' pair). Such pairs are labelled automatically.")
-    rule_parent: list[str] | None = Field(default=None, description="For rule 3: the pair of parent readings whose label is copied.")
     change: ChangeInfo | None = Field(default=None, description="What changes from the active to the passive reading, from a word-level diff.")
     warning: str | None = Field(default=None, description="Set if the category clearly contradicts the change (e.g. an Omission where the passive reading only adds words).")
 
@@ -187,6 +187,41 @@ class UnitDetail(BaseModel):
     pairs: list[PairInfo] = Field(description="Each unordered pair of substantive readings, once.")
     status: str
     sample_role: str | None = Field(default=None, description="'example' or 'test' if the unit is in the sample.")
+    translations: dict[str, str] = Field(default_factory=dict, description="English translation of the whole verse with each reading in place, by reading id (if any have been made; see set_translations).")
+
+
+def check_translation_marks(reading_id:str, text:str):
+    """ The words that render the reading are marked ⸂…⸃ (possibly in several spans), never nested or unclosed. """
+    depth = 0
+    for character in text:
+        if character == "⸂":
+            depth += 1
+        elif character == "⸃":
+            depth -= 1
+        if depth not in (0, 1):
+            raise AnnotationError(
+                f"The marks in the translation for reading '{reading_id}' are unbalanced: mark the words that render "
+                "the reading as ⸂…⸃ (several spans are allowed, but not nested), and an omission with ⸆."
+            )
+    if depth:
+        raise AnnotationError(f"The translation for reading '{reading_id}' has a ⸂ without a closing ⸃.")
+
+
+class ViewingInfo(BaseModel):
+    unit_id: str = Field(description="The unit open in the annotation GUI.")
+    when: str = Field(description="When the GUI opened it (ISO 8601, UTC).")
+
+
+class TranslationResult(BaseModel):
+    unit_id: str
+    saved: list[str] = Field(description="Reading ids whose translations were saved.")
+    missing: list[str] = Field(description="Substantive readings of the unit that still have no translation.")
+    saved_to: str
+
+
+class UntranslatedList(BaseModel):
+    total: int = Field(description="Units matching the filters with a substantive reading not yet translated.")
+    unit_ids: list[str]
 
 
 class UnitList(BaseModel):
@@ -284,11 +319,10 @@ class RuleConfig(BaseModel):
 
 
 class RuleCount(BaseModel):
-    rule: int = Field(description="1: subreading-parent; 2: sibling subreadings; 3: copies the parents' pair.")
+    rule: int = Field(description="1: a subreading and its parent; 2: two subreadings of the same parent and type.")
     covered: int = Field(description="Unordered pairs covered by this rule.")
     written: int = Field(description="Pairs whose rule label was written or updated.")
     unchanged: int = Field(description="Pairs whose rule label was already correct.")
-    waiting: int = Field(description="Rule-3 pairs waiting for their parents' pair to be labelled.")
     human: int = Field(default=0, description="Pairs left alone because a human labelled them.")
 
 
@@ -310,7 +344,8 @@ class RuleConflict(BaseModel):
 class RulesReport(BaseModel):
     rules: list[RuleConfig]
     counts: list[RuleCount]
-    cleared: int = Field(description="Stale rule labels removed because their parents' pair became unlabelled.")
+    removed: int = Field(default=0, description="Leftover rule labels removed from pairs no rule covers (e.g. written by the former rule 3). Human and pipeline labels are never removed.")
+    descriptions_updated: list[str] = Field(default_factory=list, description="Stored rules whose description in the TEI was out of date and is rewritten.")
     unresolved: list[RuleReading] = Field(description="Typed readings whose parent could not be found (not guessed).")
     nested: list[RuleReading] = Field(description="Subreadings of subreadings (skipped).")
     conflicts: list[RuleConflict] = Field(description="Human labels that disagree with the rules (kept).")
@@ -381,6 +416,7 @@ class AnnotationStore:
         lock_definitions: If True, the category definitions cannot be edited (classifications still can).
         ignore_types: Readings with these @type values are excluded from pairs (teiphy collapses them).
         sample_path: The sidecar YAML file holding the sample of units (default: <file>.sample.yaml).
+        translations_path: The sidecar YAML file holding contextual translations (default: <file>.translations.yaml).
         check_sample: Check on loading that an existing sample was drawn with the same ignore_types.
         reading_notes: Split notes in parentheses off reading texts (see rdgai.notes).
         lock_timeout: Seconds to wait for another process's write lock on the file.
@@ -396,6 +432,7 @@ class AnnotationStore:
         lock_definitions:bool=False,
         ignore_types:tuple[str,...]|list[str]=DEFAULT_IGNORE_TYPES,
         sample_path:Path|str|None=None,
+        translations_path:Path|str|None=None,
         check_sample:bool=True,
         reading_notes:bool=True,
         lock_timeout:float=10.0,
@@ -405,7 +442,10 @@ class AnnotationStore:
         if not self.path.exists():
             raise FileNotFoundError(self.path)
         self.sample_path = Path(sample_path) if sample_path else default_sample_path(self.path)
+        self.translations_path = Path(translations_path) if translations_path else translation_files.default_translations_path(self.path)
         self.lock_path = self.path.with_name(f".{self.path.name}.lock")
+        self.viewing_path = self.path.with_name(f".{self.path.name}.viewing.json")
+        self._viewing = None
         self.reading_notes = reading_notes
         self.lock_timeout = lock_timeout
         self._write_depth = 0
@@ -637,7 +677,6 @@ class AnnotationStore:
             provenance=provenance,
             source=None if hidden else self.label_source(pair),
             rule=covered.rule if covered else None,
-            rule_parent=list(covered.parent) if covered and covered.parent else None,
             change=ChangeInfo(kind=change.kind, text=change.text),
             warning=label_warning(" ".join(category) or None, change),
         )
@@ -777,6 +816,7 @@ class AnnotationStore:
                 pairs=[self.pair_info(pair) for pair in pairs],
                 status=self.status(app),
                 sample_role=self.sample_role(str(app)),
+                translations=self.translations_for(app),
             )
 
     def directed_pairs(self):
@@ -1236,28 +1276,28 @@ class AnnotationStore:
         return "human"
 
     def is_tentative(self, pair:Pair) -> bool:
-        """ Pipeline labels, and rule labels copied from a pipeline label, are tentative. """
-        source = self.label_source(pair)
-        if source == "pipeline":
-            return True
-        if source == "rule":
-            return bool(self.run_tokens(pair.relation_element()))
-        return False
+        """ Pipeline labels are tentative (rule labels never are: they depend only on the reading types). """
+        return self.label_source(pair) == "pipeline"
 
     @staticmethod
     def run_tokens(relation) -> list[str]:
         return [token for token in relation.get("change", "").split() if not token.startswith("#defs-")]
 
-    def reapply_rules(self, app:App):
-        """ Re-applies the stored rules to one unit (after a label in it changed), without saving. """
+    def restore_rule_labels(self, app:App, pairs:list[Pair]):
+        """
+        After labels are cleared: pairs covered by a rule get the rule's label back (so clearing a human override of
+        a rule label restores it). Rule labels depend only on the reading types, so no other write re-applies them.
+        """
         if self.rules:
-            self.apply_rules_to_app(app, self.rules, report=None)
+            self.apply_rules_to_app(app, self.rules, report=None, only={frozenset((pair.active.n, pair.passive.n)) for pair in pairs})
 
-    def apply_rules_to_app(self, app:App, rules:list[SubreadingRule], report:dict|None) -> bool:
-        """ Applies the rules to one unit. Returns True if anything changed. """
+    def apply_rules_to_app(self, app:App, rules:list[SubreadingRule], report:dict|None, only:set|None=None) -> bool:
+        """
+        Applies the rules to one unit (or to the given unordered pairs of it). Rule labels left on pairs no rule
+        covers (written by the former rule 3) are removed. Returns True if anything changed.
+        """
         parents = self.rule_parents(app, rules)
         by_type = {rule.reading_type: rule for rule in rules}
-        directed = {(pair.active.n, pair.passive.n): pair for pair in app.pairs}
         changed = False
         definitions_change = None
         when = self.now()
@@ -1266,8 +1306,18 @@ class AnnotationStore:
             report["nested"].extend(RuleReading(unit_id=str(app), reading=reading, parent=parent) for reading, parent in parents.nested)
 
         for pair in self.substantive_pairs(app):
+            if only is not None and frozenset((pair.active.n, pair.passive.n)) not in only:
+                continue
             covered = rule_coverage(pair.active.n, pair.passive.n, parents)
             if covered is None:
+                # a leftover rule label (e.g. from the former rule 3): remove it; human and pipeline labels stay
+                leftover = [directed for directed in (pair, pair.get_inverse()) if self.label_source(directed) == "rule"]
+                for directed in leftover:
+                    directed.clear_types()
+                if leftover:
+                    changed = True
+                    if report is not None:
+                        report["removed"] += 1
                 continue
             counts = report["counts"][covered.rule] if report is not None else {}
             if report is not None:
@@ -1275,61 +1325,28 @@ class AnnotationStore:
             rule = by_type[covered.reading_type]
             first, second = pair.active.n, pair.passive.n
 
-            # what the rule gives for first -> second
-            run = []
-            if covered.rule == 3:
-                parent_pair = directed[covered.parent]
-                parent_relation = parent_pair.relation_element()
-                if parent_relation is not None:
-                    relation_type = next(iter(sorted(parent_pair.types, key=lambda t: t.name)), None)
-                else:
-                    reverse = directed[(covered.parent[1], covered.parent[0])]
-                    parent_relation = reverse.relation_element()
-                    reverse_type = next(iter(sorted(reverse.types, key=lambda t: t.name)), None)
-                    relation_type = reverse_type.get_inverse() if reverse_type else None
-                if relation_type is None:
-                    desired = None
-                else:
-                    cert = parent_relation.get("cert") or "high"
-                    run = self.run_tokens(parent_relation)
-                    justification = f"Same as {covered.parent[0]} → {covered.parent[1]}; spelling difference ignored."
-                    inverse_justification = f"Same as {covered.parent[1]} → {covered.parent[0]}; spelling difference ignored."
-                    desired = (relation_type, cert, justification, inverse_justification)
+            relation_type = self.get_relation_type(rule.category)
+            if covered.rule == 1 and parents.parents.get(first) == second:
+                relation_type = relation_type.get_inverse()  # subreading -> parent
+            if covered.rule == 1:
+                subreading = second if parents.parents.get(second) == first else first
+                article = "an" if covered.reading_type[:1].lower() in "aeiou" else "a"
+                justification = f"{subreading} is {article} {covered.reading_type} subreading of {parents.parents[subreading]}."
             else:
-                relation_type = self.get_relation_type(rule.category)
-                if covered.rule == 1 and parents.parents.get(first) == second:
-                    relation_type = relation_type.get_inverse()  # subreading -> parent
-                if covered.rule == 1:
-                    subreading = second if parents.parents.get(second) == first else first
-                    article = "an" if covered.reading_type[:1].lower() in "aeiou" else "a"
-                    justification = f"{subreading} is {article} {covered.reading_type} subreading of {parents.parents[subreading]}."
-                else:
-                    justification = f"{first} and {second} are both {covered.reading_type} subreadings of {parents.parents[first]}."
-                desired = (relation_type, "high", justification, justification)
+                justification = f"{first} and {second} are both {covered.reading_type} subreadings of {parents.parents[first]}."
 
             source = self.label_source(pair)
             if source == "human":
                 if report is not None:
                     counts["human"] += 1
                     current = self.current_category(pair)
-                    if desired is not None and current != desired[0].name:
+                    if current != relation_type.name:
                         report["conflicts"].append(RuleConflict(
                             unit_id=str(app), active=first, passive=second, label=current or "",
-                            rule_label=desired[0].name, rule=covered.rule,
+                            rule_label=relation_type.name, rule=covered.rule,
                         ))
                 continue
 
-            if desired is None:
-                if report is not None:
-                    counts["waiting"] += 1
-                if source == "rule":
-                    pair.clear_types_with_inverse()
-                    changed = True
-                    if report is not None:
-                        report["cleared"] += 1
-                continue
-
-            relation_type, cert, justification, inverse_justification = desired
             relation = pair.relation_element()
             inverse_relation = pair.get_inverse().relation_element()
             resp = f"#{rule.resp_id}"
@@ -1337,9 +1354,9 @@ class AnnotationStore:
                 source == "rule" and relation is not None and inverse_relation is not None
                 and self.current_category(pair) == relation_type.name
                 and self.current_category(pair.get_inverse()) == relation_type.get_inverse().name
-                and relation.get("resp") == resp and relation.get("cert") == cert
+                and relation.get("resp") == resp and relation.get("cert") == "high"
                 and relation_provenance(relation)["justification"] == justification
-                and self.run_tokens(relation) == run
+                and not self.run_tokens(relation)
             ):
                 if report is not None:
                     counts["unchanged"] += 1
@@ -1350,16 +1367,27 @@ class AnnotationStore:
             pair.set_type_with_inverse(
                 relation_type,
                 responsible=resp,
-                cert=cert,
+                cert="high",
                 description=justification,
-                inverse_description=inverse_justification,
-                change=self.change_pointers(*run, definitions_change),
+                inverse_description=justification,
+                change=self.change_pointers(definitions_change),
                 when=when,
             )
             changed = True
             if report is not None:
                 counts["written"] += 1
         return changed
+
+    def update_rule_descriptions(self, rules:list[SubreadingRule]) -> list[str]:
+        """ Rewrites the description of stored rules whose text is out of date (e.g. still describing rule 3). """
+        by_id = {rule.resp_id: rule for rule in rules}
+        updated = []
+        for interp in self.rule_interps():
+            rule = by_id.get(interp.get(XML_ID))
+            if rule is not None and extract_text(interp).strip() != rule.description():
+                self.set_interp_text(interp, rule.description())
+                updated.append(rule.resp_id)
+        return updated
 
     def apply_rules(self, rules:list[SubreadingRule]|None=None, dry_run:bool=False) -> RulesReport:
         """
@@ -1378,20 +1406,25 @@ class AnnotationStore:
                 raise AnnotationError("No subreading rules configured: give rules, e.g. orthographic=Orthography.")
             self.check_rules(rules)
             report = dict(
-                counts={number: dict(covered=0, written=0, unchanged=0, waiting=0, human=0) for number in (1, 2, 3)},
-                cleared=0, unresolved=[], nested=[], conflicts=[],
+                counts={number: dict(covered=0, written=0, unchanged=0, human=0) for number in (1, 2)},
+                removed=0, unresolved=[], nested=[], conflicts=[],
             )
             changed = False
+            descriptions_updated = []
             if rules != self.rules:
                 self.write_rules(rules)
                 changed = True
+            else:
+                descriptions_updated = self.update_rule_descriptions(rules)
+                changed = bool(descriptions_updated)
             for app in self.doc.apps:
                 changed = self.apply_rules_to_app(app, rules, report) or changed
 
             result = RulesReport(
                 rules=[RuleConfig(reading_type=rule.reading_type, category=rule.category, suffix=rule.suffix) for rule in rules],
                 counts=[RuleCount(rule=number, **values) for number, values in report["counts"].items()],
-                cleared=report["cleared"],
+                removed=report["removed"],
+                descriptions_updated=descriptions_updated,
                 unresolved=report["unresolved"],
                 nested=report["nested"],
                 conflicts=report["conflicts"],
@@ -1403,6 +1436,103 @@ class AnnotationStore:
                 self.save()
                 self.load()
             return result
+
+    # -- the unit open in the GUI (so that Claude can act on "the verse I'm on") ------------
+
+    def set_viewing(self, unit_id:str):
+        """
+        Records the unit the GUI shows, in a small hidden file next to the TEI (so another process, e.g. a second
+        MCP server, sees it). A read-only store keeps it in memory and writes nothing.
+        """
+        with self.lock:
+            self.refresh()
+            info = ViewingInfo(unit_id=str(self.get_app(unit_id)), when=sampling.now())
+        self._viewing = info
+        if self.read_only:
+            return
+        fd, tmp = tempfile.mkstemp(dir=self.viewing_path.parent, prefix=f"{self.viewing_path.name}.", suffix=".tmp")
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                f.write(info.model_dump_json())
+            os.replace(tmp, self.viewing_path)
+        finally:
+            if os.path.exists(tmp):
+                os.remove(tmp)
+
+    def viewing(self) -> ViewingInfo|None:
+        """ The unit most recently opened in the GUI (by any process), if any. """
+        try:
+            from_file = ViewingInfo.model_validate_json(self.viewing_path.read_text(encoding="utf-8"))
+        except (FileNotFoundError, ValueError):
+            from_file = None
+        candidates = [info for info in (from_file, self._viewing) if info is not None]
+        return max(candidates, key=lambda info: info.when) if candidates else None
+
+    # -- contextual translations (sidecar file) ------------------------------------------
+
+    def load_translations(self) -> translation_files.Translations:
+        """ Loads the translations from the sidecar file (cached until the file changes). """
+        try:
+            stat = self.translations_path.stat()
+            key = (stat.st_ino, stat.st_mtime_ns, stat.st_size)
+        except FileNotFoundError:
+            return translation_files.Translations()
+        if getattr(self, "_translations_cache", (None, None))[0] != key:
+            self._translations_cache = (key, translation_files.load_translations(self.translations_path))
+        return self._translations_cache[1]
+
+    def translations_for(self, app:App) -> dict[str, str]:
+        """ {reading id: translation} for a unit, leaving out translations made for a reading text that has changed. """
+        entry = self.load_translations().units.get(str(app))
+        if entry is None:
+            return {}
+        texts = {reading.n: str(reading) for reading in app.readings}
+        return {
+            reading_id: item.translation for reading_id, item in entry.readings.items()
+            if texts.get(reading_id) == item.reading
+        }
+
+    def untranslated(self, app:App) -> list[str]:
+        """ Substantive readings of a unit with no (current) translation. """
+        done = self.translations_for(app)
+        return [reading.n for reading in app.readings if not self.is_excluded(reading) and reading.n not in done]
+
+    def untranslated_units(self, sample:SampleFilter="all", verse:str="") -> list[str]:
+        with self.lock:
+            self.refresh()
+            return [
+                str(app) for app in self.filter_units(sample=sample, verse=verse)
+                if self.work_pairs(app) and self.untranslated(app)
+            ]
+
+    def set_translations(self, unit_id:str, translations:dict[str, str], source:str="claude") -> TranslationResult:
+        """
+        Saves translations of the verse with each reading in place (merged with the unit's existing ones).
+        Only the sidecar file is written; the TEI is never changed.
+        """
+        with self.writing():
+            self.check_writable()
+            self.refresh()
+            app = self.get_app(unit_id)
+            if not translations:
+                raise AnnotationError("Give at least one translation, as {reading id: translation}.")
+            readings = {reading.n: reading for reading in app.readings}
+            for reading_id, text in translations.items():
+                if reading_id not in readings:
+                    raise AnnotationError(f"Unit '{unit_id}' has no reading '{reading_id}'. Readings: {', '.join(readings)}.")
+                if not (text or "").strip():
+                    raise AnnotationError(f"The translation for reading '{reading_id}' is empty.")
+                check_translation_marks(reading_id, text)
+            data = translation_files.load_translations(self.translations_path)
+            entry = data.units.setdefault(str(app), translation_files.UnitTranslations())
+            for reading_id, text in translations.items():
+                entry.readings[reading_id] = translation_files.ReadingTranslation(reading=str(readings[reading_id]), translation=text.strip())
+            entry.source = source
+            entry.when = sampling.now()
+            translation_files.save_translations(data, self.translations_path)
+            return TranslationResult(
+                unit_id=str(app), saved=list(translations), missing=self.untranslated(app), saved_to=str(self.translations_path),
+            )
 
     # -- sampling -----------------------------------------------------------------------
 
@@ -1537,6 +1667,51 @@ class AnnotationStore:
             return self.sample_info()
 
     # -- write operations -----------------------------------------------------------
+
+    def resp_stmt_for(self, xml_id:str):
+        for resp_stmt in unique(find_elements(self.doc.tree, ".//respStmt")):
+            if resp_stmt.attrib.get(XML_ID) == xml_id:
+                return resp_stmt
+        return None
+
+    def annotator_full_name(self) -> str|None:
+        """ The annotator's name as recorded in the TEI (<respStmt xml:id="..."><name>), else as given when starting. """
+        if not self.annotator:
+            return None
+        with self.lock:
+            self.refresh()
+            resp_stmt = self.resp_stmt_for(self.annotator)
+            if resp_stmt is not None:
+                for element in resp_stmt:
+                    if isinstance(element.tag, str) and ET.QName(element).localname in ("name", "persName"):
+                        text = extract_text(element).strip()
+                        if text:
+                            return text
+        return self.annotator_name
+
+    def set_annotator_name(self, name:str):
+        """ Records the annotator's full name in the TEI header (<respStmt xml:id="..."><name>), and saves. """
+        name = (name or "").strip()
+        if not self.annotator:
+            raise AnnotationError("No annotator is set on this server (start it with --annotator, e.g. --annotator RT).")
+        if not name:
+            raise AnnotationError("The name cannot be empty.")
+        with self.writing():
+            self.check_writable()
+            self.refresh()
+            resp_stmt = self.resp_stmt_for(self.annotator)
+            if resp_stmt is None:
+                self.ensure_resp_stmt(self.annotator, name, "classification of transcriptional changes")
+            else:
+                name_element = next((element for element in resp_stmt
+                                     if isinstance(element.tag, str) and ET.QName(element).localname in ("name", "persName")), None)
+                if name_element is None:
+                    name_element = ET.SubElement(resp_stmt, tei_tag(resp_stmt, "name"))
+                for child in list(name_element):
+                    name_element.remove(child)
+                name_element.text = name
+            self.annotator_name = name
+            self.save()
 
     def ensure_resp_stmt(self, xml_id:str, name:str, resp:str):
         """ Adds <respStmt xml:id="..."> to the titleStmt so that @resp pointers resolve. """
@@ -1697,7 +1872,6 @@ class AnnotationStore:
                     when=when,
                     description_resp=description_resp,
                 )
-            self.reapply_rules(app)
             self.save()
             return self.write_results(app, pair_objects)
 
@@ -1767,7 +1941,6 @@ class AnnotationStore:
                 )
                 result.written.append(key)
             if result.written:
-                self.reapply_rules(app)
                 self.save()
             return result
 
@@ -1801,7 +1974,6 @@ class AnnotationStore:
                     tokens = [token for token in relation.attrib.get("change", "").split() if not token.startswith("#defs-")]
                     relation.set("change", self.change_pointers(*tokens, definitions_change))
                     self.stamp(relation, when)
-            self.reapply_rules(app)
             self.save()
             return self.write_results(app, pair_objects)
 
@@ -1826,7 +1998,7 @@ class AnnotationStore:
             pair = self.get_pair(app, active, passive)
             self.check_expected([pair], {(active, passive): expected_category})
             pair.clear_types_with_inverse()
-            self.reapply_rules(app)
+            self.restore_rule_labels(app, [pair])
             self.save()
             return self.write_results(app, [pair])[0]
 
@@ -1843,7 +2015,7 @@ class AnnotationStore:
             self.check_expected(pair_objects, expected or {})
             for pair in pair_objects:
                 pair.clear_types_with_inverse()
-            self.reapply_rules(app)
+            self.restore_rule_labels(app, pair_objects)
             self.save()
             return self.write_results(app, pair_objects)
 

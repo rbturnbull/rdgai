@@ -91,10 +91,9 @@ test("progress shows the pairs to annotate and those labelled by rule", () => {
 });
 
 test("rule pairs explain where their label comes from", () => {
-  assert.equal(ruleText({ rule: 1, parent: null, waiting: false }), "By rule: subreading and parent");
-  assert.equal(ruleText({ rule: 2, parent: null, waiting: false }), "By rule: subreadings of the same reading");
-  assert.equal(ruleText({ rule: 3, parent: ["a", "b"], waiting: false }), "By rule: same as a → b");
-  assert.equal(ruleText({ rule: 3, parent: ["a", "c"], waiting: true }), "By rule: waiting for a → c to be labelled");
+  assert.equal(ruleText({ rule: 1 }), "By rule: subreading and parent");
+  assert.equal(ruleText({ rule: 2 }), "By rule: subreadings of the same reading");
+
 });
 
 import { refreshAction } from "../../rdgai/gui/static/logic.js";

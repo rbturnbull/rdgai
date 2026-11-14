@@ -22,6 +22,8 @@ from .annotation import (
     SimilarResults,
     SuggestionList,
     SuggestionResult,
+    TranslationResult,
+    UntranslatedList,
     CategoryPairList,
     Definitions,
     UnitList,
@@ -51,6 +53,18 @@ suggestions there would leak into the evaluation.
 
 Annotating the sample: get_sample shows progress; list_units(sample='sampled', status='unclassified')
 gives the next units in document order. Work through one unit at a time.
+
+The unit the annotator has open in the GUI is given by get_current_unit: use it when they say "this verse" or
+"the verse I'm on".
+
+Translations: the annotator sees, for each pair, an English translation of the whole verse with each reading in
+place. list_untranslated gives the units still to translate (e.g. sample='sampled'); get_unit shows the verse
+(context_before, the reading, context_after) and any translations made so far. For each substantive reading, translate
+the whole verse with that reading in place and save them with set_translations. Translate closely enough that the
+difference between the readings shows, and word the rest of the verse identically in every translation so that only
+the differences stand out. Mark the words that render the reading with ⸂…⸃ (several spans if the English word order
+splits them), and put ⸆ where an omitted reading's words would have been, e.g. 'of Jesus ⸂Christ⸃, Son of God' and
+'of Jesus⸆, Son of God'. Translations are not classifications: do not suggest categories in them.
 
 When working with a human annotator, propose a category with a brief reason for each pair of the unit,
 and only call set_classification for the labels the annotator has agreed to, with the certainty they
@@ -261,9 +275,9 @@ def build_server(store:AnnotationStore) -> MCPServer:
         ) -> RulesReport:
             """
             Labels the pairs formed by typed subreadings (e.g. orthographic readings 'ao', 'ao1' of reading 'a'):
-            subreading-parent and sibling subreadings get the mapped category; any other pair with a subreading copies
-            the label of its parents' pair (waiting if that is unlabelled). Human labels are never changed; those that
-            disagree are reported as conflicts. The rules are re-applied automatically whenever a label in a unit changes.
+            a subreading and its parent, and two subreadings of the same parent, get the mapped category. Any other
+            pair with a subreading (e.g. ao-b) is an ordinary pair to classify; rule labels left on such pairs (from the
+            former rule 3) are removed. Human labels are never changed; those that disagree are reported as conflicts.
             """
             from .rules import build_rules
             with tool_errors():
@@ -273,7 +287,44 @@ def build_server(store:AnnotationStore) -> MCPServer:
                     raise AnnotationError(str(error))
                 return store.apply_rules(rule_list, dry_run=dry_run)
 
+    @server.tool(annotations=read_only)
+    def get_current_unit() -> UnitDetail:
+        """
+        The unit the annotator has open in the annotation GUI, in full (as get_unit). Use it when the annotator
+        refers to "this verse", "this unit" or "the verse I'm on", e.g. to translate it with set_translations.
+        """
+        with tool_errors():
+            viewing = store.viewing()
+            if viewing is None:
+                raise AnnotationError("No unit is open in the annotation GUI. Ask the annotator which unit they mean.")
+            return store.get_unit(viewing.unit_id, pair_order="attestation")
+
+    @server.tool(annotations=read_only)
+    def list_untranslated(
+        sample: Annotated[SampleFilter, Field(description="Which units: 'sampled', 'example', 'test', 'unsampled' or 'all'.")] = "sampled",
+        verse: Annotated[str, Field(description="Only units in this verse or chapter, e.g. 'Mark.1.2'.")] = "",
+        limit: Annotated[int, Field(description="Maximum number of unit ids to return.")] = 50,
+    ) -> UntranslatedList:
+        """ Lists the units (in document order) with a substantive reading that has no contextual translation yet. """
+        with tool_errors():
+            unit_ids = store.untranslated_units(sample=sample, verse=verse)
+            return UntranslatedList(total=len(unit_ids), unit_ids=unit_ids[:max(limit, 1)])
+
     if not store.read_only:
+        @server.tool(annotations=write)
+        def set_translations(
+            unit_id: Annotated[str, Field(description="The variation unit's id.")],
+            translations: Annotated[dict[str, str], Field(description="{reading id: English translation of the whole verse with that reading in place}, with the words that render the reading marked ⸂…⸃ and ⸆ where an omitted reading would be, e.g. 'of Jesus ⸂Christ⸃, Son of God' / 'of Jesus⸆, Son of God'.")],
+            source: Annotated[str, Field(description="Who translated: 'claude' by default.")] = "claude",
+        ) -> TranslationResult:
+            """
+            Saves contextual translations for a unit's readings: for each reading, the whole verse translated with that
+            reading in place. They are shown to the annotator beside each pair and stored in a sidecar file (never in the
+            TEI). Existing translations of other readings are kept; the result lists the readings still missing.
+            """
+            with tool_errors():
+                return store.set_translations(unit_id, translations, source=source)
+
         @server.tool(annotations=write)
         def suggest_classification(
             unit_id: Annotated[str, Field(description="The variation unit's id.")],

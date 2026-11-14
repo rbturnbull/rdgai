@@ -315,3 +315,32 @@ def test_page_has_the_views(client):
     page = client.get("/").text
     for view in ("annotate", "category", "agreement"):
         assert f'data-view="{view}"' in page
+
+
+def test_controls_are_in_a_labelled_sidebar(client):
+    """ The controls sit in a left sidebar, grouped under headings, and every control has a visible label. """
+    import re
+    page = client.get("/").text
+    assert '<aside id="sidebar"' in page
+    sidebar = page[page.index('<aside id="sidebar"'):page.index("</aside>", page.index('<aside id="sidebar"'))]
+    for heading in ("View", "Units to annotate", "Narrow down", "Display", "Reference"):
+        assert f">{heading}</h2>" in sidebar, heading
+    for control in re.findall(r'<(?:select|input)\b[^>]*\bid="([^"]+)"', sidebar):
+        assert f'for="{control}"' in sidebar, f"#{control} has no <label for>"
+    assert 'id="queue-reset"' in sidebar
+    assert 'id="queue-count"' in sidebar
+
+
+def test_page_has_a_fixed_header(client):
+    """ A header that stays in place: the file on the left, the unit in the middle, the annotator at the top right. """
+    page = client.get("/").text
+    assert '<header id="topbar"' in page
+    header = page[page.index('<header id="topbar"'):page.index("</header>")]
+    for part in ('id="header-file"', 'id="header-unit"', 'id="header-user"'):
+        assert part in header, part
+    assert 'id="file"' not in page   # the file name moved from the sidebar to the header
+
+
+def test_config_gives_the_annotators_name(client):
+    config = client.get("/api/config").json()
+    assert (config["annotator"], config["annotator_name"]) == ("RT", "Test Annotator")

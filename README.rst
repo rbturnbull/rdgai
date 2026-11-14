@@ -218,7 +218,7 @@ Use ``--max-pairs`` to leave out units with very many readings. ``list_units`` w
 
 Suggestions on the sample's test units are refused (pass ``allow_test_unit`` to override), since they would leak
 into the evaluation. With ``--evaluation`` (on ``serve-mcp`` or ``annotate``), no tool or GUI view reveals the labels
-or suggestions of test units: they are reported as unlabelled, and labels copied from them by subreading rules are
+or suggestions of test units: they are reported as unlabelled, and their rule labels are
 hidden too. Test units cannot be changed (the refusal is the same whether a pair is labelled or not), the definitions
 are locked (their hash is reported by ``get_definitions``), and rules cannot be applied or the sample redrawn.
 The labels stay in the file for evaluation.
@@ -261,10 +261,10 @@ spellings of reading ``a``. If these readings are kept in the analysis (no ``-t 
 they form can be labelled by rule, with no LLM call and no human decision:
 
 1. subreading ↔ its parent (``a``–``ao``): the mapped category, e.g. Orthography;
-2. two subreadings of the same parent and type (``ao1``–``ao2``): the mapped category;
-3. subreading ↔ anything else (``ao``–``b``, ``ao``–``bo``): the label of the parents' pair (``a``–``b``), in the same
-   direction, because the categories ignore spelling. Such a pair waits until its parents' pair is labelled; a copy of a
-   tentative (pipeline) label is tentative too.
+2. two subreadings of the same parent and type (``ao1``–``ao2``): the mapped category.
+
+A subreading only determines its pair with its own parent (and its siblings). Any other pair with a subreading
+(``ao``–``b``, ``ao``–``bo``) is an ordinary pair, annotated by a human or classified by the pipeline like any other.
 
 .. code-block:: bash
 
@@ -273,10 +273,12 @@ they form can be labelled by rule, with no LLM call and no human decision:
 A subreading's parent is its id without the suffix (``o`` for orthographic, ``f`` for defective; change with
 ``--suffix orthographic=o``) and any digits after it. Readings whose parent cannot be found, and subreadings of
 subreadings, are reported and skipped. Human labels are never changed: those that disagree with a rule are reported
-as conflicts. Pipeline labels on rule pairs are replaced, since the rules are more reliable. Running it again changes nothing.
+as conflicts. Pipeline labels on rule pairs are replaced, since the rules are more reliable. Rule labels left on pairs
+no rule covers (written by an earlier version's third rule, which copied the parents' label) are removed and counted;
+an out-of-date rule description in the file is rewritten. Running it again changes nothing.
 
-The rules are stored in the file, next to the category definitions, and re-applied to a unit whenever a label in it
-changes (from the GUI, MCP or the pipeline), so a label copied under rule 3 always follows its parents' pair:
+The rules are stored in the file, next to the category definitions. Clearing a label on a rule pair (e.g. a human
+override) restores the rule's label:
 
 .. code-block:: xml
 
@@ -335,7 +337,24 @@ Then open ``http://127.0.0.1:8765/``. If the port is in use, the MCP server stil
   Every write reloads the file under a lock first, so neither process overwrites the other's work.
 - Readings are shown as cards, as in the original rdgai GUI, or as a table ("Table"/"Cards" switches; the choice is
   remembered in the browser). Labels made by the pipeline carry the rdgai logo.
-- The queue can also be filtered by category, certainty, source (human, pipeline or rule labels, or suggestions) and
+- Each pair is shown as two rows, first reading above, an arrow down, then the second reading: a card for the
+  reading, and beside it the verse with that reading in place (highlighted), its translation with the words that
+  render the reading highlighted, and the witnesses (collapsed).
+- Contextual translations: the verse translated with each reading in place, the words that render the reading
+  marked ⸂…⸃ (⸆ where an omitted reading would be), e.g. ``of Jesus ⸂Christ⸃, Son of God`` / ``of Jesus⸆, Son of
+  God``; translations without marks highlight the words that differ instead. Claude writes them through MCP (``list_untranslated``, then ``set_translations``; e.g. ask
+  Claude in Desktop to "translate the sample"). They are kept in a sidecar file, ``<file>.translations.yaml``, never in
+  the TEI, and a translation is not shown once its reading's text has changed. The GUI records which unit is open
+  (in a hidden ``.<file>.viewing.json`` next to the file), and the MCP tool ``get_current_unit`` returns it, so you can
+  ask Claude to "translate the verse I'm on"; the translation appears in the GUI once Claude has saved it. "Translation" or ``t`` shows or hides them.
+- All controls are in the left sidebar, grouped under headings: View (Annotate, By category, Agreement), Units to
+  annotate (sample, progress, verse) and Narrow down (the filters below), Display (translations, reading overview) and
+  Reference (definitions, keyboard). "Reset" returns to the whole sample.
+- The header shows the unit and its navigation, then the file (or a title) and the annotator. Click your name to
+  change your full name (recorded in the TEI header, ``<respStmt xml:id="RT"><name>``), the short name shown in the
+  circle, and a title shown instead of the file name; the last two are kept in ``<file>.display.yaml``. The id
+  labels are saved under (e.g. ``#RT``) is set when the server starts (``--annotator``).
+- The units can also be filtered by category, certainty, source (human, pipeline or rule labels, or suggestions) and
   "Disagreement" (a label differs from a suggestion for the same pair).
 
 Besides Annotate, the GUI has views for developing rdgai:

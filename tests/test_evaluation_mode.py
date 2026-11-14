@@ -171,8 +171,6 @@ def test_gui_hides_test_labels(evaluation):
     data = client.get("/api/unit/Mark.1.5.20-22", params={"sample": "all"}).json()
     assert all(pair["category"] is None for pair in data["pairs"] + data["rule_pairs"])
     assert all(pair["reason"] == "" and pair["suggestions"] == [] for pair in data["pairs"])
-    # whether a rule-3 pair is waiting would reveal whether its parents' pair is labelled
-    assert all(pair["rule"]["waiting"] is True for pair in data["rule_pairs"] if pair["rule"]["rule"] == 3)
     assert data["progress"]["pairs_done"] == 0
     queue = {unit["id"]: unit for unit in client.get("/api/queue", params={"sample": "test"}).json()["units"]}
     assert all(unit["classified_count"] == 0 for unit in queue.values())
