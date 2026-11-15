@@ -94,7 +94,7 @@ def gui(tmp_path):
     server = subprocess.Popen([RDGAI, "annotate", str(path), "--port", str(port), "--annotator", "RT"],
                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     debug_port = free_port()
-    chrome = subprocess.Popen([CHROME, "--headless=new", "--disable-gpu", f"--remote-debugging-port={debug_port}",
+    chrome = subprocess.Popen([CHROME, "--headless=new", "--disable-gpu", "--no-sandbox", f"--remote-debugging-port={debug_port}",
                                f"--user-data-dir={tmp_path / 'chrome'}", "--window-size=1400,1000", "about:blank"],
                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     try:
