@@ -78,7 +78,7 @@ export function visiblePairs(unit, showRules) {
 }
 
 export function progressText(progress) {
-  const text = `${progress.pairs_done} / ${progress.pairs_total} pairs`;
+  const text = `${progress.pairs_done} / ${progress.pairs_total} ${progress.pairs_total === 1 ? "pair" : "pairs"}`;
   return progress.rule_pairs ? `${text} · ${progress.rule_pairs} by rule` : text;
 }
 
@@ -260,4 +260,9 @@ export function changeParts(text) {
   const index = (text || "").indexOf(": ");
   if (index < 0) return { label: text || "", words: "" };
   return { label: text.slice(0, index), words: text.slice(index + 2) };
+}
+
+// "1 pair", "3 pairs" (or a given plural, e.g. witnesses).
+export function countOf(count, singular, plural = `${singular}s`) {
+  return `${count} ${count === 1 ? singular : plural}`;
 }

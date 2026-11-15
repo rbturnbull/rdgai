@@ -172,3 +172,20 @@ test("Enter or e expands the focused row; other keys are unchanged in compact mo
   assert.deepEqual(keyAction(press("1"), buttons), { type: "category", name: "Orthography" });
   assert.deepEqual(keyAction(press("j"), buttons), { type: "move", delta: 1 });
 });
+
+test("progress uses the singular for one pair", () => {
+  assert.equal(progressText({ pairs_done: 0, pairs_total: 1, rule_pairs: 0 }), "0 / 1 pair");
+  assert.equal(progressText({ pairs_done: 1, pairs_total: 1, rule_pairs: 1 }), "1 / 1 pair · 1 by rule");
+  assert.equal(progressText({ pairs_done: 0, pairs_total: 2, rule_pairs: 0 }), "0 / 2 pairs");
+  assert.equal(progressText({ pairs_done: 0, pairs_total: 0, rule_pairs: 3 }), "0 / 0 pairs · 3 by rule");
+});
+
+import { countOf } from "../../rdgai/gui/static/logic.js";
+
+test("counts use the singular for one", () => {
+  assert.equal(countOf(1, "pair"), "1 pair");
+  assert.equal(countOf(0, "pair"), "0 pairs");
+  assert.equal(countOf(3, "pair"), "3 pairs");
+  assert.equal(countOf(1, "witness", "witnesses"), "1 witness");
+  assert.equal(countOf(2, "witness", "witnesses"), "2 witnesses");
+});

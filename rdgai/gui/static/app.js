@@ -1,6 +1,6 @@
 // The rdgai annotation GUI. Talks to the JSON API in rdgai/gui/__init__.py; pure logic lives in logic.js.
 import { keyAction, categoryClick, targetPairs, pairKey, labelRequest, certaintyRequest, visiblePairs, progressText, ruleText, refreshAction, justificationSource,
-  isCompact, groupByFirst, sameSuggestion, sameChange, parseRoute, routeHash, QUEUE_FILTERS, pageInfo, expectedFor, diffWords, markedParts, showsOverview, headerUser, changeParts } from "./logic.js";
+  isCompact, groupByFirst, sameSuggestion, sameChange, parseRoute, routeHash, QUEUE_FILTERS, pageInfo, expectedFor, diffWords, markedParts, showsOverview, headerUser, changeParts, countOf } from "./logic.js";
 
 const state = {
   config: null,
@@ -357,7 +357,7 @@ function renderBulkBar() {
   bar.hidden = state.ticked.size === 0;
   if (bar.hidden) return;
   bar.replaceChildren(
-    `${state.ticked.size} pairs selected: categories and certainty apply to all of them. `,
+    `${countOf(state.ticked.size, "pair")} selected: categories and certainty apply to ${state.ticked.size === 1 ? "it" : "all of them"}. `,
     el("button", { type: "button", onclick: () => { state.ticked.clear(); render(); } }, "Clear selection"),
   );
 }
@@ -463,7 +463,7 @@ function renderPairs(unit) {
   children.push(...pairViews(unit, unit.pairs, 0));
   if (rulePairs.length) {
     const details = el("details", { class: "rule-section", open: state.showRules },
-      el("summary", {}, `${rulePairs.length} pairs labelled by rule`, el("span", { class: "muted" }, " (subreadings; expand to check or override)")),
+      el("summary", {}, `${countOf(rulePairs.length, "pair")} labelled by rule`, el("span", { class: "muted" }, " (subreadings; expand to check or override)")),
       ...pairViews(unit, rulePairs, unit.pairs.length),
     );
     details.addEventListener("toggle", () => {
@@ -705,7 +705,7 @@ function categoryHash(changes) {
 function pager(data) {
   const page = pageInfo(data.total, data.offset, data.limit);
   return el("div", { class: "pager" },
-    el("span", { class: "muted" }, data.total ? `${page.from}–${page.to} of ${data.total} pairs` : "No pairs"),
+    el("span", { class: "muted" }, data.total ? `${page.from}–${page.to} of ${countOf(data.total, "pair")}` : "No pairs"),
     page.prev !== null ? el("a", { href: categoryHash({ offset: page.prev }) }, "← Previous") : null,
     page.next !== null ? el("a", { href: categoryHash({ offset: page.next }) }, "Next →") : null);
 }
