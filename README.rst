@@ -330,8 +330,9 @@ Then open ``http://127.0.0.1:8765/``. If the port is in use, the MCP server stil
 - The reason box starts empty. "Use reason" copies a suggestion's justification into it; if it is saved unchanged,
   it is recorded as the suggester's wording (``<desc type="justification" resp="#claude">``).
 - Units with more than 10 pairs (``--compact-threshold``) are shown as compact rows grouped by the first reading,
-  with short buttons in the same order and with the same keys. Enter or ``e`` expands a row to the full panel
-  (certainty and reason); "same suggestion" and "same change" tick every pair like the focused one.
+  with short buttons in the same order and with the same keys. The triangle at a row's top left (or Enter or ``e``)
+  expands it into one box with the reading cards, verse, translation, certainty and reason; "same suggestion" and
+  "same change" select every pair like the focused one.
 - If two ``serve-mcp`` processes serve the same file (Claude Desktop sometimes starts two), only one gets the GUI port;
   the other logs this, keeps serving MCP, and takes the port over if it is freed (``--gui-retry-seconds``).
   Every write reloads the file under a lock first, so neither process overwrites the other's work.

@@ -152,3 +152,41 @@ def test_hidden_always_wins_in_the_stylesheet():
     """ A display rule (e.g. .readings { display: flow-root }) must never override the hidden attribute. """
     css = (Path(__file__).parents[1] / "rdgai" / "gui" / "static" / "style.css").read_text()
     assert "[hidden] { display: none !important; }" in css
+
+
+def test_expanding_a_compact_row(gui):
+    """
+    In a compact unit, a row expands with a disclosure triangle at its top left (in the same place whether collapsed
+    or expanded), and the expanded row's box contains everything: the reading cards and verse as well as the decision.
+    """
+    base, ws_url = gui
+    compact = "Mark.1.1.12-16"
+
+    async def run():
+        async with websockets.connect(ws_url, max_size=None) as ws:
+            page = Page(ws)
+            await page.send("Page.navigate", url=f"{base}/#/unit/{compact}?sample=all")
+            await page.wait_until("document.querySelectorAll('.pair.compact').length > 0")
+            first = "document.querySelector('#pairs .pair[data-index=\"0\"]')"
+            # no More/Less text buttons: a disclosure triangle, the row's first element, collapsed
+            assert await page.eval(f"[...document.querySelectorAll('#pairs button')].filter((b) => /^(More|Less)$/.test(b.textContent.trim())).length") == 0
+            assert await page.eval(f"{first}.firstElementChild.matches('button.disclosure')")
+            assert await page.eval(f"{first}.querySelector('button.disclosure').getAttribute('aria-expanded')") == "false"
+            collapsed = await page.eval(f"(() => {{ const r = {first}.querySelector('button.disclosure').getBoundingClientRect(), p = {first}.getBoundingClientRect(); return [Math.round(r.left - p.left), Math.round(r.top - p.top)]; }})()")
+
+            await page.eval(f"{first}.querySelector('button.disclosure').click()")
+            await page.wait_until(f"{first}.classList.contains('expanded')")
+            assert await page.eval(f"{first}.querySelector('button.disclosure').getAttribute('aria-expanded')") == "true"
+            assert await page.eval(f"{first}.firstElementChild.matches('button.disclosure, .expanded-head')")
+            expanded = await page.eval(f"(() => {{ const r = {first}.querySelector('button.disclosure').getBoundingClientRect(), p = {first}.getBoundingClientRect(); return [Math.round(r.left - p.left), Math.round(r.top - p.top)]; }})()")
+            assert abs(collapsed[0] - expanded[0]) <= 2 and abs(collapsed[1] - expanded[1]) <= 6, (collapsed, expanded)
+            # the box (its border) contains the cards, the verse and the decision
+            assert await page.eval(f"getComputedStyle({first}).borderTopStyle") != "none"
+            assert await page.eval(f"!!{first}.querySelector('.pair-readings .reading-card') && !!{first}.querySelector('.decision .categories')")
+
+            # and collapses again
+            await page.eval(f"{first}.querySelector('button.disclosure').click()")
+            await page.wait_until(f"!{first}.classList.contains('expanded')")
+            assert await page.eval(f"{first}.querySelector('button.disclosure').getAttribute('aria-expanded')") == "false"
+
+    asyncio.run(run())

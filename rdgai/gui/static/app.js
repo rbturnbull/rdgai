@@ -443,7 +443,7 @@ function updateCompactTools(box = document.getElementById("compact-tools")) {
       `same suggestion (${bySuggestion.length})`),
     el("button", { type: "button", disabled: !byChange.length, "data-tick-keys": byChange.join(" "),
       title: focused?.change?.text || "" }, `same change (${byChange.length})`),
-    el("span", { class: "muted" }, " · Enter or e expands a row"),
+    el("span", { class: "muted" }, " · ▸ (or Enter, e) expands a row"),
   );
 }
 
@@ -476,6 +476,15 @@ function renderPairs(unit) {
   $("pairs").replaceChildren(...children);
 }
 
+// The disclosure triangle that expands a compact row into the full panel (and back): always the row's first element.
+function disclosure(key, expanded) {
+  return el("button", {
+    type: "button", class: "disclosure", "aria-expanded": String(expanded), "data-expand": key,
+    title: expanded ? "Collapse to a row (Enter)" : "Expand: cards, verse, certainty and reason (Enter)",
+    "aria-label": expanded ? "Collapse" : "Expand",
+  }, el("span", { class: "triangle", "aria-hidden": "true" }));
+}
+
 function compactRow(pair, index) {
   const readOnly = state.config.read_only;
   const key = pairKey(pair);
@@ -484,6 +493,7 @@ function compactRow(pair, index) {
   const byRule = pair.source === "rule" || (pair.rule && !pair.source);
   const label = pair.category || (pair.rule ? ruleText(pair.rule).replace("By rule: ", "rule: ") : "—");
   return el("article", { class: `pair compact${index === state.focused ? " focused" : ""}${byRule ? " rule-pair" : ""}${state.ticked.has(key) ? " ticked" : ""}`, "data-index": String(index) },
+    disclosure(key, false),
     el("button", { type: "button", class: "ids select", "aria-pressed": String(state.ticked.has(key)), disabled: readOnly,
       title: "Select this pair, to label several at once (x)", "data-tick": key }, `${pair.first} → ${pair.second}`),
     el("div", { class: "row-main" },
@@ -503,7 +513,6 @@ function compactRow(pair, index) {
       disabled: readOnly,
       "data-category": button.name,
     }, button.short || button.name))),
-    el("button", { type: "button", class: "expand", title: "Show the full panel: certainty and reason (Enter)", "data-expand": key }, "More"),
   );
 }
 
@@ -535,12 +544,16 @@ function pairPanel(pair, index) {
 
   const cert = certaintyOf(pair);
   const byRule = pair.source === "rule" || (pair.rule && !pair.source);
-  // the readings (cards, verse, translation, witnesses) above; the decision in the box below, outlined when focused
-  return el("article", { class: `pair full${index === state.focused ? " focused" : ""}${byRule ? " rule-pair" : ""}${state.ticked.has(key) ? " ticked" : ""}`, "data-index": String(index) },
+  // the readings (cards, verse, translation, witnesses) above; the decision in the box below, outlined when focused.
+  // An expanded compact row is one box around all of it, with the disclosure triangle at its top left.
+  const expanded = compactMode();
+  return el("article", { class: `pair full${expanded ? " expanded" : ""}${index === state.focused ? " focused" : ""}${byRule ? " rule-pair" : ""}${state.ticked.has(key) ? " ticked" : ""}`, "data-index": String(index) },
+    expanded ? el("div", { class: "expanded-head" },
+      disclosure(key, true),
+      el("button", { type: "button", class: "ids select", "aria-pressed": String(state.ticked.has(key)), disabled: readOnly,
+        title: "Select this pair, to label several at once (x)", "data-tick": key }, `${pair.first} → ${pair.second}`)) : null,
     pairReadings(pair),
     el("div", { class: "decision" },
-    compactMode() ? el("div", { class: "pair-head" },
-      el("button", { type: "button", class: "expand", title: "Back to a compact row (Enter)", "data-expand": key }, "Less")) : null,
     el("div", { class: "categories" }, buttons),
     pair.warning ? el("div", { class: "warning", role: "note" }, `Check: ${pair.warning}`) : null,
     suggestions,

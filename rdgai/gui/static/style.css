@@ -602,3 +602,54 @@ main { padding-top: 16px; }
 /* header buttons never wrap their labels onto two lines */
 .topbar button { white-space: nowrap; }
 .unit-progress { flex-shrink: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+/* compact mode: a disclosure triangle at each row's top left (▸ collapsed, ▾ expanded), in the same place either way */
+.pair.compact { grid-template-columns: 28px 52px minmax(200px, 1fr) minmax(120px, 170px) auto; }
+button.disclosure {
+  display: inline-grid; place-items: center; width: 24px; height: 24px; padding: 0;
+  border: none; background: none; color: var(--muted); border-radius: 4px; align-self: center;
+}
+button.disclosure:hover { background: var(--panel); color: var(--brand); }
+button.disclosure .triangle { display: inline-block; font-size: 15px; line-height: 1; transition: transform 0.12s; }
+button.disclosure[aria-expanded="true"] { color: var(--brand); }
+button.disclosure[aria-expanded="true"] .triangle { transform: rotate(90deg); }
+
+/* an expanded compact row: one rounded box around the cards, verse, translation and decision */
+.pair.full.expanded {
+  border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px 10px;
+  margin: 2px 0;
+}
+.pair.full.expanded + .pair.full.expanded { border-top: 1px solid var(--line); }
+.pair.full.expanded.focused { outline: 2px solid var(--brand); outline-offset: 1px; }
+.pair.full.expanded.focused .decision { outline: none; }
+.pair.full.expanded .decision { border-color: var(--line); }
+.expanded-head { display: flex; align-items: center; gap: 4px; padding: 0 0 2px; }
+@media (max-width: 900px) {
+  .pair.compact { grid-template-columns: 28px 1fr; }
+  .pair.compact .ids, .pair.compact .row-label, .pair.compact .mini { grid-column: 2; }
+}
+
+/* the triangle is pinned to the top of the row, so it does not move when the row expands */
+.pair.compact > button.disclosure { align-self: start; }
+
+.pair.compact { grid-template-columns: 28px 64px minmax(200px, 1fr) minmax(120px, 170px) auto; }
+.ids.select { white-space: nowrap; }
+button.disclosure { color: var(--fg); }
+button.disclosure .triangle { font-size: 17px; }
+
+/* a bigger disclosure triangle: a solid triangle drawn with borders, in a larger click target */
+.pair.compact { grid-template-columns: 36px 64px minmax(200px, 1fr) minmax(120px, 170px) auto; }
+button.disclosure { width: 34px; height: 34px; }
+button.disclosure .triangle {
+  width: 0; height: 0; font-size: 0;
+  border-left: 13px solid currentColor; border-top: 9px solid transparent; border-bottom: 9px solid transparent;
+  margin-left: 4px;
+}
+button.disclosure[aria-expanded="true"] .triangle { transform: rotate(90deg); }
+@media (max-width: 900px) { .pair.compact { grid-template-columns: 36px 1fr; } }
+
+/* a medium triangle: between the first small glyph and the large one */
+.pair.compact { grid-template-columns: 30px 64px minmax(200px, 1fr) minmax(120px, 170px) auto; }
+button.disclosure { width: 28px; height: 28px; }
+button.disclosure .triangle { border-left-width: 9px; border-top-width: 6px; border-bottom-width: 6px; margin-left: 3px; }
+@media (max-width: 900px) { .pair.compact { grid-template-columns: 30px 1fr; } }
