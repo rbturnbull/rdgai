@@ -217,6 +217,7 @@ async function goToQueueStart() {
     state.unit = null;
     $("header-unit").replaceChildren(el("span", { class: "muted" }, "No units match these filters."));
     for (const id of ["context", "readings", "pairs"]) $(id).replaceChildren();
+    delete $("readings").dataset.unit;
     $("bulk-bar").hidden = true;
     return;
   }
@@ -270,6 +271,12 @@ function render() {
   if (overview) {
     renderContext(unit);
     renderReadings(unit);
+    $("readings").dataset.unit = unit.id;   // the cards always belong to the unit in the header
+  } else {
+    // never leave another unit's verse or reading cards behind, even if hidden
+    $("context").replaceChildren();
+    $("readings").replaceChildren();
+    delete $("readings").dataset.unit;
   }
   renderBulkBar();
   renderPairs(unit);

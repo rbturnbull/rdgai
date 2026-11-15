@@ -30,6 +30,9 @@
 
 * { box-sizing: border-box; }
 
+/* the hidden attribute always hides, whatever display a rule gives the element (e.g. .readings { display: flow-root }) */
+[hidden] { display: none !important; }
+
 body {
   margin: 0;
   background: var(--bg);
@@ -595,3 +598,7 @@ main { padding-top: 16px; }
 }
 .group-head .group-text { font-family: var(--text-font); font-size: 24px; font-weight: 600; }
 .group-head .group-witnesses { font-size: 13px; color: var(--muted); }
+
+/* header buttons never wrap their labels onto two lines */
+.topbar button { white-space: nowrap; }
+.unit-progress { flex-shrink: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
