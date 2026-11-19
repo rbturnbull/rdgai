@@ -653,3 +653,85 @@ button.disclosure[aria-expanded="true"] .triangle { transform: rotate(90deg); }
 button.disclosure { width: 28px; height: 28px; }
 button.disclosure .triangle { border-left-width: 9px; border-top-width: 6px; border-bottom-width: 6px; margin-left: 3px; }
 @media (max-width: 900px) { .pair.compact { grid-template-columns: 30px 1fr; } }
+
+/* ---------------------------------------------------------------------------
+   the pair rail: a quiet column beside the pairs with the unit's progress and one entry per pair
+   --------------------------------------------------------------------------- */
+#view-unit:not([hidden]) { display: grid; align-items: start; }
+.unit-body { min-width: 0; }
+.pair { scroll-margin-top: calc(var(--topbar) + 12px); }
+.pair-nav {
+  position: sticky; top: calc(var(--topbar) + 16px);
+  max-height: calc(100vh - var(--topbar) - 32px); overflow-y: auto;
+  font-size: 12px; color: var(--muted);
+  border-left: 1px solid var(--line); padding: 2px 0 2px 10px;
+}
+.pair-nav-progress { font-variant-numeric: tabular-nums; padding: 2px 6px 8px; }
+.pair-nav-list { list-style: none; margin: 0; padding: 0; }
+.pair-nav-item {
+  display: flex; align-items: center; gap: 4px; width: 100%;
+  border: none; background: none; color: var(--muted); font: inherit; text-align: left;
+  padding: 3px 6px; border-radius: 4px; cursor: pointer; white-space: nowrap;
+}
+.pair-nav-item:hover { background: var(--panel); color: var(--fg); }
+.pair-nav-mark { width: 1em; flex: none; text-align: center; }
+.pair-nav-item.done { color: var(--fg); }
+.pair-nav-item.done .pair-nav-mark { color: #2e7d32; }
+.pair-nav-item.rule { font-style: italic; }
+.pair-nav-item.current { background: var(--brand); color: var(--brand-fg); }
+.pair-nav-item.current .pair-nav-mark { color: inherit; }
+@media (prefers-color-scheme: dark) { .pair-nav-item.done .pair-nav-mark { color: #81c784; } }
+@media (max-width: 1100px) {
+  #view-unit:not([hidden]) { display: block; }
+  .pair-nav { display: none; }
+}
+/* with the rail beside them the pairs are narrower: the category buttons shrink to their longest word, and the
+   compact rows' short buttons wrap, rather than run under the rail */
+.categories { grid-auto-columns: minmax(min-content, 1fr); }
+.mini { flex-wrap: wrap; }
+.pair.compact { grid-template-columns: auto 52px minmax(0, 1fr) fit-content(150px) max-content auto; }
+@media (max-width: 1250px) { .pair.compact { grid-template-columns: auto 52px minmax(0, 1fr) fit-content(150px) minmax(0, max-content) auto; } }
+@media (max-width: 900px) { .pair.compact { grid-template-columns: auto 1fr; } }
+
+/* the rail at the right edge of the window, and the pairs centred in the main area: three columns, the outer two
+   equal when there is room (the right one never narrower than the rail), so the pairs move left only when they must */
+main:has(#view-unit:not([hidden])), main.wide:has(#view-unit:not([hidden])) { max-width: none; width: 100%; box-sizing: border-box; margin: 0; }
+#view-unit:not([hidden]) { grid-template-columns: minmax(0, 1fr) minmax(0, 1200px) minmax(152px, 1fr); gap: 0; }
+main.wide #view-unit:not([hidden]) { grid-template-columns: minmax(0, 1fr) minmax(0, 1500px) minmax(152px, 1fr); }
+#view-unit > .unit-body { grid-column: 2; }
+#view-unit > .pair-nav { grid-column: 3; justify-self: end; width: 132px; box-sizing: border-box; }
+
+/* the ✓ on a labelled pair: a small green badge, bold, so the labelled pairs stand out at a glance */
+.pair-nav-mark { width: 16px; height: 16px; line-height: 16px; border-radius: 50%; font-size: 11px; font-weight: 700; }
+.pair-nav-item.done .pair-nav-mark { background: #2e7d32; color: #fff; }
+.pair-nav-item.current.done .pair-nav-mark { background: #fff; color: var(--brand); }
+@media (prefers-color-scheme: dark) { .pair-nav-item.done .pair-nav-mark { background: #66bb6a; color: #10210f; } }
+
+/* unit navigation at the top of the rail: Prev and Next, then "Next to do", filled once this unit is done */
+.unit-nav { display: grid; gap: 4px; padding: 0 0 10px; margin-bottom: 8px; border-bottom: 1px solid var(--line); }
+.unit-nav-row { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.unit-nav button { font-size: 12px; padding: 4px 4px; white-space: nowrap; }
+.unit-nav .next-to-do { font-weight: 600; }
+.unit-nav .next-to-do.ready { background: var(--brand); color: var(--brand-fg); border-color: var(--brand); }
+.unit-nav .next-to-do.ready:hover { filter: brightness(1.1); }
+.unit-nav button:disabled { opacity: 0.45; cursor: default; }
+/* narrow windows: no room for the rail, so its navigation and progress go in a strip above the pairs */
+@media (max-width: 1100px) {
+  .pair-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; position: static; max-height: none;
+              width: auto !important; border-left: none; padding: 0 0 8px; }
+  .pair-nav .unit-nav { display: flex; gap: 6px; border-bottom: none; padding: 0; margin: 0; }
+  .pair-nav .unit-nav-row { display: flex; gap: 6px; }
+  .pair-nav .pair-nav-progress { padding: 0; }
+  .pair-nav .pair-nav-list { display: none; }
+}
+@media (max-width: 1100px) {
+  #view-unit:not([hidden]) { display: flex; flex-direction: column; }
+  #view-unit > .pair-nav { order: -1; }
+}
+/* narrow windows: the category buttons wrap rather than run off the side */
+@media (max-width: 1100px) {
+  .categories { display: flex; flex-wrap: wrap; }
+  .categories button { flex: 1 1 96px; }
+}
+/* room between the ✓ and the pair's ids */
+.pair-nav-item { gap: 9px; }

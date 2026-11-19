@@ -266,3 +266,44 @@ export function changeParts(text) {
 export function countOf(count, singular, plural = `${singular}s`) {
   return `${count} ${count === 1 ? singular : plural}`;
 }
+
+// "Use reason" is offered for any suggestion with a reason (not when read-only), whichever direction it was written for
+export function canUseReason(suggestion, readOnly) {
+  return Boolean(suggestion?.justification) && !readOnly;
+}
+
+// the reason as copied into the reason box: a reason written for the other direction says so, so it isn't saved as
+// though it described the pair as shown (where e.g. "adds" would read as the opposite)
+export function usableReason(suggestion) {
+  const text = suggestion.justification || "";
+  return suggestion.written_for ? `Written for ${suggestion.written_for[0]} → ${suggestion.written_for[1]}: ${text}` : text;
+}
+
+// The pair rail beside the pairs: one entry per pair shown ("a → b"), in display order, marking the current pair,
+// the labelled ones, and those labelled by a subreading rule.
+export function pairNavItems(pairs, focusedIndex) {
+  return pairs.map((pair, index) => ({
+    index,
+    label: `${pair.first} → ${pair.second}`,
+    current: index === focusedIndex,
+    done: Boolean(pair.category),
+    rule: pair.source === "rule",
+    category: pair.category || null,
+  }));
+}
+
+// "Next to do": the next unit with pairs still to label. Once every pair in this unit is labelled it is "ready",
+// and the rail shows it as the main action.
+export function nextToDo(unit) {
+  const target = unit.next_unclassified || null;
+  const progress = unit.progress || {};
+  return { target, ready: Boolean(target) && progress.pairs_done >= progress.pairs_total };
+}
+
+// A category button's tooltip: its name, key and inverse. Not the definition, which is long and is in the
+// Definitions panel.
+export function categoryTitle(button) {
+  const key = button.key ? ` (key ${button.key.replace("shift+", "⇧")})` : "";
+  const inverse = button.inverse && button.inverse !== button.name ? ` · inverse: ${button.inverse}` : "";
+  return `${button.name}${key}${inverse}`;
+}

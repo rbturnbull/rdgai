@@ -332,7 +332,7 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None, compact_thr
                 else:
                     position, prev_id, next_id = None, None, (ids[0] if ids else None)
                 detail = store.get_unit(unit_id)
-                ordered = store.ordered_pairs(app)
+                ordered = store.reading_ordered_pairs(app)
                 return JSONResponse(dict(
                     id=unit_id,
                     verse=detail.verse,

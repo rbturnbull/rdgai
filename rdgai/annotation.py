@@ -788,6 +788,19 @@ class AnnotationStore:
             for j in range(i + 1, len(ranked))
         ]
 
+    def reading_ordered_pairs(self, app:App) -> list[Pair]:
+        """
+        The unordered pairs of substantive readings in reading order, each with the earlier reading first:
+        a → b, a → c, …, b → c, … (the GUI's order; the pipeline and MCP use ``ordered_pairs``).
+        """
+        readings = [reading for reading in app.readings if not self.is_excluded(reading)]
+        directed = {(pair.active.n, pair.passive.n): pair for pair in app.pairs}
+        return [
+            directed[(readings[i].n, readings[j].n)]
+            for i in range(len(readings))
+            for j in range(i + 1, len(readings))
+        ]
+
     def get_unit(self, unit_id:str, pair_order:Literal["document", "attestation"]="document") -> UnitDetail:
         with self.lock:
             self.refresh()

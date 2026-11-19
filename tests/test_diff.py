@@ -32,6 +32,49 @@ def test_describe_change(first, second, kind, text):
     assert (change.kind, change.text) == (kind, text)
 
 
+@pytest.mark.parametrize("first, second, kind, text", [
+    # Mark.5.21.26-32: words moved and changed. The change alone ("changed: επ αυτον → μετ αυτων") hides the move.
+    ("επ αυτον οχλος πολυς", "οχλος πολυς μετ αυτων", "changed", "reordered and changed: επ αυτον → μετ αυτων"),
+    ("οχλος πολυς προς αυτον", "επ αυτον οχλος πολυς", "changed", "reordered and changed: προς → επ"),
+    ("οχλος πολυς προς αυτον", "επ αυτω οχλος πολυς", "changed", "reordered and changed: προς αυτον → επ αυτω"),
+    # moved, with words added or omitted
+    ("και εδησεν αυτον εν φυλακη", "εν φυλακη και εδησεν αυτον εκει", "addition", "second reading reorders and adds: εκει"),
+    ("εν φυλακη και εδησεν αυτον", "και εδησεν αυτον φυλακη", "omission", "second reading reorders and omits: εν"),
+])
+def test_describe_change_reordered_and_changed(first, second, kind, text):
+    change = describe_change(first, second)
+    assert (change.kind, change.text) == (kind, text)
+    assert change.reordered
+
+
+@pytest.mark.parametrize("first, second", [
+    # no word moves: the same descriptions as before, not "reordered"
+    ("οχλος πολυς επ αυτον", "οχλος πολυς μετ αυτων"),
+    ("και εδησεν αυτον εν φυλακη", "και εδησεν αυτον εις φυλακην"),
+    ("εξηλθεν και απηλθεν", "εξελθων απηλθεν"),
+    ("και ειπεν αυτω", "ειπεν δε αυτοις"),        # αυτω/αυτοις are alike, but in the same order
+    ("υιου θεου", "του υιου του θεου"),
+    ("", "και"),
+])
+def test_no_reordering_when_nothing_moves(first, second):
+    change = describe_change(first, second)
+    assert not change.reordered
+    assert "reorder" not in change.text
+
+
+def test_the_unit_from_the_annotator(store):
+    """ Every pair of Mark.5.21.26-32's readings that moves words says so. """
+    readings = {"a": "οχλος πολυς επ αυτον", "b": "επ αυτον οχλος πολυς", "c": "οχλος πολυς επ αυτω",
+                "d": "οχλος πολυς προς αυτον", "e": "οχλος πολυς παρ αυτον", "f": "οχλος πολυς μετ αυτων"}
+    for first in readings:
+        for second in readings:
+            if first == second:
+                continue
+            change = describe_change(readings[first], readings[second])
+            # b is the reading with the other word order: exactly the pairs with b are reordered
+            assert change.reordered == ("b" in (first, second)), (first, second, change.text)
+
+
 def test_describe_change_lists_the_words():
     change = describe_change("υιου θεου", "του υιου του θεου")
     assert change.added == ["του", "του"]
@@ -87,12 +130,12 @@ def test_mcp_reports_a_warning_for_a_contradicting_label(store):
 
 def test_gui_describes_pairs_in_display_order(store):
     client = TestClient(create_app(store))
-    # witnesses: a 11, b 29, c 3, e 126 -> display e→b, e→a, e→c, b→a, ...
-    # b = ησαια τω προφητη, a = τω ησαια τω προφητη, e = τοις προφηταις
+    # reading order: a→b, a→c, a→e, b→c, b→e, c→e
+    # a = τω ησαια τω προφητη, b = ησαια τω προφητη, e = τοις προφηταις
     pairs = {(pair["first"], pair["second"]): pair for pair in client.get("/api/unit/Mark.1.2.8-14").json()["pairs"]}
-    assert pairs[("b", "a")]["change"]["text"] == "second reading adds: τω"
-    assert pairs[("e", "b")]["change"]["kind"] == "changed"
-    assert pairs[("b", "a")]["warning"] is None
+    assert pairs[("a", "b")]["change"]["text"] == "second reading omits: τω"
+    assert pairs[("b", "e")]["change"]["kind"] == "changed"
+    assert pairs[("a", "b")]["warning"] is None
 
 
 def test_gui_warning_after_saving_a_contradicting_label(store):

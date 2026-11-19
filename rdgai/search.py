@@ -32,6 +32,8 @@ def pair_terms(active_text:str, passive_text:str, before:str="", after:str="") -
     """ The search terms for the change from the active reading to the passive reading. """
     change = describe_change(" ".join(tokens(active_text)), " ".join(tokens(passive_text)))
     terms = [f"kind:{change.kind}"]
+    if change.reordered and change.kind != "reordering":
+        terms.append("kind:reordering")   # moved as well as changed
     # the difference is what matters most, so its terms count twice
     terms += [f"+{word}" for word in change.added] * 2
     terms += [f"-{word}" for word in change.removed] * 2

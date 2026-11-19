@@ -1,6 +1,6 @@
 // The rdgai annotation GUI. Talks to the JSON API in rdgai/gui/__init__.py; pure logic lives in logic.js.
 import { keyAction, categoryClick, targetPairs, pairKey, labelRequest, certaintyRequest, visiblePairs, progressText, ruleText, refreshAction, justificationSource,
-  isCompact, groupByFirst, sameSuggestion, sameChange, parseRoute, routeHash, QUEUE_FILTERS, pageInfo, expectedFor, diffWords, markedParts, showsOverview, headerUser, changeParts, countOf } from "./logic.js";
+  isCompact, groupByFirst, sameSuggestion, sameChange, parseRoute, routeHash, QUEUE_FILTERS, pageInfo, expectedFor, diffWords, markedParts, showsOverview, headerUser, changeParts, countOf, canUseReason, usableReason, pairNavItems, nextToDo, categoryTitle } from "./logic.js";
 
 const state = {
   config: null,
@@ -226,9 +226,21 @@ async function goToQueueStart() {
   await loadUnit(first.id);
 }
 
+// Loads can overlap (Next, the reload after a save, the check for changes): only the newest one may change the page,
+// so a slow reload of the previous unit can't put it back after Next. Reloads are for the unit being opened.
+let latestLoad = 0;
+let wantedUnitId = null;
+
+function reloadUnit() {
+  return loadUnit(wantedUnitId || state.unit.id, { keepFocus: true });
+}
+
 async function loadUnit(unitId, { keepFocus = false } = {}) {
+  const load = ++latestLoad;
+  wantedUnitId = unitId;
   try {
     const unit = await api(`/api/unit/${encodeURIComponent(unitId)}${filterQuery()}`);
+    if (load !== latestLoad) return;   // a newer load has started: it decides what is shown
     const previousId = state.unit?.id;
     state.unit = unit;
     state.lastUnitId = unit.id;
@@ -252,7 +264,7 @@ async function loadUnit(unitId, { keepFocus = false } = {}) {
     render();
     window.scrollTo({ top: keepFocus && previousId === unit.id ? scroll : 0 });
   } catch (error) {
-    showStatus(error.message, true);
+    if (load === latestLoad) showStatus(error.message, true);
   }
 }
 
@@ -280,6 +292,78 @@ function render() {
   }
   renderBulkBar();
   renderPairs(unit);
+  renderPairNav(unit);
+}
+
+// the rail beside the pairs: the unit's progress, and one entry per pair with the current one highlighted
+// The rail's elements are built once and then updated in place: a redraw (after a save, or the check for changes) must
+// never replace a button between the press and the release of a click, or the click is lost.
+function renderPairNav(unit) {
+  const rail = $("pair-nav");
+  if (!rail.querySelector(".unit-nav")) {
+    const button = (className, onclick) => el("button", { type: "button", class: className, onclick });
+    rail.replaceChildren(
+      el("div", { class: "unit-nav" },
+        el("div", { class: "unit-nav-row" },
+          button("unit-prev", () => goToUnit(state.unit?.prev)),
+          button("unit-next", () => goToUnit(state.unit?.next))),
+        button("next-to-do", () => goToUnit(state.unit && nextToDo(state.unit).target))),
+      el("div", { class: "pair-nav-progress" }),
+      el("ol", { class: "pair-nav-list" }),
+    );
+  }
+  const todo = nextToDo(unit);
+  setButton(rail.querySelector(".unit-prev"), { text: "← Prev", disabled: !unit.prev,
+    title: unit.prev ? `Previous unit: ${unit.prev}` : "This is the first unit" });
+  setButton(rail.querySelector(".unit-next"), { text: "Next →", disabled: !unit.next,
+    title: unit.next ? `Next unit: ${unit.next}` : "This is the last unit" });
+  const next = rail.querySelector(".next-to-do");
+  setButton(next, { text: todo.target ? "Next to do →" : "All done ✓", disabled: !todo.target,
+    title: todo.target ? `The next unit with pairs to label: ${todo.target} (n)` : "No units left to label" });
+  next.classList.toggle("ready", todo.ready);
+  if (todo.target) next.dataset.target = todo.target;
+  else delete next.dataset.target;
+  rail.querySelector(".pair-nav-progress").textContent = progressText(unit.progress);
+
+  const items = pairNavItems(visible(), state.focused);
+  const list = rail.querySelector(".pair-nav-list");
+  const signature = `${unit.id}|${items.map((item) => item.label).join(",")}`;
+  if (list.dataset.signature !== signature) {
+    list.dataset.signature = signature;
+    list.replaceChildren(...items.map((item) => el("li", {}, el("button", { type: "button", class: "pair-nav-item", "data-nav-index": String(item.index) },
+      el("span", { class: "pair-nav-mark", "aria-hidden": "true" }), el("span", { class: "pair-nav-ids" }, item.label)))));
+  }
+  list.querySelectorAll(".pair-nav-item").forEach((entry, index) => {
+    const item = items[index];
+    entry.classList.toggle("done", item.done);
+    entry.classList.toggle("rule", item.rule);
+    entry.querySelector(".pair-nav-mark").textContent = item.done ? "✓" : "";
+    entry.title = item.category ? `${item.label}: ${item.category}${item.rule ? " (by rule)" : ""}` : `${item.label}: not labelled yet`;
+  });
+  updatePairNav();
+}
+
+function setButton(button, { text, disabled, title }) {
+  if (button.textContent !== text) button.textContent = text;
+  button.disabled = disabled;
+  button.title = title;
+}
+
+function updatePairNav() {
+  for (const item of document.querySelectorAll("#pair-nav .pair-nav-item")) {
+    const current = Number(item.dataset.navIndex) === state.focused;
+    item.classList.toggle("current", current);
+    if (current) item.setAttribute("aria-current", "true");
+    else item.removeAttribute("aria-current");
+  }
+  // keep the current entry visible when the list is longer than the window, scrolling the rail only (never the page)
+  const rail = $("pair-nav"), current = rail.querySelector(".pair-nav-item.current");
+  if (current) {
+    const top = current.getBoundingClientRect().top - rail.getBoundingClientRect().top + rail.scrollTop;
+    const bottom = top + current.offsetHeight;
+    if (top < rail.scrollTop) rail.scrollTop = top;
+    else if (bottom > rail.scrollTop + rail.clientHeight) rail.scrollTop = bottom - rail.clientHeight;
+  }
 }
 
 function renderHeader(unit) {
@@ -289,15 +373,7 @@ function renderHeader(unit) {
       el("h1", {}, unit.id),
       unit.sample_role ? el("span", { class: "badge" }, unit.sample_role) : null,
     ),
-    el("div", { class: "unit-progress" },
-      el("span", {}, position),
-      el("span", {}, progressText(unit.progress)),
-    ),
-    el("div", { class: "nav" },
-      el("button", { type: "button", disabled: !unit.prev, onclick: () => goToUnit(unit.prev) }, "← Prev"),
-      el("button", { type: "button", disabled: !unit.next, onclick: () => goToUnit(unit.next) }, "Next →"),
-      el("button", { type: "button", disabled: !unit.next_unclassified, title: "n", onclick: () => goToUnit(unit.next_unclassified) }, "Next unclassified"),
-    ),
+    el("div", { class: "unit-progress" }, el("span", {}, position)),
   );
 }
 
@@ -509,7 +585,7 @@ function compactRow(pair, index) {
     el("div", { class: "mini" }, state.config.buttons.map((button) => el("button", {
       type: "button",
       class: [pair.category === button.name ? "current" : "", suggested.has(button.name) ? "suggested" : ""].join(" ").trim(),
-      title: `${button.key ? `${button.key}: ` : ""}${button.name}\n\n${button.description}`,
+      title: categoryTitle(button),
       disabled: readOnly,
       "data-category": button.name,
     }, button.short || button.name))),
@@ -529,7 +605,7 @@ function pairPanel(pair, index) {
   const buttons = state.config.buttons.map((button) => el("button", {
     type: "button",
     class: [pair.category === button.name ? "current" : "", suggested.has(button.name) ? "suggested" : ""].join(" ").trim(),
-    title: `${button.name}${button.inverse !== button.name ? ` (inverse: ${button.inverse})` : ""}\n\n${button.description}`,
+    title: categoryTitle(button),
     style: { gridRow: String(button.row + 1), gridColumn: String(button.column + 1) },
     disabled: readOnly,
     "data-category": button.name,
@@ -538,7 +614,7 @@ function pairPanel(pair, index) {
   const suggestions = pair.suggestions.map((suggestion, suggestionIndex) => el("div", { class: "suggestion muted" },
     `Suggested by ${suggestion.source}: `, el("strong", {}, suggestion.category),
     suggestion.justification ? ` — ${suggestion.written_for ? `(written for ${suggestion.written_for[0]} → ${suggestion.written_for[1]}) ` : ""}${suggestion.justification} ` : "",
-    suggestion.justification && !suggestion.written_for && !readOnly  // a reason written for the other direction would not fit
+    canUseReason(suggestion, readOnly)
       ? el("button", { type: "button", class: "copy-reason", title: "Copy this reason into the reason box (recorded as copied unless you edit it)", "data-copy-reason": String(suggestionIndex) }, "Use reason")
       : null));
 
@@ -752,7 +828,7 @@ function categoryRow(pair, index) {
     el("div", { class: "mini" }, state.config.buttons.map((button) => el("button", {
       type: "button",
       class: pair.category === button.name ? "current" : "",
-      title: `Re-label as ${button.name}\n\n${button.description}`,
+      title: `Re-label as ${button.name}`,
       disabled: readOnly || pair.category === button.name,
       "data-relabel": button.name,
     }, button.short || button.name))),
@@ -973,13 +1049,13 @@ async function write(path, body, message) {
     state.ticked.clear();
     render();
     // fetch the unit again: other labels may have changed too (subreading rules, or another process)
-    await loadUnit(state.unit.id, { keepFocus: true });
+    await reloadUnit();
     showStatus(message);
     return true;
   } catch (error) {
     if (error.status === 409) {
       showStatus("This pair was changed elsewhere (e.g. through Claude); reloaded.", true);
-      await loadUnit(state.unit.id, { keepFocus: true });
+      await reloadUnit();
     } else {
       showStatus(error.message, true);
     }
@@ -991,7 +1067,8 @@ function targets() {
   return targetPairs(visible(), state.focused, state.ticked);
 }
 
-async function chooseCategory(name) {
+// scroll: whether moving on to the next pair afterwards scrolls it into view (from the keyboard; never after a click)
+async function chooseCategory(name, { scroll = true } = {}) {
   const pairs = targets();
   if (!pairs.length || state.config.read_only) return;
   const single = pairs.length === 1;
@@ -1004,7 +1081,7 @@ async function chooseCategory(name) {
   const saved = await write("/api/label", labelRequest(state.unit.id, pairs, category, cert, justification, source),
     category ? `Saved ${category}${single ? "" : ` for ${pairs.length} pairs`}` : "Cleared");
   if (saved && single && category && state.focused < visible().length - 1) {
-    moveFocus(1);
+    moveFocus(1, { scroll });
   }
 }
 
@@ -1027,24 +1104,29 @@ async function saveReason(key) {
   await write("/api/label", labelRequest(state.unit.id, [pair], pair.category, certaintyOf(pair), state.reasons[key], source), "Reason saved");
 }
 
-function copyReason(pairIndex, suggestionIndex) {
+// "Use reason": a labelled pair saves the reason straight away; an unlabelled one keeps it for the category chosen next
+async function copyReason(pairIndex, suggestionIndex) {
   const pair = visible()[pairIndex];
   const suggestion = pair?.suggestions[suggestionIndex];
   if (!suggestion) return;
   const key = pairKey(pair);
-  state.reasons[key] = suggestion.justification;
-  state.copied[key] = { text: suggestion.justification, source: suggestion.source.split(":")[0] };
+  const text = usableReason(suggestion);
+  state.reasons[key] = text;
+  state.copied[key] = { text, source: suggestion.source.split(":")[0] };
   render();  // focus stays on the pair, so a number key can save the label with this reason straight away
+  if (pair.category) await saveReason(key);
+  else showStatus("Reason ready: choose a category to save it with");
 }
 
-function moveFocus(delta) {
+function moveFocus(delta, { scroll = true } = {}) {
   const count = visible().length;
   if (!count) return;
   state.focused = Math.max(0, Math.min(count - 1, state.focused + delta));
   for (const panel of document.querySelectorAll(".pair")) {
     panel.classList.toggle("focused", Number(panel.dataset.index) === state.focused);
   }
-  document.querySelector(`.pair[data-index="${state.focused}"]`)?.scrollIntoView({ block: "nearest" });
+  if (scroll) document.querySelector(`.pair[data-index="${state.focused}"]`)?.scrollIntoView({ block: "nearest" });
+  updatePairNav();
   updateCompactTools();
 }
 
@@ -1077,17 +1159,26 @@ function setUpEvents() {
     const panel = event.target.closest(".pair");
     if (!panel) return;
     const index = Number(panel.dataset.index);
-    if (index !== state.focused) moveFocus(index - state.focused);
+    // a click focuses the pair where it is: the page doesn't move under the pointer
+    if (index !== state.focused) moveFocus(index - state.focused, { scroll: false });
     const selectButton = event.target.closest("[data-tick]");
     if (selectButton) return toggleTick(selectButton.dataset.tick);
     const categoryButton = event.target.closest("[data-category]");
-    if (categoryButton) return chooseCategory(categoryButton.dataset.category);
+    if (categoryButton) return chooseCategory(categoryButton.dataset.category, { scroll: false });
     const certButton = event.target.closest("[data-cert]");
     if (certButton) return chooseCertainty(certButton.dataset.cert);
     const copyButton = event.target.closest("[data-copy-reason]");
     if (copyButton) return copyReason(index, Number(copyButton.dataset.copyReason));
     const expandButton = event.target.closest("[data-expand]");
     if (expandButton) return toggleExpanded(expandButton.dataset.expand);
+  });
+  // the rail: going to a pair is navigation, so it scrolls the pair to the top (below the header)
+  $("pair-nav").addEventListener("click", (event) => {
+    const item = event.target.closest("[data-nav-index]");
+    if (!item) return;
+    const index = Number(item.dataset.navIndex);
+    if (index !== state.focused) moveFocus(index - state.focused, { scroll: false });
+    document.querySelector(`.pair[data-index="${index}"]`)?.scrollIntoView({ block: "start", behavior: "smooth" });
   });
   $("pairs").addEventListener("input", (event) => {
     if (event.target.dataset.reason) state.reasons[event.target.dataset.reason] = event.target.value;
@@ -1176,7 +1267,7 @@ async function checkForChanges() {
 async function reloadView() {
   if (state.view === "category" && state.category) return loadCategory(state.category.data.category, state.category.params);
   if (state.view === "agreement" && state.agreement) return loadAgreement(state.agreement.params);
-  if (state.view === "unit" && state.unit) return loadUnit(state.unit.id, { keepFocus: true });
+  if (state.view === "unit" && state.unit) return reloadUnit();
 }
 
 function reloadCurrentUnit() {

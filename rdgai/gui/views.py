@@ -49,7 +49,7 @@ def unit_matches(store:AnnotationStore, app, filters:dict, roles:dict) -> bool:
     shows_suggestions = roles.get(str(app)) != "test"
     if (source == "suggestion" or disagreement) and not shows_suggestions:
         return False
-    pairs = store.ordered_pairs(app)
+    pairs = store.reading_ordered_pairs(app)
     if category:
         name = store.get_relation_type(category).name
         if not any(name in pair.relation_type_names() or name in pair.get_inverse().relation_type_names() for pair in pairs):
@@ -93,8 +93,8 @@ def category_pairs(store:AnnotationStore, category:str, source:str="all") -> lis
 
 
 def display_direction(store:AnnotationStore, pair) -> bool:
-    """ Whether the directed pair is in the order the GUI shows it (better-attested reading first). """
-    return any((ordered.active.n, ordered.passive.n) == (pair.active.n, pair.passive.n) for ordered in store.ordered_pairs(pair.app))
+    """ Whether the directed pair is in the order the GUI shows it (reading order: the earlier reading first). """
+    return any((ordered.active.n, ordered.passive.n) == (pair.active.n, pair.passive.n) for ordered in store.reading_ordered_pairs(pair.app))
 
 
 def default_scope(store:AnnotationStore) -> str:
@@ -117,7 +117,7 @@ def agreement(store:AnnotationStore, scope:str|None=None, source:str|None=None, 
     for app in apps:
         if store.hides(app):
             continue
-        for pair in store.ordered_pairs(app):
+        for pair in store.reading_ordered_pairs(app):
             if store.coverage_for(pair) is not None:
                 continue
             by_source = {}

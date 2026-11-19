@@ -312,8 +312,9 @@ or on its own:
 
 Then open ``http://127.0.0.1:8765/``. If the port is in use, the MCP server still starts (without the GUI).
 
-- Each pair is shown with the better-attested reading first; the label is saved for first → second and the
-  inverse is set automatically.
+- Pairs are shown in reading order, the earlier reading first: a → b, a → c, …, b → c, …. The label is saved for
+  first → second and the inverse is set automatically. (The pipeline and the MCP tools put the better-attested
+  reading first instead, so a suggestion made in the other direction is shown with a "written for" note.)
 - One button per category, always in the same position. ``--group-by-prefix _`` lays them out in rows
   (e.g. Minor_* above Major_*), as does a ``@type`` on the ``<interp>`` elements. Hover over a button for its definition.
 - Clicking another category replaces the label; clicking the current one clears it.
@@ -326,9 +327,13 @@ Then open ``http://127.0.0.1:8765/``. If the port is in use, the MCP server stil
   the unit reloads, so no one's label is overwritten silently. The page also checks every few seconds (and on focus)
   whether the file has changed, and reloads the unit, so suggestions and labels made through MCP appear by themselves.
 - Each pair shows a computed description of the change in display order (e.g. "second reading adds: και"), and a
-  warning if a saved label contradicts it (e.g. an Omission where the second reading only adds words).
-- The reason box starts empty. "Use reason" copies a suggestion's justification into it; if it is saved unchanged,
-  it is recorded as the suggester's wording (``<desc type="justification" resp="#claude">``).
+  warning if a saved label contradicts it (e.g. an Omission where the second reading only adds words). Words the
+  readings share, or forms of the same word (αυτον/αυτων), that come in a different order are reported as a
+  reordering alongside the change (e.g. "reordered and changed: επ αυτον → μετ αυτων").
+- The reason box starts empty. "Use reason" copies a suggestion's justification into it. On a pair that already has a
+  label it is saved straight away; otherwise it is saved with the category you choose next. Saved unchanged,
+  it is recorded as the suggester's wording (``<desc type="justification" resp="#claude">``). A reason written for
+  the other direction (b → a) is copied as "Written for b → a: …".
 - Units with more than 10 pairs (``--compact-threshold``) are shown as compact rows grouped by the first reading,
   with short buttons in the same order and with the same keys. The triangle at a row's top left (or Enter or ``e``)
   expands it into one box with the reading cards, verse, translation, certainty and reason; "same suggestion" and
@@ -351,10 +356,15 @@ Then open ``http://127.0.0.1:8765/``. If the port is in use, the MCP server stil
 - All controls are in the left sidebar, grouped under headings: View (Annotate, By category, Agreement), Units to
   annotate (sample, progress, verse) and Narrow down (the filters below), Display (translations, reading overview) and
   Reference (definitions, keyboard). "Reset" returns to the whole sample.
-- The header shows the unit and its navigation, then the file (or a title) and the annotator. Click your name to
+- The header shows the unit and its place in the queue, then the file (or a title) and the annotator. Click your name to
   change your full name (recorded in the TEI header, ``<respStmt xml:id="RT"><name>``), the short name shown in the
   circle, and a title shown instead of the file name; the last two are kept in ``<file>.display.yaml``. The id
   labels are saved under (e.g. ``#RT``) is set when the server starts (``--annotator``).
+- A narrow rail at the right edge holds the unit navigation: Prev and Next, and "Next to do" (``n``: the next unit
+  with pairs to label), which turns into the filled red button once every pair in this unit is labelled. Below them
+  are the unit's progress ("3 / 6 pairs · 1 by rule") and its pairs (``a → b``), with ✓ on the labelled ones and the
+  current pair highlighted; click one to go to that pair. In narrow windows the navigation and progress sit in a
+  strip above the pairs instead.
 - The units can also be filtered by category, certainty, source (human, pipeline or rule labels, or suggestions) and
   "Disagreement" (a label differs from a suggestion for the same pair).
 

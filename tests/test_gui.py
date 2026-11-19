@@ -166,8 +166,8 @@ def test_unit_view(client):
     assert readings["f"]["text"] == "OMIT"
     assert readings["b"]["witnesses"] == ["03", "05", "019", "032", "732", "2148"]
 
-    # pairs in display order: better-attested first
-    assert [(pair["first"], pair["second"]) for pair in data["pairs"]][:3] == [("a", "b"), ("a", "e"), ("a", "f")]
+    # pairs in reading order: the earlier reading first
+    assert [(pair["first"], pair["second"]) for pair in data["pairs"]][:3] == [("a", "b"), ("a", "c"), ("a", "d")]
     first = data["pairs"][0]
     assert first["first_text"] == "υιου του θεου"
     assert first["second_text"] == "υιου θεου"
@@ -336,7 +336,7 @@ def test_suggestions_hidden_on_test_units(client, store):
     test_unit = next(unit.id for unit in info.units if unit.role == "test")
     example_unit = next(unit.id for unit in info.units if unit.role == "example")
     for unit_id in (test_unit, example_unit):
-        first = store.ordered_pairs(store.get_app(unit_id))[0]
+        first = store.reading_ordered_pairs(store.get_app(unit_id))[0]
         store.suggest_classification(
             unit_id, first.active.n, first.passive.n, "Major_Substitution", justification="x", source="claude", allow_test_unit=True,
         )
@@ -566,3 +566,37 @@ def test_page_has_the_rdgai_brand(client):
     assert client.get("/static/favicon.svg").status_code == 200
     css = client.get("/static/style.css").text
     assert "--brand: #940000" in css
+
+
+# ---------------------------------------------------------------------------
+# pair order: reading order (a → b, a → c, …, b → c, …), the earlier reading first
+# ---------------------------------------------------------------------------
+
+def reading_order(data):
+    ids = [reading["id"] for reading in data["readings"] if not reading.get("excluded")]
+    return [(ids[i], ids[j]) for i in range(len(ids)) for j in range(i + 1, len(ids))]
+
+
+def test_gui_pairs_in_reading_order(client):
+    data = client.get("/api/unit/Mark.1.1.12-16?sample=all").json()
+    pairs = [(pair["first"], pair["second"]) for pair in data["pairs"] + data.get("rule_pairs", [])]
+    assert [reading["id"] for reading in data["readings"]] == ["a", "b", "c", "d", "e", "f"]
+    # not by number of witnesses (a 151, b 6, e 5, f 5, d 2, c 1), but a → b, a → c, …, e → f
+    assert sorted(pairs, key=reading_order(data).index) == reading_order(data)
+
+
+def test_gui_pairs_in_reading_order_in_every_unit(client, store):
+    for unit_id in [str(app) for app in store.doc.apps]:
+        data = client.get(f"/api/unit/{unit_id}?sample=all").json()
+        shown = [(pair["first"], pair["second"]) for pair in data["pairs"]]
+        order = reading_order(data)
+        assert all(pair in order for pair in shown), (unit_id, shown)
+        assert shown == sorted(shown, key=order.index), (unit_id, shown)
+
+
+def test_pipeline_and_mcp_keep_the_witness_order(store):
+    """ Only the GUI changed: the pipeline and MCP still put the better-attested reading first. """
+    detail = store.get_unit("Mark.1.1.12-16", pair_order="attestation")
+    firsts = [pair.active for pair in detail.pairs]
+    assert firsts[0] == "a"
+    assert ("e", "c") in [(pair.active, pair.passive) for pair in detail.pairs]   # e (5 witnesses) before c (1)

@@ -87,9 +87,18 @@ VISIBLE_TOP_CARDS = """
 
 
 @pytest.fixture
-def gui(tmp_path):
+def prepare():
+    """ Changes made to the copied file (through an AnnotationStore) before the server starts: none by default. """
+    return None
+
+
+@pytest.fixture
+def gui(tmp_path, prepare):
     path = tmp_path / "mark_sample.xml"
     shutil.copy(TEST_DATA_DIR / "mark_sample.xml", path)
+    if prepare:
+        from rdgai.annotation import AnnotationStore
+        prepare(AnnotationStore(path, annotator="RT"))
     port = free_port()
     server = subprocess.Popen([RDGAI, "annotate", str(path), "--port", str(port), "--annotator", "RT"],
                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -128,7 +137,7 @@ def test_next_replaces_the_reading_cards(gui):
             assert sorted(await page.eval(VISIBLE_TOP_CARDS)) == sorted(unit_readings(base, compact))
 
             # Next →
-            await page.eval("[...document.querySelectorAll('#header-unit button')].find((b) => b.textContent.startsWith('Next →')).click()")
+            await page.eval("[...document.querySelectorAll('#pair-nav .unit-nav button')].find((b) => b.textContent.startsWith('Next →')).click()")
             await page.wait_until(f"document.querySelector('#header-unit h1')?.textContent === '{simple}'")
             await asyncio.sleep(0.5)
             shown = await page.eval(VISIBLE_TOP_CARDS)
@@ -139,7 +148,7 @@ def test_next_replaces_the_reading_cards(gui):
             assert marked in (None, simple)
 
             # and back: the compact unit's cards are shown again, all of them
-            await page.eval("[...document.querySelectorAll('#header-unit button')].find((b) => b.textContent.startsWith('← Prev')).click()")
+            await page.eval("[...document.querySelectorAll('#pair-nav .unit-nav button')].find((b) => b.textContent.startsWith('← Prev')).click()")
             await page.wait_until(f"document.querySelector('#header-unit h1')?.textContent === '{compact}'")
             await asyncio.sleep(0.5)
             assert sorted(await page.eval(VISIBLE_TOP_CARDS)) == sorted(unit_readings(base, compact))
@@ -188,5 +197,338 @@ def test_expanding_a_compact_row(gui):
             await page.eval(f"{first}.querySelector('button.disclosure').click()")
             await page.wait_until(f"!{first}.classList.contains('expanded')")
             assert await page.eval(f"{first}.querySelector('button.disclosure').getAttribute('aria-expanded')") == "false"
+
+    asyncio.run(run())
+
+
+def test_clicking_a_button_does_not_scroll(gui):
+    """
+    Clicking a button (here a category, which saves the label and moves the focus to the next pair) must leave the
+    page where it is: neither focusing the clicked pair nor moving on to the next one may scroll the page.
+    """
+    base, ws_url = gui
+    unit = "Mark.1.2.8-14"   # 4 readings: 6 full pair panels, taller than the window
+
+    async def run():
+        async with websockets.connect(ws_url, max_size=None) as ws:
+            page = Page(ws)
+            await page.send("Page.navigate", url=f"{base}/#/unit/{unit}?sample=all")
+            await page.wait_until("document.querySelectorAll('#pairs .pair.full').length >= 3")
+            second = "document.querySelector('#pairs .pair[data-index=\"1\"]')"
+            # scroll so the second pair's top is just above the window: it is not fully visible, so
+            # scrollIntoView would move the page; its category buttons are on screen
+            await page.eval(f"window.scrollTo(0, window.scrollY + {second}.getBoundingClientRect().top + 40)")
+            await asyncio.sleep(0.3)
+            before = await page.eval("window.scrollY")
+            assert before > 0
+            button = f"{second}.querySelector('.decision [data-category]')"
+            top = await page.eval(f"{button}.getBoundingClientRect().top")
+            assert 0 < top < await page.eval("window.innerHeight")
+            await page.eval(f"{button}.click()")
+            await page.wait_until(f"!!{second}.querySelector('.decision [data-category].current')")
+            await asyncio.sleep(0.5)
+            assert abs(await page.eval("window.scrollY") - before) <= 2
+
+    asyncio.run(run())
+
+
+REASON_UNIT = "Mark.1.2.8-14"
+
+
+def suggest_and_label(store):
+    # a -> b (shown that way): labelled, with a suggestion; a -> c: a suggestion only; b -> c: labelled
+    store.suggest_classification(REASON_UNIT, "a", "b", "Minor_Omission", justification="omits a word", source="claude")
+    store.set_classification(REASON_UNIT, "a", "b", "Minor_Omission", justification="")
+    store.set_classification(REASON_UNIT, "b", "c", "Major_Substitution", justification="")
+    store.suggest_classification(REASON_UNIT, "a", "c", "Minor_Omission", justification="omits another word", source="claude")
+
+
+def saved_pair(base:str, first:str, second:str) -> dict:
+    unit = wait_for(f"{base}/api/unit/{REASON_UNIT}?sample=all")
+    return next(pair for pair in unit["pairs"] if (pair["first"], pair["second"]) == (first, second))
+
+
+@pytest.mark.parametrize("prepare", [suggest_and_label])
+def test_use_reason_saves_on_a_labelled_pair(gui):
+    """ On a pair that already has its label, "Use reason" saves the reason straight away (as the suggester's wording). """
+    base, ws_url = gui
+    assert saved_pair(base, "a", "b")["reason"] == ""
+
+    async def run():
+        async with websockets.connect(ws_url, max_size=None) as ws:
+            page = Page(ws)
+            await page.send("Page.navigate", url=f"{base}/#/unit/{REASON_UNIT}?sample=all")
+            panel = "[...document.querySelectorAll('#pairs .pair.full')].find((p) => p.querySelector('.copy-reason') && p.textContent.includes('omits a word'))"
+            await page.wait_until(f"!!({panel})")
+            await page.eval(f"({panel}).querySelector('.copy-reason').click()")
+            deadline = time.time() + 5
+            while time.time() < deadline and saved_pair(base, "a", "b")["reason"] != "omits a word":
+                await asyncio.sleep(0.2)
+
+    asyncio.run(run())
+    pair = saved_pair(base, "a", "b")
+    assert pair["reason"] == "omits a word"
+    assert pair["category"] == "Minor_Omission"   # the label is kept
+
+
+@pytest.mark.parametrize("prepare", [suggest_and_label])
+def test_use_reason_waits_for_the_category_on_an_unlabelled_pair(gui):
+    """ Without a label there is nothing to save yet: the reason is saved with the category chosen next. """
+    base, ws_url = gui
+
+    async def run():
+        async with websockets.connect(ws_url, max_size=None) as ws:
+            page = Page(ws)
+            await page.send("Page.navigate", url=f"{base}/#/unit/{REASON_UNIT}?sample=all")
+            panel = "[...document.querySelectorAll('#pairs .pair.full')].find((p) => p.querySelector('.copy-reason') && p.textContent.includes('omits another word'))"
+            await page.wait_until(f"!!({panel})")
+            await page.eval(f"({panel}).querySelector('.copy-reason').click()")
+            await asyncio.sleep(0.5)
+            assert saved_pair(base, "a", "c")["category"] is None
+            # the annotator is told the reason is waiting for a category
+            assert "category" in (await page.eval("document.getElementById('status').textContent")).lower()
+            await page.eval(f"({panel}).querySelector('.decision [data-category=Minor_Omission]').click()")
+            deadline = time.time() + 5
+            while time.time() < deadline and saved_pair(base, "a", "c")["category"] is None:
+                await asyncio.sleep(0.2)
+
+    asyncio.run(run())
+    pair = saved_pair(base, "a", "c")
+    assert (pair["category"], pair["reason"]) == ("Minor_Omission", "omits another word")
+
+
+def test_pair_rail_shows_where_the_annotator_is(gui):
+    """
+    A narrow rail beside the pairs holds the unit's progress line (moved from the header) and one entry per pair,
+    "a → b", with the current pair highlighted. Clicking an entry goes to that pair; moving with the keyboard
+    moves the highlight.
+    """
+    base, ws_url = gui
+    unit = "Mark.1.2.8-14"
+
+    async def run():
+        async with websockets.connect(ws_url, max_size=None) as ws:
+            page = Page(ws)
+            await page.send("Page.navigate", url=f"{base}/#/unit/{unit}?sample=all")
+            await page.wait_until("document.querySelectorAll('#pairs .pair.full').length === 6")
+            await page.wait_until("document.querySelectorAll('#pair-nav .pair-nav-item').length === 6")
+            # the progress line is in the rail, not the header
+            assert "0 / 6 pairs" in await page.eval("document.getElementById('pair-nav').textContent")
+            assert "pairs" not in await page.eval("document.getElementById('header-unit').textContent")
+            labels = await page.eval("[...document.querySelectorAll('#pair-nav .pair-nav-item')].map((item) => item.querySelector('.pair-nav-ids').textContent)")
+            shown = await page.eval("[...document.querySelectorAll('#pairs .pair.full')].map((pair) => pair.dataset.index)")
+            assert labels[0] == "a → b" and len(labels) == len(shown)
+            current = "[...document.querySelectorAll('#pair-nav .pair-nav-item')].findIndex((item) => item.classList.contains('current'))"
+            assert await page.eval(current) == 0
+            # beside the pairs, not over them
+            assert await page.eval("document.getElementById('pair-nav').getBoundingClientRect().left >= document.getElementById('pairs').getBoundingClientRect().right")
+
+            # clicking an entry goes to that pair
+            await page.eval("document.querySelectorAll('#pair-nav .pair-nav-item')[3].click()")
+            await page.wait_until(f"{current} === 3")
+            assert await page.eval("document.querySelector('#pairs .pair[data-index=\"3\"]').classList.contains('focused')")
+            # and scrolls it into view, at the top below the header
+            await page.wait_until("(() => { const top = document.querySelector('#pairs .pair[data-index=\"3\"]').getBoundingClientRect().top; return top >= 0 && top < 200; })()")
+
+            # the keyboard moves the highlight too
+            await page.send("Input.dispatchKeyEvent", type="keyDown", key="j", code="KeyJ", text="j", windowsVirtualKeyCode=74)
+            await page.send("Input.dispatchKeyEvent", type="keyUp", key="j", code="KeyJ", windowsVirtualKeyCode=74)
+            await page.wait_until(f"{current} === 4")
+
+    asyncio.run(run())
+
+
+def test_pair_rail_at_the_right_edge_and_pairs_centred(gui):
+    """
+    The rail sits at the right edge of the window; the pairs are centred in the main area (beside the left sidebar)
+    when there is room, and never run under the rail. The labelled mark stands out from the entry's text.
+    """
+    base, ws_url = gui
+    unit = "Mark.1.2.8-14"
+
+    async def run():
+        async with websockets.connect(ws_url, max_size=None) as ws:
+            page = Page(ws)
+            await page.send("Emulation.setDeviceMetricsOverride", width=2000, height=1000, deviceScaleFactor=1, mobile=False)
+            await page.send("Page.navigate", url=f"{base}/#/unit/{unit}?sample=all")
+            await page.wait_until("document.querySelectorAll('#pair-nav .pair-nav-item').length === 6")
+            await asyncio.sleep(0.3)
+            geometry = await page.eval("""(() => {
+                const main = document.getElementById('main').getBoundingClientRect();
+                const body = document.querySelector('#view-unit .unit-body').getBoundingClientRect();
+                const rail = document.getElementById('pair-nav').getBoundingClientRect();
+                return { mainLeft: main.left, mainRight: main.right, bodyLeft: body.left, bodyRight: body.right,
+                         railLeft: rail.left, railRight: rail.right, width: document.documentElement.clientWidth };
+            })()""")
+            # the rail at the right edge
+            assert geometry["width"] - geometry["railRight"] <= 24, geometry
+            # the pairs centred in the main area, clear of the rail
+            centre = (geometry["mainLeft"] + geometry["mainRight"]) / 2
+            assert abs((geometry["bodyLeft"] + geometry["bodyRight"]) / 2 - centre) <= 2, geometry
+            assert geometry["bodyRight"] <= geometry["railLeft"], geometry
+
+            # narrower: the pairs move left to make room, still clear of the rail
+            await page.send("Emulation.setDeviceMetricsOverride", width=1400, height=1000, deviceScaleFactor=1, mobile=False)
+            await asyncio.sleep(0.3)
+            assert await page.eval("document.querySelector('#view-unit .unit-body').getBoundingClientRect().right <= document.getElementById('pair-nav').getBoundingClientRect().left")
+
+    asyncio.run(run())
+
+
+@pytest.mark.parametrize("prepare", [suggest_and_label])
+def test_pair_rail_check_mark_stands_out(gui):
+    """ A labelled entry's ✓ is a badge: bold, and on its own background, unlike the entry's text. """
+    base, ws_url = gui
+
+    async def run():
+        async with websockets.connect(ws_url, max_size=None) as ws:
+            page = Page(ws)
+            await page.send("Page.navigate", url=f"{base}/#/unit/{REASON_UNIT}?sample=all")
+            done = "document.querySelector('#pair-nav .pair-nav-item.done:not(.current)')"
+            await page.wait_until(f"!!{done}")
+            mark = await page.eval(f"(() => {{ const s = getComputedStyle({done}.querySelector('.pair-nav-mark')); return [s.backgroundColor, s.fontWeight]; }})()")
+            item = await page.eval(f"getComputedStyle({done}).backgroundColor")
+            assert mark[0] not in ("rgba(0, 0, 0, 0)", "transparent", item), mark
+            assert int(mark[1]) >= 700
+            # with room between the ✓ and the pair's ids
+            gap = await page.eval(f"{done}.querySelector('.pair-nav-ids').getBoundingClientRect().left - {done}.querySelector('.pair-nav-mark').getBoundingClientRect().right")
+            assert gap >= 8, gap
+
+    asyncio.run(run())
+
+
+# delays the responses for one unit, to make the order in which loads finish deterministic
+DELAY_UNIT = """
+(() => {
+  const original = window.fetch;
+  window.__delay = { unit: null, ms: 0 };
+  window.fetch = async (path, options) => {
+    const response = await original(path, options);
+    if (window.__delay.unit && String(path).startsWith(`/api/unit/${window.__delay.unit}`)) {
+      await new Promise((resolve) => setTimeout(resolve, window.__delay.ms));
+    }
+    return response;
+  };
+})()
+"""
+
+HEADER_UNIT = "document.querySelector('#header-unit h1')?.textContent"
+
+
+def press(page, key, code, keycode):
+    async def run():
+        await page.send("Input.dispatchKeyEvent", type="keyDown", key=key, code=code, text=key, windowsVirtualKeyCode=keycode)
+        await page.send("Input.dispatchKeyEvent", type="keyUp", key=key, code=code, windowsVirtualKeyCode=keycode)
+    return run()
+
+
+def test_next_is_not_undone_by_a_slower_reload(gui):
+    """
+    Labelling a pair reloads the unit; clicking Next before that reload returns must still move on. A load that
+    finishes after a newer one must not put the previous unit back on screen.
+    """
+    base, ws_url = gui
+    first, second = "Mark.1.2.8-14", wait_for(f"{base}/api/unit/Mark.1.2.8-14?sample=all")["next"]
+
+    async def run():
+        async with websockets.connect(ws_url, max_size=None) as ws:
+            page = Page(ws)
+            await page.send("Page.navigate", url=f"{base}/#/unit/{first}?sample=all")
+            await page.wait_until(f"{HEADER_UNIT} === '{first}' && document.querySelectorAll('#pairs .pair.full').length > 0")
+            await page.eval(DELAY_UNIT)
+            await page.eval(f"window.__delay = {{ unit: '{first}', ms: 1500 }}")
+            # label the first pair (its reload of this unit is slow), then Next straight away
+            await page.eval("document.querySelector('#pairs .pair[data-index=\"0\"] .decision [data-category]').click()")
+            await asyncio.sleep(0.2)
+            await page.eval("[...document.querySelectorAll('#pair-nav .unit-nav button')].find((b) => b.textContent.startsWith('Next →')).click()")
+            await page.wait_until(f"{HEADER_UNIT} === '{second}'")
+            await asyncio.sleep(2.5)   # the slow reload of the first unit has come back by now
+            assert await page.eval(HEADER_UNIT) == second
+            assert second in await page.eval("location.hash")
+
+    asyncio.run(run())
+
+
+def test_a_reload_during_next_reloads_the_unit_being_opened(gui):
+    """ A reload started while Next is still loading (e.g. after a save) is for the unit being opened, not the old one. """
+    base, ws_url = gui
+    first, second = "Mark.1.2.8-14", wait_for(f"{base}/api/unit/Mark.1.2.8-14?sample=all")["next"]
+
+    async def run():
+        async with websockets.connect(ws_url, max_size=None) as ws:
+            page = Page(ws)
+            await page.send("Page.navigate", url=f"{base}/#/unit/{first}?sample=all")
+            await page.wait_until(f"{HEADER_UNIT} === '{first}' && document.querySelectorAll('#pairs .pair.full').length > 0")
+            await page.eval(DELAY_UNIT)
+            await page.eval(f"window.__delay = {{ unit: '{second}', ms: 1500 }}")
+            # Next (slow), then a label on the pair still on screen, whose save reloads the unit
+            await page.eval("[...document.querySelectorAll('#pair-nav .unit-nav button')].find((b) => b.textContent.startsWith('Next →')).click()")
+            await asyncio.sleep(0.2)
+            await press(page, "1", "Digit1", 49)
+            await asyncio.sleep(3.5)
+            assert await page.eval(HEADER_UNIT) == second
+            assert second in await page.eval("location.hash")
+
+    asyncio.run(run())
+
+
+def test_unit_navigation_at_the_top_of_the_rail(gui):
+    """
+    Prev and Next are at the top of the rail, not in the header; under them "Next to do", which becomes the main
+    (filled) button once every pair in the unit is labelled.
+    """
+    base, ws_url = gui
+    unit = "Mark.1.2.2"   # one pair
+
+    async def run():
+        async with websockets.connect(ws_url, max_size=None) as ws:
+            page = Page(ws)
+            await page.send("Page.navigate", url=f"{base}/#/unit/{unit}?sample=all")
+            await page.wait_until(f"{HEADER_UNIT} === '{unit}' && !!document.querySelector('#pair-nav .unit-nav')")
+            assert await page.eval("document.querySelectorAll('#header-unit button').length") == 0
+            assert await page.eval("document.getElementById('pair-nav').firstElementChild.classList.contains('unit-nav')")
+            texts = await page.eval("[...document.querySelectorAll('#pair-nav .unit-nav button')].map((b) => b.textContent.trim())")
+            assert texts[0].startswith("←") and texts[1].endswith("→") and texts[2].startswith("Next to do"), texts
+            todo = "document.querySelector('#pair-nav .unit-nav .next-to-do')"
+            assert not await page.eval(f"{todo}.classList.contains('ready')")
+
+            # label the only pair: the unit is done, and "Next to do" becomes the main action
+            await page.eval("document.querySelector('#pairs .pair[data-index=\"0\"] .decision [data-category]').click()")
+            await page.wait_until(f"{todo}.classList.contains('ready')")
+            target = await page.eval(f"{todo}.dataset.target")
+            await page.eval(f"{todo}.click()")
+            await page.wait_until(f"{HEADER_UNIT} === '{target}'")
+
+    asyncio.run(run())
+
+
+def test_rail_buttons_survive_a_redraw_during_a_click(gui):
+    """
+    A click is a press and a release on the same element. Saving a label redraws the page (twice: at once, and when
+    the unit is reloaded), so if the rail's buttons were rebuilt, a click made just after labelling — "Next to do"
+    as soon as the unit is done — would be lost. The buttons must stay the same elements across redraws.
+    """
+    base, ws_url = gui
+    first = "Mark.1.2.8-14"
+
+    async def run():
+        async with websockets.connect(ws_url, max_size=None) as ws:
+            page = Page(ws)
+            await page.send("Page.navigate", url=f"{base}/#/unit/{first}?sample=all")
+            await page.wait_until(f"{HEADER_UNIT} === '{first}' && !!document.querySelector('#pair-nav .next-to-do:not(:disabled)')")
+            todo = "document.querySelector('#pair-nav .next-to-do')"
+            target = await page.eval(f"{todo}.dataset.target")
+            await page.eval(f"{todo}.dataset.original = 'yes'")
+            x, y = await page.eval(f"(() => {{ const r = {todo}.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }})()")
+
+            # press on "Next to do", save a label (which redraws), then release
+            await page.send("Input.dispatchMouseEvent", type="mouseMoved", x=x, y=y)
+            await page.send("Input.dispatchMouseEvent", type="mousePressed", x=x, y=y, button="left", clickCount=1)
+            await press(page, "1", "Digit1", 49)
+            await page.wait_until("document.querySelector('#pairs .pair[data-index=\"0\"] .decision [data-category].current') !== null")
+            await asyncio.sleep(0.8)   # the reload after the save has redrawn the page too
+            assert await page.eval(f"{todo}.dataset.original") == "yes"   # the same button, not a new one
+            await page.send("Input.dispatchMouseEvent", type="mouseReleased", x=x, y=y, button="left", clickCount=1)
+            await page.wait_until(f"{HEADER_UNIT} === '{target}'")
 
     asyncio.run(run())
