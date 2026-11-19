@@ -334,6 +334,11 @@ Then open ``http://127.0.0.1:8765/``. If the port is in use, the MCP server stil
   label it is saved straight away; otherwise it is saved with the category you choose next. Saved unchanged,
   it is recorded as the suggester's wording (``<desc type="justification" resp="#claude">``). A reason written for
   the other direction (b → a) is copied as "Written for b → a: …".
+- Two buttons above the pairs act on all of a unit's suggestions at once (greyed out when there are none) (after a confirmation, with
+  one save). "Save all suggestions" labels every unlabelled pair whose suggestions agree, with the suggested
+  category, reason and certainty (high if none). "Save all reasons" gives each pair you labelled without a reason
+  the reason of a suggestion for the same category. Labels and reasons already there are never replaced, pairs
+  labelled by rule or by the pipeline are left alone, and nothing is saved on the sample's test units.
 - Units with more than 10 pairs (``--compact-threshold``) are shown as compact rows grouped by the first reading,
   with short buttons in the same order and with the same keys. The triangle at a row's top left (or Enter or ``e``)
   expands it into one box with the reading cards, verse, translation, certainty and reason; "same suggestion" and
@@ -360,6 +365,10 @@ Then open ``http://127.0.0.1:8765/``. If the port is in use, the MCP server stil
   change your full name (recorded in the TEI header, ``<respStmt xml:id="RT"><name>``), the short name shown in the
   circle, and a title shown instead of the file name; the last two are kept in ``<file>.display.yaml``. The id
   labels are saved under (e.g. ``#RT``) is set when the server starts (``--annotator``).
+- When the "Units" filter selects the sample (or only its example or test units), the left sidebar shows a progress
+  bar per role, e.g. "Example pairs (181/576) 31.4%" (labelled pairs out of all the pairs to label, one decimal
+  place) with "Example units 12/100 (12.0%)" (complete units) under it. Below them, always, the same for the whole
+  file: "All pairs (628/44006)" and "All units 113/5626".
 - A narrow rail at the right edge holds the unit navigation: Prev and Next, and "Next to do" (``n``: the next unit
   with pairs to label), which turns into the filled red button once every pair in this unit is labelled. Below them
   are the unit's progress ("3 / 6 pairs · 1 by rule") and its pairs (``a → b``), with ✓ on the labelled ones and the

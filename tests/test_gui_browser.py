@@ -532,3 +532,87 @@ def test_rail_buttons_survive_a_redraw_during_a_click(gui):
             await page.wait_until(f"{HEADER_UNIT} === '{target}'")
 
     asyncio.run(run())
+
+
+def suggest_three(store):
+    # a -> b and a -> c: suggestions only; a -> d: labelled by the annotator, with a suggested reason for the same category
+    store.suggest_classification(REASON_UNIT, "a", "b", "Minor_Omission", justification="omits a word", source="claude")
+    store.suggest_classification(REASON_UNIT, "a", "c", "Major_Substitution", justification="other words", source="claude")
+    store.suggest_classification(REASON_UNIT, "a", "e", "Major_Substitution", justification="changed", source="claude")
+    store.set_classification(REASON_UNIT, "a", "e", "Major_Substitution", justification="")
+
+
+@pytest.mark.parametrize("prepare", [suggest_three])
+def test_save_all_suggestions_and_reasons_buttons(gui):
+    """ The buttons above the pairs save the unit's suggestions (after a confirmation) and update their counts. """
+    base, ws_url = gui
+
+    async def run():
+        async with websockets.connect(ws_url, max_size=None) as ws:
+            page = Page(ws)
+            await page.send("Page.navigate", url=f"{base}/#/unit/{REASON_UNIT}?sample=all")
+            labels, reasons = "document.querySelector('#suggestion-bar .save-labels')", "document.querySelector('#suggestion-bar .save-reasons')"
+            await page.wait_until(f"!!{labels} && !document.getElementById('suggestion-bar').hidden")
+            assert await page.eval(f"{labels}.textContent") == "Save all suggestions (2)"
+            assert await page.eval(f"{reasons}.textContent") == "Save all reasons (1)"
+            await page.eval("window.confirm = () => true")
+
+            await page.eval(f"{labels}.click()")
+            await page.wait_until(f"{labels}.textContent === 'Save all suggestions (0)'")
+            assert await page.eval(f"{labels}.disabled")
+            await page.eval(f"{reasons}.click()")
+            await page.wait_until(f"{reasons}.textContent === 'Save all reasons (0)'")
+
+    asyncio.run(run())
+    assert (saved_pair(base, "a", "b")["category"], saved_pair(base, "a", "b")["reason"]) == ("Minor_Omission", "omits a word")
+    assert saved_pair(base, "a", "c")["category"] == "Major_Substitution"
+    assert saved_pair(base, "a", "e")["reason"] == "changed"
+
+
+def test_suggestion_buttons_always_shown(gui):
+    """ On a unit without suggestions the buttons are still there (greyed out), so they can be found. """
+    base, ws_url = gui
+
+    async def run():
+        async with websockets.connect(ws_url, max_size=None) as ws:
+            page = Page(ws)
+            await page.send("Page.navigate", url=f"{base}/#/unit/{REASON_UNIT}?sample=all")
+            await page.wait_until("!!document.querySelector('#suggestion-bar .save-labels')")
+            assert not await page.eval("document.getElementById('suggestion-bar').hidden")
+            assert await page.eval("document.querySelector('#suggestion-bar .save-labels').disabled")
+            assert await page.eval("document.querySelector('#suggestion-bar .save-reasons').disabled")
+            assert "no suggestions" in (await page.eval("document.getElementById('suggestion-bar').textContent")).lower()
+
+    asyncio.run(run())
+
+
+def draw_a_sample(store):
+    store.draw_sample(size=10, seed=3)
+
+
+@pytest.mark.parametrize("prepare", [draw_a_sample])
+def test_sample_progress_bars(gui):
+    """ The sidebar shows the sample's progress, for the roles the Units filter selects: pairs and percentage (1 dp). """
+    base, ws_url = gui
+    progress = wait_for(f"{base}/api/sample-progress")
+    first_example = wait_for(f"{base}/api/queue?sample=example")["units"][0]["id"]
+
+    async def run():
+        async with websockets.connect(ws_url, max_size=None) as ws:
+            page = Page(ws)
+            rows = "[...document.querySelectorAll('#sample-progress .sample-progress-row')]"
+            await page.send("Page.navigate", url=f"{base}/#/unit/{first_example}?sample=sampled")
+            await page.wait_until(f"{rows}.length === 3")
+            texts = await page.eval(f"{rows}.map((row) => row.textContent)")
+            example = progress["example"]
+            assert texts[0].startswith(f"Example pairs ({example['pairs_done']}/{example['pairs_total']})0.0%"), texts
+            assert f"Example units 0/{example['units_total']} (0.0%)" in texts[0]
+            assert texts[1].startswith("Test pairs (") and texts[2].startswith("All pairs ("), texts
+
+            await page.send("Page.navigate", url=f"{base}/#/unit/{first_example}?sample=example")
+            await page.wait_until(f"{rows}.length === 2 && {rows}[0].classList.contains('example') && {rows}[1].classList.contains('all')")
+            # all units in the file: only the whole file's bar
+            await page.send("Page.navigate", url=f"{base}/#/unit/{first_example}?sample=all")
+            await page.wait_until(f"{rows}.length === 1 && {rows}[0].classList.contains('all')")
+
+    asyncio.run(run())

@@ -29,7 +29,7 @@ try:
     import fcntl
 except ImportError:  # pragma: no cover (Windows)
     fcntl = None
-from .tei import find_element, find_elements, extract_text, find_parent
+from .tei import find_element, find_elements, extract_text, find_parent, parse_tei
 from . import sampling
 from .sampling import Sample, default_sample_path
 from . import translations as translation_files
@@ -380,6 +380,28 @@ class DecisionsResult(BaseModel):
     skipped: list[tuple[str, str]] = Field(default_factory=list, description="Pairs labelled by someone else meanwhile (left as they are).")
 
 
+class SkippedPair(BaseModel):
+    pair: tuple[str, str]
+    why: str
+
+
+class SavedSuggestions(BaseModel):
+    written: list[tuple[str, str]] = Field(default_factory=list)
+    skipped: list[SkippedPair] = Field(default_factory=list)
+
+
+# a reason saved on the inverse pair starts like this; copied into a label for the pair as shown, it says so instead
+INVERSE_REASON = re.compile(r"^Inverse of (\S+) → (\S+):\s*")
+
+
+def reason_for_pair(justification:str) -> str:
+    """ A suggestion's reason as it reads for the pair shown: one written for the other direction says so. """
+    match = INVERSE_REASON.match(justification or "")
+    if match:
+        return f"Written for {match[1]} → {match[2]}: {justification[match.end():]}"
+    return (justification or "").strip()
+
+
 class WriteResult(BaseModel):
     unit_id: str
     pair: PairInfo
@@ -473,11 +495,40 @@ class AnnotationStore:
         stat = self.path.stat()
         return (stat.st_ino, stat.st_mtime_ns, stat.st_size)
 
-    def load(self):
+    @staticmethod
+    def identity(stat:os.stat_result) -> tuple:
+        return (stat.st_ino, stat.st_mtime_ns, stat.st_size)
+
+    def load(self, data:bytes|None=None, stat:os.stat_result|None=None):
+        """
+        Loads the file. Its identity and its content come from one open file, so they always belong to the same
+        version: if another process replaces the file meanwhile, the store still knows which version it holds.
+        (Recording the identity after parsing could pair old content with a newer identity, and the next write would
+        then skip the reload and save over the other process's work.)
+        """
         with self.lock:
-            self.doc = Doc(self.path, reading_notes=self.reading_notes)
-            self._file_id = self.file_id()
+            if data is None:
+                with open(self.path, "rb") as handle:
+                    stat = os.fstat(handle.fileno())
+                    data = handle.read()
+            self.doc = Doc(self.path, tree=parse_tei(data), reading_notes=self.reading_notes)
+            self._file_id = self.identity(stat)
+            self._digest = hashlib.sha256(data).digest()
             self.rules = self.read_rules()
+            self._file_pairs = None   # the whole-file pair structure (file_progress) belongs to the old document
+
+    def sync_for_write(self):
+        """
+        Called with the write lock held: reloads unless the file's bytes are exactly what this store holds. Compares
+        the content itself, so a write can't be fooled by a file identity that looks unchanged (a reused inode).
+        """
+        with open(self.path, "rb") as handle:
+            stat = os.fstat(handle.fileno())
+            data = handle.read()
+        if hashlib.sha256(data).digest() != self._digest:
+            self.load(data, stat)
+        else:
+            self._file_id = self.identity(stat)
 
     def refresh(self):
         """ Reloads the file if it has been changed by another program (e.g. a second rdgai process). """
@@ -493,6 +544,8 @@ class AnnotationStore:
         """
         with self.lock:
             if self._write_depth > 0 or fcntl is None:
+                if self._write_depth == 0:
+                    self.sync_for_write()
                 self._write_depth += 1
                 try:
                     yield
@@ -512,6 +565,8 @@ class AnnotationStore:
                                 f"{self.path.name} is locked by another process that is writing to it. Try again shortly."
                             )
                         time.sleep(0.05)
+                # with the lock held, nobody else can change the file: make sure this store holds its current content
+                self.sync_for_write()
                 self._write_depth += 1
                 try:
                     yield
@@ -531,11 +586,14 @@ class AnnotationStore:
             os.close(fd)
             try:
                 self.doc.write(tmp)
+                with open(tmp, "rb") as handle:
+                    digest = hashlib.sha256(handle.read()).digest()
                 os.replace(tmp, self.path)
             finally:
                 if os.path.exists(tmp):
                     os.remove(tmp)
             self._file_id = self.file_id()
+            self._digest = digest
 
     def check_writable(self):
         if self.read_only:
@@ -608,6 +666,29 @@ class AnnotationStore:
         if classified == len(pairs):
             return "classified"
         return "partial"
+
+    def file_progress(self) -> dict:
+        """
+        Labelled pairs and complete units in the whole file. Which pairs need a label depends only on the document
+        (not on the labels), so each pair and its inverse are worked out once per loaded document and reused; only the
+        labels are checked each time.
+        """
+        with self.lock:
+            if getattr(self, "_file_pairs", None) is None:
+                units = []
+                for app in self.doc.apps:
+                    directed = {(pair.active.n, pair.passive.n): pair for pair in app.pairs}
+                    units.append((app, [(pair, directed[(pair.passive.n, pair.active.n)]) for pair in self.work_pairs(app)]))
+                self._file_pairs = units
+            counts = dict(pairs_done=0, pairs_total=0, units_done=0, units_total=0)
+            for app, pairs in self._file_pairs:
+                hidden = self.hides(app)
+                done = 0 if hidden else sum(bool(pair.types) or bool(inverse.types) for pair, inverse in pairs)
+                counts["pairs_done"] += done
+                counts["pairs_total"] += len(pairs)
+                counts["units_done"] += done == len(pairs)
+                counts["units_total"] += 1
+            return counts
 
     def changes_by_id(self) -> dict:
         return {
@@ -1953,6 +2034,88 @@ class AnnotationStore:
                     when=when,
                 )
                 result.written.append(key)
+            if result.written:
+                self.save()
+            return result
+
+    def save_suggestions(self, unit_id:str, pairs:list[tuple[str, str]], kind:Literal["labels", "reasons"]) -> SavedSuggestions:
+        """
+        The GUI's "Save all suggestions" (kind 'labels') and "Save all reasons" (kind 'reasons') for the given pairs of a
+        unit, each in the direction shown, with one save. The annotator becomes responsible for what is saved; a copied
+        reason is recorded as the suggester's wording.
+
+        labels: an unlabelled pair whose suggestions all agree is labelled with that category, the suggestion's reason
+        and its certainty (high if none). Labelled pairs, disagreeing suggestions and rule pairs are skipped.
+        reasons: a pair the annotator labelled without a reason gets the reason of a suggestion for the same category.
+        Existing reasons are never replaced. Nothing is saved on test units, whose suggestions the GUI hides.
+        """
+        if kind not in ("labels", "reasons"):
+            raise AnnotationError("kind must be 'labels' or 'reasons'.")
+        with self.writing():
+            self.check_writable()
+            self.refresh()
+            app = self.get_app(unit_id)
+            self.check_unit_writable(app)
+            result = SavedSuggestions()
+            if self.sample_role(str(app)) == "test" or self.hides(app):
+                return result
+            resp = self.resolve_resp(None)
+            change_attr = self.change_pointers(None, self.ensure_definitions_change())
+            when = self.now()
+            for active, passive in pairs:
+                pair = self.get_pair(app, active, passive)
+                info = self.pair_info(pair)
+                suggestions = self.suggestions_for(app, pair)
+                skip = lambda why: result.skipped.append(SkippedPair(pair=(active, passive), why=why))
+                if self.coverage_for(pair) is not None or info.source == "rule":
+                    skip("by rule")
+                    continue
+                if kind == "labels":
+                    if info.category or info.inverse_category:
+                        skip("labelled")
+                        continue
+                    if not suggestions:
+                        skip("no suggestion")
+                        continue
+                    if len({suggestion.category for suggestion in suggestions}) > 1:
+                        skip("suggestions disagree")
+                        continue
+                    chosen = next((suggestion for suggestion in suggestions if suggestion.justification), suggestions[0])
+                    category, cert = chosen.category, chosen.cert or "high"
+                else:
+                    if not info.category:
+                        skip("not labelled")
+                        continue
+                    if info.source != "human":
+                        skip(f"labelled by the {info.source}")
+                        continue
+                    if info.provenance is not None and info.provenance.justification:
+                        skip("has a reason")
+                        continue
+                    with_reasons = [suggestion for suggestion in suggestions if suggestion.justification]
+                    chosen = next((suggestion for suggestion in with_reasons if suggestion.category == info.category), None)
+                    if chosen is None:
+                        skip("different category" if with_reasons else "no suggested reason")
+                        continue
+                    category, cert = info.category, (info.provenance.cert if info.provenance else "") or "high"
+                reason = reason_for_pair(chosen.justification)
+                source_name = chosen.source.split(":")[0]
+                description_resp = None
+                if reason and NC_NAME.match(source_name):
+                    if source_name == "claude":
+                        self.ensure_resp_stmt("claude", "Claude", "suggested classifications")
+                    description_resp = f"#{source_name}"
+                pair.set_type_with_inverse(
+                    self.get_relation_type(category),
+                    responsible=f"#{resp}",
+                    cert=cert,
+                    description=reason,
+                    inverse_description=f"Inverse of {active} → {passive}: {reason}" if reason else "",
+                    change=change_attr,
+                    when=when,
+                    description_resp=description_resp,
+                )
+                result.written.append((active, passive))
             if result.written:
                 self.save()
             return result

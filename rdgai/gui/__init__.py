@@ -314,6 +314,24 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None, compact_thr
         except AnnotationError as error:
             return error_response(error)
 
+    def sample_progress(request:Request):
+        """ Labelled pairs and complete units per role of the sample (example, test) and in the whole file, for the sidebar's bars. """
+        with store.lock:
+            store.refresh()
+            if store.load_sample() is None:
+                return JSONResponse(dict(sample=False, file=store.file_progress()))
+            result = dict(sample=True, file=store.file_progress())
+            for role in ("example", "test"):
+                counts = dict(pairs_done=0, pairs_total=0, units_done=0, units_total=0)
+                for app in store.filter_units(sample=role):
+                    pairs = store.work_pairs(app)
+                    counts["pairs_done"] += sum(store.is_classified(pair) for pair in pairs)
+                    counts["pairs_total"] += len(pairs)
+                    counts["units_done"] += store.status(app) in ("classified", "nothing_to_classify")
+                    counts["units_total"] += 1
+                result[role] = counts
+            return JSONResponse(result)
+
     def unit(request:Request):
         try:
             with store.lock:
@@ -355,12 +373,33 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None, compact_thr
         except AnnotationError as error:
             return error_response(error)
 
-    def write_response(unit_id:str, pairs:list[tuple[str, str]]) -> JSONResponse:
+    def write_payload(unit_id:str, pairs:list[tuple[str, str]]) -> dict:
         with store.lock:
             app = store.get_app(unit_id)
             role = store.sample_role(str(app))
             payload = [pair_payload(app, store.get_pair(app, active, passive), role) for active, passive in pairs]
-            return JSONResponse(dict(pairs=payload, progress=progress(app), status=store.status(app)))
+            return dict(pairs=payload, progress=progress(app), status=store.status(app))
+
+    def write_response(unit_id:str, pairs:list[tuple[str, str]]) -> JSONResponse:
+        return JSONResponse(write_payload(unit_id, pairs))
+
+    async def save_suggestions(request:Request):
+        data = await request.json()
+
+        def run():
+            try:
+                unit_id = data.get("unit_id", "")
+                pairs = parse_pairs(data) if data.get("pairs") else []
+                result = store.save_suggestions(unit_id, pairs, data.get("kind", ""))
+                return JSONResponse(dict(
+                    write_payload(unit_id, result.written),
+                    written=result.written,
+                    skipped=[item.model_dump() for item in result.skipped],
+                ))
+            except AnnotationError as error:
+                return error_response(error)
+
+        return await run_in_threadpool(run)
 
     async def label(request:Request):
         return await run_in_threadpool(label_sync, await request.json())
@@ -523,10 +562,12 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None, compact_thr
         Route("/", index),
         Route("/api/config", config),
         Route("/api/queue", queue),
+        Route("/api/sample-progress", sample_progress),
         Route("/api/version", version),
         Route("/api/unit/{unit_id:path}", unit),
         Route("/api/label", label, methods=["POST"]),
         Route("/api/certainty", certainty, methods=["POST"]),
+        Route("/api/save-suggestions", save_suggestions, methods=["POST"]),
         Route("/api/viewing", viewing, methods=["POST"]),
         Route("/api/profile", edit_profile, methods=["POST"]),
         Route("/api/categories", categories),

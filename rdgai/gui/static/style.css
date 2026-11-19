@@ -735,3 +735,19 @@ main.wide #view-unit:not([hidden]) { grid-template-columns: minmax(0, 1fr) minma
 }
 /* room between the ✓ and the pair's ids */
 .pair-nav-item { gap: 9px; }
+
+/* "Save all suggestions" / "Save all reasons": a quiet line above the pairs, only when the unit has suggestions */
+.suggestion-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: 13px; color: var(--muted); margin: 4px 0 10px; }
+.suggestion-bar button { font-size: 12px; padding: 3px 10px; }
+.suggestion-bar button:disabled { opacity: 0.45; cursor: default; }
+
+/* the sample's progress in the sidebar: a bar per role, with labelled pairs out of all and the percentage */
+.sample-progress { display: grid; gap: 10px; margin: 2px 0 12px; }
+.sample-progress-head { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; font-weight: 600; }
+.sample-progress-percent { font-variant-numeric: tabular-nums; }
+.sample-progress-bar { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; margin: 4px 0 3px; }
+.sample-progress-fill { height: 100%; background: var(--brand); border-radius: 4px; transition: width 0.3s ease; }
+.sample-progress-row.test .sample-progress-fill { background: #2e6fbf; }
+.sample-progress-counts { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.sample-progress-row.all { border-top: 1px solid var(--line); padding-top: 8px; }
+.sample-progress-row.all .sample-progress-fill { background: var(--fg); }

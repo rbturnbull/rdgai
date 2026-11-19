@@ -307,3 +307,45 @@ export function categoryTitle(button) {
   const inverse = button.inverse && button.inverse !== button.name ? ` · inverse: ${button.inverse}` : "";
   return `${button.name}${key}${inverse}`;
 }
+
+// How many pairs "Save all suggestions" and "Save all reasons" would save (the server applies the same rules):
+// labels: unlabelled pairs (not by rule) whose suggestions agree on a category;
+// reasons: the annotator's labels without a reason, with a suggested reason for the same category.
+export function suggestionCounts(pairs) {
+  let labels = 0, reasons = 0;
+  for (const pair of pairs) {
+    if (pair.rule || pair.source === "rule") continue;
+    const suggestions = pair.suggestions || [];
+    if (!pair.category) {
+      if (suggestions.length && new Set(suggestions.map((s) => s.category)).size === 1) labels += 1;
+    } else if (pair.source === "human" && !pair.reason
+               && suggestions.some((s) => s.category === pair.category && s.justification)) {
+      reasons += 1;
+    }
+  }
+  return { labels, reasons };
+}
+
+// The progress bars in the sidebar: the sample roles the "Units" filter selects (none for all units, or without a
+// sample), then the whole file ("All pairs"). Each: "Example pairs (181/576)", the percentage to one decimal place,
+// and "Example units 12/100 (12.0%)".
+export function sampleProgressRows(progress, sampleFilter) {
+  if (!progress) return [];
+  const roles = progress.sample
+    ? ({ sampled: ["example", "test"], example: ["example"], test: ["test"] }[sampleFilter] || []).filter((role) => progress[role])
+    : [];
+  const percentOf = (done, total) => (total ? Math.round((done / total) * 1000) / 10 : 100);
+  const row = (role, name, counts) => {
+    const percent = percentOf(counts.pairs_done, counts.pairs_total);
+    return {
+      role,
+      heading: `${name} pairs (${counts.pairs_done}/${counts.pairs_total})`,
+      percent,
+      percentText: `${percent.toFixed(1)}%`,
+      units: `${name} units ${counts.units_done}/${counts.units_total} (${percentOf(counts.units_done, counts.units_total).toFixed(1)}%)`,
+    };
+  };
+  const rows = roles.map((role) => row(role, role === "example" ? "Example" : "Test", progress[role]));
+  if (progress.file) rows.push(row("all", "All", progress.file));
+  return rows;
+}

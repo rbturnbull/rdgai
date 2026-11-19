@@ -581,7 +581,8 @@ class Doc():
     reading_notes: bool = True
     
     def __post_init__(self):
-        self.tree = read_tei(self.path)
+        if self.tree is None:   # a tree may be given already parsed (e.g. from bytes read with the file's identity)
+            self.tree = read_tei(self.path)
         self.relation_types = self.get_relation_types()
 
         for app_element in find_elements(self.tree, ".//app"):

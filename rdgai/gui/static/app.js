@@ -1,6 +1,6 @@
 // The rdgai annotation GUI. Talks to the JSON API in rdgai/gui/__init__.py; pure logic lives in logic.js.
 import { keyAction, categoryClick, targetPairs, pairKey, labelRequest, certaintyRequest, visiblePairs, progressText, ruleText, refreshAction, justificationSource,
-  isCompact, groupByFirst, sameSuggestion, sameChange, parseRoute, routeHash, QUEUE_FILTERS, pageInfo, expectedFor, diffWords, markedParts, showsOverview, headerUser, changeParts, countOf, canUseReason, usableReason, pairNavItems, nextToDo, categoryTitle } from "./logic.js";
+  isCompact, groupByFirst, sameSuggestion, sameChange, parseRoute, routeHash, QUEUE_FILTERS, pageInfo, expectedFor, diffWords, markedParts, showsOverview, headerUser, changeParts, countOf, canUseReason, usableReason, pairNavItems, nextToDo, categoryTitle, suggestionCounts, sampleProgressRows } from "./logic.js";
 
 const state = {
   config: null,
@@ -291,6 +291,8 @@ function render() {
     delete $("readings").dataset.unit;
   }
   renderBulkBar();
+  renderSuggestionBar();
+  loadSampleProgress();
   renderPairs(unit);
   renderPairNav(unit);
 }
@@ -436,6 +438,86 @@ function renderBulkBar() {
     `${countOf(state.ticked.size, "pair")} selected: categories and certainty apply to ${state.ticked.size === 1 ? "it" : "all of them"}. `,
     el("button", { type: "button", onclick: () => { state.ticked.clear(); render(); } }, "Clear selection"),
   );
+}
+
+// The sample's progress in the sidebar, under the "Units" filter: one bar per role it selects.
+let sampleProgressLoad = 0;
+async function loadSampleProgress() {
+  const load = ++sampleProgressLoad;
+  try {
+    const progress = await api("/api/sample-progress");
+    if (load === sampleProgressLoad) renderSampleProgress(progress);
+  } catch {
+    // leave the bars as they are; they are refreshed with the next unit
+  }
+}
+
+function renderSampleProgress(progress) {
+  const box = $("sample-progress");
+  const rows = sampleProgressRows(progress, state.filters.sample || $("queue-sample").value);
+  box.hidden = rows.length === 0;
+  box.replaceChildren(...rows.map((row) => el("div", { class: `sample-progress-row ${row.role}` },
+    el("div", { class: "sample-progress-head" },
+      el("span", { class: "sample-progress-label" }, row.heading),
+      el("span", { class: "sample-progress-percent" }, row.percentText)),
+    el("div", { class: "sample-progress-bar", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100", "aria-valuenow": String(row.percent), "aria-label": row.heading },
+      el("div", { class: "sample-progress-fill", style: { width: `${Math.min(row.percent, 100)}%` } })),
+    el("div", { class: "sample-progress-counts" }, row.units))));
+}
+
+// "Save all suggestions" and "Save all reasons" for the unit on screen. Built once and updated in place, so a redraw
+// never replaces a button mid-click.
+function renderSuggestionBar() {
+  const bar = $("suggestion-bar");
+  const pairs = visible();
+  const hasSuggestions = pairs.some((pair) => pair.suggestions.length);
+  // always there (greyed out when there is nothing to save), so the buttons can be found
+  bar.hidden = state.config.read_only;
+  if (bar.hidden) return;
+  if (!bar.querySelector(".save-labels")) {
+    bar.replaceChildren(
+      el("span", { class: "suggestion-bar-label" }),
+      el("button", { type: "button", class: "save-labels", onclick: () => saveSuggestions("labels") }),
+      el("button", { type: "button", class: "save-reasons", onclick: () => saveSuggestions("reasons") }),
+    );
+  }
+  const counts = suggestionCounts(pairs);
+  bar.querySelector(".suggestion-bar-label").textContent = hasSuggestions
+    ? "Suggestions in this unit:"
+    : state.unit.sample_role === "test" ? "Suggestions are hidden on test units:" : "No suggestions in this unit yet:";
+  setButton(bar.querySelector(".save-labels"), {
+    text: `Save all suggestions (${counts.labels})`, disabled: counts.labels === 0,
+    title: "Label every unlabelled pair whose suggestions agree, with the suggested category, reason and certainty. Labelled pairs are left as they are.",
+  });
+  setButton(bar.querySelector(".save-reasons"), {
+    text: `Save all reasons (${counts.reasons})`, disabled: counts.reasons === 0,
+    title: "Give each pair you labelled without a reason the reason of a suggestion for the same category. Your own reasons are kept.",
+  });
+}
+
+async function saveSuggestions(kind) {
+  const unit = state.unit;
+  if (!unit) return;
+  const counts = suggestionCounts(visible());
+  const count = kind === "labels" ? counts.labels : counts.reasons;
+  if (!count) return;
+  const question = kind === "labels"
+    ? `Save the suggested category for ${countOf(count, "pair")} in ${unit.id}?`
+    : `Save the suggested reason for ${countOf(count, "pair")} in ${unit.id}?`;
+  if (!window.confirm(question)) return;
+  try {
+    const pairs = visible().filter((pair) => !pair.rule).map((pair) => [pair.first, pair.second]);
+    const result = await api("/api/save-suggestions", { unit_id: unit.id, kind, pairs });
+    if (state.unit?.id === unit.id) {
+      applyWrite(result);
+      render();
+    }
+    await reloadUnit();
+    const what = kind === "labels" ? "suggested label" : "suggested reason";
+    showStatus(`Saved ${countOf(result.written.length, what)}`);
+  } catch (error) {
+    showStatus(error.message, true);
+  }
 }
 
 function formatWhen(when) {
