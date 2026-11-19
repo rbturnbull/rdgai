@@ -291,7 +291,6 @@ function render() {
     delete $("readings").dataset.unit;
   }
   renderBulkBar();
-  renderSuggestionBar();
   loadSampleProgress();
   renderPairs(unit);
   renderPairNav(unit);
@@ -310,6 +309,15 @@ function renderPairNav(unit) {
           button("unit-prev", () => goToUnit(state.unit?.prev)),
           button("unit-next", () => goToUnit(state.unit?.next))),
         button("next-to-do", () => goToUnit(state.unit && nextToDo(state.unit).target))),
+      el("div", { class: "rail-section rail-suggestions" },
+        el("div", { class: "rail-heading" }, "Suggestions"),
+        el("div", { class: "rail-note" }),
+        button("save-labels", () => saveSuggestions("labels")),
+        button("save-reasons", () => saveSuggestions("reasons"))),
+      el("div", { class: "rail-section rail-select" },
+        el("div", { class: "rail-heading", title: "Select all pairs like the current one, to label them together" }, "Select pairs like this one"),
+        button("select-same-suggestion", (event) => selectKeys(event.currentTarget.dataset.tickKeys)),
+        button("select-same-change", (event) => selectKeys(event.currentTarget.dataset.tickKeys))),
       el("div", { class: "pair-nav-progress" }),
       el("ol", { class: "pair-nav-list" }),
     );
@@ -326,6 +334,8 @@ function renderPairNav(unit) {
   if (todo.target) next.dataset.target = todo.target;
   else delete next.dataset.target;
   rail.querySelector(".pair-nav-progress").textContent = progressText(unit.progress);
+  updateRailSuggestions();
+  updateRailSelect();
 
   const items = pairNavItems(visible(), state.focused);
   const list = rail.querySelector(".pair-nav-list");
@@ -465,31 +475,22 @@ function renderSampleProgress(progress) {
     el("div", { class: "sample-progress-counts" }, row.units))));
 }
 
-// "Save all suggestions" and "Save all reasons" for the unit on screen. Built once and updated in place, so a redraw
-// never replaces a button mid-click.
-function renderSuggestionBar() {
-  const bar = $("suggestion-bar");
+// The rail's "Suggestions" section: "Save all suggestions" and "Save all reasons" for the unit on screen. Always there
+// (greyed out when there is nothing to save), so the buttons can be found; updated in place, never rebuilt mid-click.
+function updateRailSuggestions() {
+  const section = $("pair-nav").querySelector(".rail-suggestions");
+  if (!section || !state.unit) return;
+  section.hidden = state.config.read_only;
   const pairs = visible();
   const hasSuggestions = pairs.some((pair) => pair.suggestions.length);
-  // always there (greyed out when there is nothing to save), so the buttons can be found
-  bar.hidden = state.config.read_only;
-  if (bar.hidden) return;
-  if (!bar.querySelector(".save-labels")) {
-    bar.replaceChildren(
-      el("span", { class: "suggestion-bar-label" }),
-      el("button", { type: "button", class: "save-labels", onclick: () => saveSuggestions("labels") }),
-      el("button", { type: "button", class: "save-reasons", onclick: () => saveSuggestions("reasons") }),
-    );
-  }
   const counts = suggestionCounts(pairs);
-  bar.querySelector(".suggestion-bar-label").textContent = hasSuggestions
-    ? "Suggestions in this unit:"
-    : state.unit.sample_role === "test" ? "Suggestions are hidden on test units:" : "No suggestions in this unit yet:";
-  setButton(bar.querySelector(".save-labels"), {
+  section.querySelector(".rail-note").textContent = hasSuggestions ? ""
+    : state.unit.sample_role === "test" ? "Hidden on test units" : "No suggestions in this unit yet";
+  setButton(section.querySelector(".save-labels"), {
     text: `Save all suggestions (${counts.labels})`, disabled: counts.labels === 0,
     title: "Label every unlabelled pair whose suggestions agree, with the suggested category, reason and certainty. Labelled pairs are left as they are.",
   });
-  setButton(bar.querySelector(".save-reasons"), {
+  setButton(section.querySelector(".save-reasons"), {
     text: `Save all reasons (${counts.reasons})`, disabled: counts.reasons === 0,
     title: "Give each pair you labelled without a reason the reason of a suggestion for the same category. Your own reasons are kept.",
   });
@@ -582,33 +583,36 @@ function pairViews(unit, pairs, offset) {
   ));
 }
 
-function compactTools() {
-  const box = el("div", { id: "compact-tools", class: "compact-tools" });
-  updateCompactTools(box);
-  return box;
-}
-
-function updateCompactTools(box = document.getElementById("compact-tools")) {
-  if (!box || !state.unit) return;
+// The rail's "Select pairs like this one" section (compact units): select all pairs with the same suggestion or the
+// same change as the current pair. Updated in place as the current pair changes.
+function updateRailSelect() {
+  const section = $("pair-nav").querySelector(".rail-select");
+  if (!section || !state.unit) return;
+  section.hidden = !compactMode() || state.config.read_only;
+  if (section.hidden) return;
   const pairs = visible();
   const focused = pairs[state.focused];
   const bySuggestion = focused ? sameSuggestion(pairs, focused) : [];
   const byChange = focused ? sameChange(pairs, focused) : [];
-  box.replaceChildren(
-    el("span", { class: "muted" }, "Select all pairs like the focused one: "),
-    el("button", { type: "button", disabled: !bySuggestion.length, "data-tick-keys": bySuggestion.join(" "),
-      title: focused?.suggestions[0] ? `Suggested ${focused.suggestions[0].category}` : "The focused pair has no suggestion" },
-      `same suggestion (${bySuggestion.length})`),
-    el("button", { type: "button", disabled: !byChange.length, "data-tick-keys": byChange.join(" "),
-      title: focused?.change?.text || "" }, `same change (${byChange.length})`),
-    el("span", { class: "muted" }, " · ▸ (or Enter, e) expands a row"),
-  );
+  const same = section.querySelector(".select-same-suggestion");
+  setButton(same, { text: `Same suggestion (${bySuggestion.length})`, disabled: !bySuggestion.length,
+    title: focused?.suggestions[0] ? `Select the pairs also suggested ${focused.suggestions[0].category}` : "The current pair has no suggestion" });
+  same.dataset.tickKeys = bySuggestion.join(" ");
+  const change = section.querySelector(".select-same-change");
+  setButton(change, { text: `Same change (${byChange.length})`, disabled: !byChange.length,
+    title: focused?.change?.text ? `Select the pairs where also: ${focused.change.text}` : "" });
+  change.dataset.tickKeys = byChange.join(" ");
+}
+
+function selectKeys(keys) {
+  state.ticked = new Set((keys || "").split(" ").filter(Boolean));
+  render();
 }
 
 function renderPairs(unit) {
   $("main").classList.toggle("wide", compactMode());
   const rulePairs = unit.rule_pairs || [];
-  const children = compactMode() ? [compactTools()] : [];
+  const children = [];
   if (state.showTranslation && unit.pairs.length && !Object.keys(unit.translations || {}).length) {
     const request = "Translate the verse I'm on.";
     children.unshift(el("div", { class: "translation-hint" },
@@ -1209,7 +1213,7 @@ function moveFocus(delta, { scroll = true } = {}) {
   }
   if (scroll) document.querySelector(`.pair[data-index="${state.focused}"]`)?.scrollIntoView({ block: "nearest" });
   updatePairNav();
-  updateCompactTools();
+  updateRailSelect();
 }
 
 function toggleTick(key) {

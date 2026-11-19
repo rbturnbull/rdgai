@@ -246,8 +246,6 @@ main { max-width: 1200px; margin: 0 auto; padding: 12px 16px 80px; }
 .warning { margin-top: 6px; font-size: 13px; color: var(--error); }
 
 /* compact mode */
-.compact-tools { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 13px; padding: 4px 0 2px; }
-.compact-tools button { font-size: 12px; padding: 2px 8px; }
 .group { display: flex; flex-direction: column; gap: 4px; }
 .group-head { font-size: 13px; font-weight: 600; margin: 10px 0 2px; font-family: var(--text-font); }
 main.wide { max-width: 1500px; }
@@ -736,10 +734,6 @@ main.wide #view-unit:not([hidden]) { grid-template-columns: minmax(0, 1fr) minma
 /* room between the ✓ and the pair's ids */
 .pair-nav-item { gap: 9px; }
 
-/* "Save all suggestions" / "Save all reasons": a quiet line above the pairs, only when the unit has suggestions */
-.suggestion-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: 13px; color: var(--muted); margin: 4px 0 10px; }
-.suggestion-bar button { font-size: 12px; padding: 3px 10px; }
-.suggestion-bar button:disabled { opacity: 0.45; cursor: default; }
 
 /* the sample's progress in the sidebar: a bar per role, with labelled pairs out of all and the percentage */
 .sample-progress { display: grid; gap: 10px; margin: 2px 0 12px; }
@@ -751,3 +745,15 @@ main.wide #view-unit:not([hidden]) { grid-template-columns: minmax(0, 1fr) minma
 .sample-progress-counts { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .sample-progress-row.all { border-top: 1px solid var(--line); padding-top: 8px; }
 .sample-progress-row.all .sample-progress-fill { background: var(--fg); }
+
+/* the rail's sections: suggestions, and (compact units) selecting pairs like the current one */
+.rail-section { display: grid; gap: 4px; padding: 0 0 10px; margin-bottom: 8px; border-bottom: 1px solid var(--line); }
+.rail-heading { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); padding: 0 2px; }
+.rail-note { font-size: 11px; color: var(--muted); padding: 0 2px; }
+.rail-note:empty { display: none; }
+.rail-section button { font-size: 12px; padding: 4px 6px; text-align: left; line-height: 1.25; }
+.rail-section button:disabled { opacity: 0.45; cursor: default; }
+@media (max-width: 1100px) {
+  .pair-nav .rail-section { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; border-bottom: none; padding: 0; margin: 0; }
+  .pair-nav .rail-section[hidden] { display: none; }
+}

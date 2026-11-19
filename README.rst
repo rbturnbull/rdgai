@@ -334,15 +334,15 @@ Then open ``http://127.0.0.1:8765/``. If the port is in use, the MCP server stil
   label it is saved straight away; otherwise it is saved with the category you choose next. Saved unchanged,
   it is recorded as the suggester's wording (``<desc type="justification" resp="#claude">``). A reason written for
   the other direction (b → a) is copied as "Written for b → a: …".
-- Two buttons above the pairs act on all of a unit's suggestions at once (greyed out when there are none) (after a confirmation, with
+- Two buttons in the rail's "Suggestions" section act on all of a unit's suggestions at once (greyed out when there are none) (after a confirmation, with
   one save). "Save all suggestions" labels every unlabelled pair whose suggestions agree, with the suggested
   category, reason and certainty (high if none). "Save all reasons" gives each pair you labelled without a reason
   the reason of a suggestion for the same category. Labels and reasons already there are never replaced, pairs
   labelled by rule or by the pipeline are left alone, and nothing is saved on the sample's test units.
 - Units with more than 10 pairs (``--compact-threshold``) are shown as compact rows grouped by the first reading,
   with short buttons in the same order and with the same keys. The triangle at a row's top left (or Enter or ``e``)
-  expands it into one box with the reading cards, verse, translation, certainty and reason; "same suggestion" and
-  "same change" select every pair like the focused one.
+  expands it into one box with the reading cards, verse, translation, certainty and reason; "Same suggestion" and
+  "Same change", in the rail's "Select pairs like this one" section, select every pair like the current one.
 - If two ``serve-mcp`` processes serve the same file (Claude Desktop sometimes starts two), only one gets the GUI port;
   the other logs this, keeps serving MCP, and takes the port over if it is freed (``--gui-retry-seconds``).
   Every write reloads the file under a lock first, so neither process overwrites the other's work.

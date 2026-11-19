@@ -551,10 +551,11 @@ def test_save_all_suggestions_and_reasons_buttons(gui):
         async with websockets.connect(ws_url, max_size=None) as ws:
             page = Page(ws)
             await page.send("Page.navigate", url=f"{base}/#/unit/{REASON_UNIT}?sample=all")
-            labels, reasons = "document.querySelector('#suggestion-bar .save-labels')", "document.querySelector('#suggestion-bar .save-reasons')"
-            await page.wait_until(f"!!{labels} && !document.getElementById('suggestion-bar').hidden")
+            labels, reasons = "document.querySelector('#pair-nav .save-labels')", "document.querySelector('#pair-nav .save-reasons')"
+            await page.wait_until(f"!!{labels} && {labels}.getClientRects().length > 0")
             assert await page.eval(f"{labels}.textContent") == "Save all suggestions (2)"
             assert await page.eval(f"{reasons}.textContent") == "Save all reasons (1)"
+            assert await page.eval("!document.getElementById('suggestion-bar')")   # no longer above the pairs
             await page.eval("window.confirm = () => true")
 
             await page.eval(f"{labels}.click()")
@@ -577,11 +578,11 @@ def test_suggestion_buttons_always_shown(gui):
         async with websockets.connect(ws_url, max_size=None) as ws:
             page = Page(ws)
             await page.send("Page.navigate", url=f"{base}/#/unit/{REASON_UNIT}?sample=all")
-            await page.wait_until("!!document.querySelector('#suggestion-bar .save-labels')")
-            assert not await page.eval("document.getElementById('suggestion-bar').hidden")
-            assert await page.eval("document.querySelector('#suggestion-bar .save-labels').disabled")
-            assert await page.eval("document.querySelector('#suggestion-bar .save-reasons').disabled")
-            assert "no suggestions" in (await page.eval("document.getElementById('suggestion-bar').textContent")).lower()
+            await page.wait_until("!!document.querySelector('#pair-nav .save-labels')")
+            assert await page.eval("document.querySelector('#pair-nav .save-labels').getClientRects().length > 0")
+            assert await page.eval("document.querySelector('#pair-nav .save-labels').disabled")
+            assert await page.eval("document.querySelector('#pair-nav .save-reasons').disabled")
+            assert "no suggestions" in (await page.eval("document.querySelector('#pair-nav .rail-suggestions').textContent")).lower()
 
     asyncio.run(run())
 
@@ -614,5 +615,45 @@ def test_sample_progress_bars(gui):
             # all units in the file: only the whole file's bar
             await page.send("Page.navigate", url=f"{base}/#/unit/{first_example}?sample=all")
             await page.wait_until(f"{rows}.length === 1 && {rows}[0].classList.contains('all')")
+
+    asyncio.run(run())
+
+
+def test_select_like_this_pair_in_the_rail(gui):
+    """
+    In a compact unit, "same suggestion" and "same change" (select all pairs like the current one) are in the rail,
+    not above the pairs; "same change" selects the pairs, and the selection bar appears.
+    """
+    base, ws_url = gui
+    compact = "Mark.1.1.12-16"
+
+    async def run():
+        async with websockets.connect(ws_url, max_size=None) as ws:
+            page = Page(ws)
+            await page.send("Page.navigate", url=f"{base}/#/unit/{compact}?sample=all")
+            await page.wait_until("document.querySelectorAll('.pair.compact').length > 0")
+            same = "document.querySelector('#pair-nav .select-same-change')"
+            await page.wait_until(f"!!{same} && {same}.getClientRects().length > 0")
+            assert await page.eval("!document.getElementById('compact-tools')")
+            assert await page.eval("!!document.querySelector('#pair-nav .select-same-suggestion')")
+            count = int((await page.eval(f"{same}.textContent")).split("(")[1].rstrip(")"))
+            assert count >= 1
+            await page.eval(f"{same}.click()")
+            await page.wait_until("!document.getElementById('bulk-bar').hidden")
+            assert await page.eval("document.querySelectorAll('#pairs .pair.ticked').length") == count
+
+    asyncio.run(run())
+
+
+def test_select_like_this_pair_not_shown_on_full_units(gui):
+    """ Units shown as full panels have no selection tools (as before): the rail's section is hidden. """
+    base, ws_url = gui
+
+    async def run():
+        async with websockets.connect(ws_url, max_size=None) as ws:
+            page = Page(ws)
+            await page.send("Page.navigate", url=f"{base}/#/unit/{REASON_UNIT}?sample=all")
+            await page.wait_until("document.querySelectorAll('#pairs .pair.full').length > 0 && !!document.querySelector('#pair-nav .unit-nav')")
+            assert await page.eval("!document.querySelector('#pair-nav .rail-select') || document.querySelector('#pair-nav .rail-select').hidden")
 
     asyncio.run(run())
