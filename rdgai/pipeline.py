@@ -315,20 +315,31 @@ def model_name(model) -> str:
 
 
 def price(model, usage) -> float|None:
-    """ The cost in USD of the usage on this model, if its price is known. """
+    """
+    The cost in USD of the usage on this model, if its price is known.
+
+    Some models are priced by prompt length per request (e.g. Haiku 5.5 bills a request whose prompt exceeds 100,000
+    tokens at 5x), but usage is summed over a run. So the totals are spread evenly over usage["requests"] (one request
+    if not given) and the price of one such request is multiplied back up; for flat-priced models this changes nothing.
+    """
     from genai_prices import Usage, calc_price
     name = model_name(model)
     provider, _, ref = name.partition(":") if ":" in name else ("", "", name)
+    requests = usage.get("requests", 1)
+    if requests == 0:
+        return 0.0
+    share = lambda key: usage.get(key, 0) / requests   # fractional tokens keep the totals exact
     try:
-        return float(calc_price(
+        one = calc_price(
             Usage(
-                input_tokens=usage.get("input_tokens", 0), output_tokens=usage.get("output_tokens", 0),
-                cache_read_tokens=usage.get("cache_read_tokens", 0), cache_write_tokens=usage.get("cache_write_tokens", 0),
+                input_tokens=share("input_tokens"), output_tokens=share("output_tokens"),
+                cache_read_tokens=share("cache_read_tokens"), cache_write_tokens=share("cache_write_tokens"),
             ),
             model_ref=ref, provider_id=provider or None,
-        ).total_price)
+        ).total_price
     except Exception:
         return None
+    return float(one) * requests
 
 
 # ---------------------------------------------------------------------------
@@ -843,7 +854,8 @@ def estimate(store:AnnotationStore, model=DEFAULT_MODEL, unit_ids:list[str]|None
             input_tokens += int(2 * (instructions + prompt) + TOOL_TOKENS_PER_REQUEST)
             cache_read += int(2 * instructions)
             output_tokens += OUTPUT_TOKENS_PER_REQUEST + OUTPUT_TOKENS_PER_PAIR * len(chunk)
-    usage = dict(input_tokens=input_tokens, output_tokens=output_tokens, cache_read_tokens=cache_read, cache_write_tokens=0)
+    # each request is two model turns, priced separately (the price can depend on a turn's prompt length)
+    usage = dict(requests=2 * requests, input_tokens=input_tokens, output_tokens=output_tokens, cache_read_tokens=cache_read, cache_write_tokens=0)
     return Estimate(
         model=model_name(model), units=len(pending), pairs=pairs_total, requests=requests,
         input_tokens=input_tokens, cache_read_tokens=cache_read, output_tokens=output_tokens,

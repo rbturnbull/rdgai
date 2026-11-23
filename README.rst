@@ -124,6 +124,15 @@ accuracy, per-category precision, recall and F1 (categories with fewer than 10 t
 only), the confusion matrix, every test pair (correct or not) and the revisions made in review. The original file is
 not modified.
 
+To compare setups without touching the test units, cross-validate on the example units with ``--fold`` (1 to
+``--folds``, 5 by default); the folds are saved and reused. The draft model names a second category when it is unsure,
+and ``--expert-model`` sends just those pairs to a stronger model (``--expert-mode after``, the default) or lets the
+draft model ask it while it works (``--expert-mode tool``). ``--batch`` drafts through Message Batches at half price:
+
+.. code-block:: bash
+
+    rdgai evaluate apparatus.xml --output-dir cv/f1 --fold 1 --model anthropic:claude-haiku-5-5 --expert-model anthropic:claude-opus-5-5
+
 Classification
 ==================================
 
@@ -143,6 +152,16 @@ by rule instead). It is resumable: run it again to continue, and calibrate the e
 .. code-block:: bash
 
     rdgai draft apparatus.xml --model anthropic:claude-opus-5-5
+
+With an Anthropic model, ``--batch`` sends the requests through the Message Batches API at half the price, with results
+within hours rather than minutes (``rdgai estimate`` shows both prices). The batch's state is kept in
+``apparatus.batch-state.json``, so if the command is interrupted, running it again collects the submitted batch instead
+of paying again. For example, Opus labelled all 42,695 unlabelled pairs of the ECM's Mark (5,426 units) in about 84
+minutes for $131:
+
+.. code-block:: bash
+
+    rdgai draft apparatus.xml --model anthropic:claude-opus-5-5 --batch
 
 Then review the pipeline's labels one category at a time, applying the revisions (logged to ``apparatus.revisions.jsonl``):
 
@@ -204,6 +223,9 @@ The tools are:
   its inverse's ``@corresp`` and every classification that uses it; reciprocal categories are added and removed together; a category
   in use can only be removed by reassigning its classifications. These tools are not offered with ``--read-only`` or ``--lock-definitions``.
   ``get_definitions`` reports a hash of the definitions so that results can be tied to the exact definitions used.
+- ``set_category_constraints``: declares what a category requires of the computed change (``adds-only``, ``omits-only``,
+  ``keeps-word-count``, ``not-only-adds-or-omits``), or ``rules-only`` for a category only the subreading rules assign.
+  When the pipeline assigns a category whose constraint the change breaks, it asks the model once to reconsider.
 - ``draw_sample`` and ``get_sample``: a reproducible random sample of units, split into example and test units, and progress in annotating it.
 
 To draw a sample of 200 units, half of them held out for testing:
