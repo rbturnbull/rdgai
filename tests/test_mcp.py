@@ -358,7 +358,7 @@ def test_tool_list(store):
     assert list_tool_names(build_server(store)) == [
         "get_definitions", "list_units", "get_unit", "category_counts", "list_category", "get_sample", "get_suggestions",
         "search_similar",
-        "update_category", "add_category", "remove_category", "update_guidance",
+        "update_category", "add_category", "remove_category", "update_guidance", "update_classifier_instructions", "set_category_constraints",
         "draw_sample", "apply_rules", "get_current_unit", "list_untranslated", "set_translations", "suggest_classification", "set_classification", "clear_classification",
     ]
 

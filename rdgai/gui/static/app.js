@@ -750,6 +750,18 @@ function renderDefinitions() {
         config.guidance ? el("pre", {}, config.guidance) : el("p", { class: "muted" }, "No guidance."),
         editable ? el("button", { type: "button", "data-edit": "guidance" }, "Edit guidance") : null);
 
+  const constraints = Object.entries(config.constraints || {}).map(([name, list]) => `${name}: ${list.join(", ")}`);
+  const classifier = editing.kind === "classifier"
+    ? el("form", { class: "definition-form", "data-form": "classifier" },
+        el("h3", {}, "Classifier instructions"),
+        el("textarea", { name: "instructions", rows: "10" }, config.classifier_instructions || ""),
+        formButtons("Save classifier instructions"))
+    : el("section", {},
+        el("h3", {}, "Classifier instructions", el("span", { class: "muted" }, " (for the pipeline)")),
+        config.classifier_instructions ? el("pre", {}, config.classifier_instructions) : el("p", { class: "muted" }, "None."),
+        constraints.length ? el("p", { class: "muted" }, `Constraints: ${constraints.join("; ")}`) : null,
+        editable ? el("button", { type: "button", "data-edit": "classifier" }, "Edit classifier instructions") : null);
+
   const categories = config.buttons.map((button) => {
     if (editing.kind === "category" && editing.name === button.name) {
       return el("form", { class: "definition-form", "data-form": "category", "data-name": button.name },
@@ -789,7 +801,7 @@ function renderDefinitions() {
     el("h2", {}, "Definitions"),
     el("p", { class: "muted" }, `Version ${config.definitions_hash.slice(0, 8)} · ${config.direction_convention}`),
     ...[!editable ? el("p", { class: "muted" }, config.read_only ? "Read-only: the definitions cannot be edited." : "The definitions are locked on this server.") : null,
-      guidance, ...categories, add].filter(Boolean),
+      guidance, classifier, ...categories, add].filter(Boolean),
   );
 }
 
@@ -814,6 +826,7 @@ async function onDefinitionsSubmit(event) {
   const name = form.dataset.name;
   const requests = {
     guidance: () => api("/api/definitions/guidance", { guidance: values.guidance }),
+    classifier: () => api("/api/definitions/classifier", { instructions: values.instructions }),
     category: () => api("/api/definitions/category", {
       name, description: values.description, new_name: values.new_name.trim() !== name ? values.new_name.trim() : null,
     }),

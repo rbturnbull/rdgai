@@ -285,6 +285,8 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None, compact_thr
                 file=store.path.name,
                 language=definitions.language,
                 guidance=definitions.guidance,
+                classifier_instructions=definitions.classifier_instructions,
+                constraints=definitions.constraints,
                 direction_convention=definitions.direction_convention,
                 definitions_hash=definitions.definitions_hash,
                 buttons=[button.model_dump() for button in buttons],
@@ -553,6 +555,7 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None, compact_thr
     update_category = definitions_write(lambda data: store.update_category(
         data.get("name", ""), description=data.get("description"), new_name=data.get("new_name") or None))
     update_guidance = definitions_write(lambda data: store.update_guidance(data.get("guidance", "")))
+    update_classifier = definitions_write(lambda data: store.update_classifier_instructions(data.get("instructions", "")))
     add_category = definitions_write(lambda data: store.add_category(
         data.get("name", ""), data.get("description", ""),
         inverse_name=data.get("inverse_name") or None, inverse_description=data.get("inverse_description") or ""))
@@ -575,6 +578,7 @@ def create_app(store:AnnotationStore, group_by_prefix:str|None=None, compact_thr
         Route("/api/agreement", agreement),
         Route("/api/definitions/category", update_category, methods=["POST"]),
         Route("/api/definitions/guidance", update_guidance, methods=["POST"]),
+        Route("/api/definitions/classifier", update_classifier, methods=["POST"]),
         Route("/api/definitions/add", add_category, methods=["POST"]),
         Route("/api/definitions/remove", remove_category, methods=["POST"]),
         Mount("/static", StaticFiles(directory=STATIC), name="static"),

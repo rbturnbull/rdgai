@@ -23,6 +23,7 @@ from .apparatus import Doc, App, Pair, RelationType, tei_tag, unique, relation_p
 from .notes import resolve_references
 from .diff import describe_change, label_warning
 from . import search
+CLASSIFIER_GROUP_TYPE = "classifier"
 from .rules import SubreadingRule, Parents, Coverage, find_parents, coverage as rule_coverage, RULE_GROUP_TYPE, DEFAULT_SUFFIXES
 
 try:
@@ -101,7 +102,9 @@ class Definitions(BaseModel):
     guidance: str = Field(description="Guidance given in the XML comment before the category definitions (e.g. a decision order).")
     direction_convention: str
     categories: list[Category]
-    definitions_hash: str = Field(description="SHA-256 of the guidance and the categories (name, description, inverse).")
+    definitions_hash: str = Field(description="SHA-256 of the guidance and the categories (name, description, inverse), and of the classifier instructions and constraints if any.")
+    classifier_instructions: str = Field(default="", description="This file's instructions for the classification pipeline (editable; empty if none).")
+    constraints: dict[str, list[str]] = Field(default_factory=dict, description="Constraints that categories declare on the computed change (category -> names), checked by the pipeline.")
 
 
 class DefinitionsChange(BaseModel):
@@ -791,14 +794,18 @@ class AnnotationStore:
         ]
 
     def definitions_hash(self) -> str:
-        """ SHA-256 of the guidance and the categories (name, description, inverse) in the loaded document. """
-        canonical = json.dumps(
-            dict(
-                guidance=self.doc.get_definitions_comment(),
-                categories=[[category.name, category.description, category.inverse] for category in self.categories()],
-            ),
-            ensure_ascii=False,
+        """
+        SHA-256 of the guidance and the categories (name, description, inverse) in the loaded document, and of the
+        classifier instructions and constraints when there are any (so files without them keep their hash).
+        """
+        content = dict(
+            guidance=self.doc.get_definitions_comment(),
+            categories=[[category.name, category.description, category.inverse] for category in self.categories()],
         )
+        instructions, constraints = self.classifier_instructions(), self.category_constraints()
+        if instructions or constraints:
+            content["classifier"] = dict(instructions=instructions, constraints={name: constraints[name] for name in sorted(constraints)})
+        canonical = json.dumps(content, ensure_ascii=False)
         return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
     def definitions(self) -> Definitions:
@@ -810,6 +817,8 @@ class AnnotationStore:
                 direction_convention=DIRECTION_CONVENTION,
                 categories=self.categories(),
                 definitions_hash=self.definitions_hash(),
+                classifier_instructions=self.classifier_instructions(),
+                constraints=self.category_constraints(),
             )
 
     def filter_units(self, status:UnitStatus="all", verse:str="", sample:SampleFilter="all") -> list[App]:
@@ -1010,7 +1019,7 @@ class AnnotationStore:
         Returns the number of labels changed.
         """
         pointers = {f"#{old}": f"#{new}" for old, new in mapping.items()}
-        for rule_interp in self.rule_interps():
+        for rule_interp in self.rule_interps() + self.constraint_interps():
             if rule_interp.get("ana") in pointers:
                 rule_interp.set("ana", pointers[rule_interp.get("ana")])
         labels_changed = 0
@@ -1183,6 +1192,11 @@ class AnnotationStore:
             for removed_name in removed:
                 element = self.doc.relation_types[removed_name].element
                 element.getparent().remove(element)
+            if reassign_to is None:
+                for interp in self.constraint_interps():
+                    if interp.get("ana", "").lstrip("#") in removed:
+                        interp.getparent().remove(interp)
+                self.prune_classifier_group()
 
             message = f"Removed {removed_text}."
             if reassign_to is not None:
@@ -1243,9 +1257,11 @@ class AnnotationStore:
         passive:str,
         limit:int=10,
         sources:tuple[str, ...]|list[str]=("human", "pipeline"),
+        categories:list[str]|tuple[str, ...]|set[str]|None=None,
     ) -> list[SimilarPair]:
         """
-        Labelled pairs whose change resembles the change from active to passive in this unit, best first.
+        Labelled pairs whose change resembles the change from active to passive in this unit, best first, optionally
+        only those labelled with one of `categories`.
         Pipeline (tentative) labels count for less than human ones. The pair itself and its inverse are never
         returned, so a label cannot be evidence for itself.
         """
@@ -1260,6 +1276,8 @@ class AnnotationStore:
                 if score <= 0 or source not in sources:
                     continue
                 if candidate_app is app and {candidate.active.n, candidate.passive.n} == {active, passive}:
+                    continue
+                if categories is not None and self.current_category(candidate) not in categories:
                     continue
                 weighted = score * (self.TENTATIVE_WEIGHT if source == "pipeline" else 1.0)
                 scored.append((weighted, candidate_app, candidate, source))
@@ -1285,6 +1303,88 @@ class AnnotationStore:
                     score=round(score, 3),
                 ))
             return results
+
+    # -- classifier instructions and category constraints --------------------------------
+    #
+    # Stored next to the category definitions:
+    #   <interpGrp type="classifier">
+    #     <interp type="instructions">…text for the pipeline…</interp>
+    #     <interp type="constraint" ana="#SomeCategory">adds-only</interp>
+    #   </interpGrp>
+
+    def classifier_group(self, create:bool=False):
+        text = find_element(self.doc.tree, ".//text")
+        group = find_element(text, f".//interpGrp[@type='{CLASSIFIER_GROUP_TYPE}']") if text is not None else None
+        if group is None and create:
+            categories = self.doc.get_interpgrp()
+            group = ET.Element(tei_tag(categories, "interpGrp"), attrib={"type": CLASSIFIER_GROUP_TYPE})
+            anchor = self.rule_group() if self.rule_group() is not None else categories
+            anchor.addnext(group)
+        return group
+
+    def prune_classifier_group(self):
+        group = self.classifier_group()
+        if group is not None and not len(group):
+            group.getparent().remove(group)
+
+    def constraint_interps(self) -> list:
+        group = self.classifier_group()
+        return [interp for interp in find_elements(group, "./interp") if interp.get("type") == "constraint"] if group is not None else []
+
+    def classifier_instructions(self) -> str:
+        """ This file's instructions for the classification pipeline ('' if none). """
+        group = self.classifier_group()
+        if group is None:
+            return ""
+        interp = next((interp for interp in find_elements(group, "./interp") if interp.get("type") == "instructions"), None)
+        return extract_text(interp).strip() if interp is not None else ""
+
+    def category_constraints(self) -> dict[str, list[str]]:
+        """ The constraints categories declare on the computed change: {category: [constraint names]}. """
+        result = {}
+        for interp in self.constraint_interps():
+            name = interp.get("ana", "").lstrip("#")
+            names = (extract_text(interp) or "").split()
+            if name and names:
+                result.setdefault(name, []).extend(names)
+        return result
+
+    def update_classifier_instructions(self, instructions:str) -> DefinitionsChange:
+        """ Replaces this file's classifier instructions (an empty text removes them). """
+        with self.writing():
+            self.check_definitions_editable()
+            self.refresh()
+            instructions = (instructions or "").strip()
+            group = self.classifier_group(create=bool(instructions))
+            if group is not None:
+                for interp in [interp for interp in find_elements(group, "./interp") if interp.get("type") == "instructions"]:
+                    group.remove(interp)
+                if instructions:
+                    interp = ET.Element(tei_tag(group, "interp"), attrib={"type": "instructions"})
+                    interp.text = instructions
+                    group.insert(0, interp)
+                self.prune_classifier_group()
+            return self.commit_definitions("Updated the classifier instructions.")
+
+    def set_category_constraints(self, category:str, constraints:list[str]) -> DefinitionsChange:
+        """ Sets the constraints a category declares on the computed change (an empty list removes them). """
+        from .constraints import CONSTRAINTS
+        with self.writing():
+            self.check_definitions_editable()
+            self.refresh()
+            name = self.get_relation_type(category).name
+            unknown = [constraint for constraint in constraints if constraint not in CONSTRAINTS]
+            if unknown:
+                raise AnnotationError(f"Unknown constraint {', '.join(unknown)}: use {', '.join(CONSTRAINTS)}.")
+            for interp in self.constraint_interps():
+                if interp.get("ana", "").lstrip("#") == name:
+                    interp.getparent().remove(interp)
+            if constraints:
+                group = self.classifier_group(create=True)
+                interp = ET.SubElement(group, tei_tag(group, "interp"), attrib={"type": "constraint", "ana": f"#{name}"})
+                interp.text = " ".join(dict.fromkeys(constraints))
+            self.prune_classifier_group()
+            return self.commit_definitions(f"Set the constraints of '{name}' to {', '.join(constraints) or 'none'}.", changed=[name])
 
     # -- subreading rules ----------------------------------------------------------------
 

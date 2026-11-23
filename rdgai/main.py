@@ -50,6 +50,15 @@ def evaluate(
     concurrency:int=typer.Option(4, help="Units drafted at the same time."),
     effort:str=typer.Option(None, help="Effort level for Anthropic models."),
     ignore_types:list[str]=typer.Option(["defective"], "--ignore-type", help="Readings of this @type are not classified (repeatable)."),
+    fold:int=typer.Option(None, help="Cross-validation: evaluate this fold (1-based) of the example units instead of the test units. The test units are hidden entirely."),
+    folds:int=typer.Option(5, help="Cross-validation: number of folds."),
+    seed:int=typer.Option(0, help="Cross-validation: seed for splitting the example units into folds."),
+    folds_file:Path=typer.Option(None, help="Cross-validation: where the folds are saved and reused (default: <output-dir>/../folds.yaml)."),
+    expert_model:str=typer.Option(None, help="A stronger model for the pairs the draft model is unsure about (e.g. anthropic:claude-opus-5-5)."),
+    batch:bool=typer.Option(False, help="Draft through Anthropic Message Batches (half price; results within hours)."),
+    poll_interval:float=typer.Option(60.0, help="With --batch: seconds between checks on the batch."),
+    expert_mode:str=typer.Option("after", help="'after': escalate the uncertain pairs after the draft; 'tool': let the draft model ask the expert while it works."),
+    fold_pool:str=typer.Option("example", help="Cross-validation: 'example' (folds over the example units; the test units are hidden) or 'all' (folds over every sample unit, stratified by size)."),
 ):
     """
     Evaluates the pipeline on the sample's test units: runs it on a copy with the test units' labels removed, then
@@ -59,13 +68,24 @@ def evaluate(
     from .annotation import AnnotationError
     from .evaluate import evaluate as evaluate_fn
     try:
-        report = evaluate_fn(doc, model, output_dir, rounds=rounds, concurrency=concurrency, effort=effort, ignore_types=ignore_types)
+        report = evaluate_fn(doc, model, output_dir, rounds=rounds, concurrency=concurrency, effort=effort, ignore_types=ignore_types,
+                             fold=fold, folds=folds, seed=seed, folds_path=folds_file, pool=fold_pool, expert=expert_model, expert_mode=expert_mode, batch=batch, poll_interval=poll_interval)
     except AnnotationError as error:
         error_console.print(str(error))
         raise typer.Exit(code=1)
-    console.print(f"Draft: {report.draft.correct}/{report.draft.n} correct ({report.draft.accuracy:.1%}), macro F1 {report.draft.macro_f1:.1%}")
+    if report.fold is not None:
+        console.print(f"Fold {report.fold} of {report.folds} (seed {report.seed}): {report.test_units} held-out units, {len(report.hidden_units)} hidden test units.")
+    if report.cost is not None:
+        console.print(f"Cost: ${report.cost:.2f}")
+    if report.escalation:
+        escalation = report.escalation
+        console.print(f"Expert ({escalation['model']}, {escalation['mode']}): {escalation.get('flagged', 0)} uncertain pairs, "
+                      f"{escalation.get('changed', escalation.get('calls', 0))} {'changed' if escalation['mode'] == 'after' else 'questions'}, "
+                      f"${(escalation.get('cost') or 0):.2f}")
+    console.print(f"Draft: {report.draft.correct}/{report.draft.n} correct ({report.draft.accuracy:.1%}; per unit {report.draft.unit_accuracy:.1%}), macro F1 {report.draft.macro_f1:.1%}")
     if report.final:
-        console.print(f"After review: {report.final.correct}/{report.final.n} correct ({report.final.accuracy:.1%}), macro F1 {report.final.macro_f1:.1%}")
+        stage = "After escalation" if report.escalation.get("mode") == "after" else "After review"
+        console.print(f"{stage}: {report.final.correct}/{report.final.n} correct ({report.final.accuracy:.1%}), macro F1 {report.final.macro_f1:.1%}")
     for note in report.notes:
         console.print(note)
     console.print(f"Report: {Path(output_dir) / 'report.html'}")
@@ -332,6 +352,8 @@ def estimate(
         console.print("Cost: unknown for this model")
     else:
         console.print(f"Estimated cost: ${result.cost:,.2f} (rough: calibrate with a small run, e.g. rdgai draft --limit-units 20)")
+        if model.startswith("anthropic:"):
+            console.print(f"With --batch (Message Batches, half price): about ${result.cost / 2:,.2f}")
 
 
 @app.command()
@@ -344,6 +366,9 @@ def draft(
     effort:str=typer.Option(None, help="Effort level for Anthropic models (low, medium, high, xhigh, max)."),
     ignore_types:list[str]=typer.Option(["defective"], "--ignore-type", help="Readings of this @type are not classified (repeatable)."),
     sample_file:Path=typer.Option(None, help="Sidecar YAML file for the sample (default: <doc>.sample.yaml)."),
+    batch:bool=typer.Option(False, help="Send the requests as Anthropic Message Batches: half the price; results within hours (Anthropic models only)."),
+    poll_interval:float=typer.Option(60.0, help="With --batch: seconds between checks on the batch."),
+    state_file:Path=typer.Option(None, help="With --batch: where the batch state is kept, so an interrupted run resumes without paying again (default: <doc>.batch-state.json)."),
 ):
     """
     Draft pass: classifies the pairs still to classify (not those covered by subreading rules), unit by unit.
@@ -351,10 +376,16 @@ def draft(
     """
     from .pipeline import draft as draft_fn
     store = open_store(doc, ignore_types, sample_file)
-    report = draft_fn(
-        store, model, unit_ids=unit or None, limit_units=limit_units, concurrency=concurrency, effort=effort,
-        progress=lambda app: console.print(f"  {app}"),
-    )
+    if batch:
+        from .batch import draft_batch
+        report = draft_batch(store, model, unit_ids=unit or None, limit_units=limit_units, poll_interval=poll_interval,
+                             state_path=state_file or doc.with_name(f"{doc.stem}.batch-state.json"),
+                             progress=lambda message: console.print(f"  {message}"))
+    else:
+        report = draft_fn(
+            store, model, unit_ids=unit or None, limit_units=limit_units, concurrency=concurrency, effort=effort,
+            progress=lambda app: console.print(f"  {app}"),
+        )
     console.print(f"Run {report.run_id}: {report.pairs_written} pairs written in {report.units_done} units; {report.pairs_skipped} skipped (labelled meanwhile)")
     usage = report.usage
     console.print(f"{usage['requests']} requests, {usage['input_tokens']:,} input tokens ({usage['cache_read_tokens']:,} cached), {usage['output_tokens']:,} output tokens"

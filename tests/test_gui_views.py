@@ -344,3 +344,11 @@ def test_page_has_a_fixed_header(client):
 def test_config_gives_the_annotators_name(client):
     config = client.get("/api/config").json()
     assert (config["annotator"], config["annotator_name"]) == ("RT", "Test Annotator")
+
+
+def test_update_classifier_instructions(client):
+    response = client.post("/api/definitions/classifier", json={"instructions": "Decide each change once."})
+    assert response.status_code == 200
+    config = client.get("/api/config").json()
+    assert config["classifier_instructions"] == "Decide each change once."
+    assert config["constraints"] == {}

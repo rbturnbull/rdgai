@@ -154,3 +154,71 @@ def test_search_similar_through_mcp(labelled):
 def test_search_unknown_pair(labelled):
     result = call(build_server(labelled), "search_similar", unit_id="Mark.1.1.12-16", active="a", passive="z")
     assert result.is_error
+
+
+# ---------------------------------------------------------------------------
+# character n-grams: different forms of a word share terms
+# ---------------------------------------------------------------------------
+
+from rdgai import search as search_module
+
+
+def test_pair_terms_include_signed_character_ngrams():
+    terms = pair_terms("κραζον", "κραυγαζον", ngrams=(3,))
+    assert "+g:#κρ" in terms and "+g:κρα" in terms and "+g:ον#" in terms     # with word-boundary markers
+    assert "-g:κρα" in terms                                                  # removed words too, signed
+    assert "+κραυγαζον" in terms                                              # whole words are kept
+
+
+def test_ngrams_can_be_turned_off():
+    assert not any(term.startswith(("+g:", "-g:")) for term in pair_terms("κραζον", "κραυγαζον", ngrams=()))
+
+
+def test_forms_of_one_word_share_ngrams_but_not_whole_word_terms():
+    first = set(pair_terms("ο", "πρωτη", ngrams=(3, 4)))
+    second = set(pair_terms("ο", "πρωτου", ngrams=(3, 4)))
+    shared = first & second
+    assert "+g:πρω" in shared and "+πρωτη" not in shared
+
+
+def test_whole_word_matches_still_rank_first():
+    documents = [pair_terms("x", "πρωτη"), pair_terms("x", "πρωτου"), pair_terms("x", "και")]
+    scores = BM25(documents).scores(pair_terms("x", "πρωτη"))
+    assert scores[0] > scores[1] > scores[2]
+
+
+def test_ngram_weight_scales_their_contribution():
+    documents = [pair_terms("x", "πρωτου"), pair_terms("x", "και")]
+    query = pair_terms("x", "πρωτη")
+    light = BM25(documents, weights={"+g:": 0.1, "-g:": 0.1}).scores(query)[0]
+    heavy = BM25(documents, weights={"+g:": 1.0, "-g:": 1.0}).scores(query)[0]
+    assert 0 < light < heavy
+
+
+def test_store_index_uses_ngrams(labelled):
+    # κραζω-like sharing: a different form of the omitted word still finds the precedent
+    entries, _ = labelled.search_index()
+    assert any(term.startswith("-g:") for _, _, _, terms in entries for term in terms)
+    assert search_module.NGRAM_SIZES and search_module.NGRAM_WEIGHT > 0
+
+
+# ---------------------------------------------------------------------------
+# filtering by category
+# ---------------------------------------------------------------------------
+
+def test_search_similar_can_be_limited_to_categories(labelled):
+    results = labelled.search_similar("Mark.1.1.12-16", "a", "d", limit=100, categories=["Major_Omission", "Major_Addition"])
+    assert results and {result.category for result in results} <= {"Major_Omission", "Major_Addition"}
+
+
+def test_search_similar_categories_through_mcp(labelled):
+    data = call(build_server(labelled), "search_similar", unit_id="Mark.1.1.12-16", active="a", passive="d",
+                categories=["Major_Omission"]).structured_content
+    assert data["results"] and all(result["category"] == "Major_Omission" for result in data["results"])
+
+
+def test_ngram_settings_from_the_environment(monkeypatch):
+    from rdgai.search import settings_from_env
+    assert settings_from_env({"RDGAI_NGRAMS": "2,5", "RDGAI_NGRAM_WEIGHT": "0.5"}) == ((2, 5), 0.5)
+    assert settings_from_env({"RDGAI_NGRAMS": ""})[0] == ()
+    assert settings_from_env({}) == (search_module.DEFAULT_NGRAM_SIZES, search_module.DEFAULT_NGRAM_WEIGHT)

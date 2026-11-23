@@ -120,7 +120,7 @@ def test_draft_retries_an_incomplete_answer(store):
             pairs = pairs[:-1]  # forget one pair
         return ModelResponse(parts=[ToolCallPart(info.output_tools[0].name, decide(pairs))])
 
-    report = draft(store, FunctionModel(respond), toolsets=[], unit_ids=["Mark.1.2.8-14"])
+    report = draft(store, FunctionModel(respond), toolsets=[], unit_ids=["Mark.1.2.8-14"], structure_checks=False)
     assert len(attempts) == 2
     # the model is told exactly what was missing
     feedback = [str(part.content) for message in attempts[1] for part in message.parts if isinstance(part, (RetryPromptPart, ToolReturnPart))]
@@ -176,7 +176,7 @@ def test_draft_never_overwrites_a_label_made_meanwhile(store):
 
 def test_draft_splits_large_units(store):
     asked = []
-    report = draft(store, answering(log=asked), toolsets=[], unit_ids=["Mark.1.1.12-16"], max_pairs_per_request=6)
+    report = draft(store, answering(log=asked), toolsets=[], unit_ids=["Mark.1.1.12-16"], max_pairs_per_request=6, structure_checks=False)
     assert [len(pairs) for pairs in asked] == [6, 6, 3]
     assert report.pairs_written == 15
 
@@ -205,7 +205,7 @@ def test_draft_skips_rule_pairs(tmp_path):
 
 
 def test_draft_records_usage(store):
-    report = draft(store, answering(), toolsets=[], unit_ids=["Mark.1.1.10"])
+    report = draft(store, answering(), toolsets=[], unit_ids=["Mark.1.1.10"], structure_checks=False)
     assert report.usage["requests"] == 1
     assert report.usage["output_tokens"] > 0
 

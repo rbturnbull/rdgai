@@ -181,6 +181,7 @@ def build_server(store:AnnotationStore) -> MCPServer:
         passive: Annotated[str, Field(description="Id of the passive (second) reading.")],
         limit: Annotated[int, Field(ge=1, le=50)] = 10,
         include_pipeline: Annotated[bool, Field(description="Also return pipeline labels (tentative; weigh them much less than human labels).")] = True,
+        categories: Annotated[list[str] | None, Field(description="Only pairs labelled with one of these categories (e.g. to find the closest contrasting precedent).")] = None,
     ) -> SimilarResults:
         """
         Finds labelled pairs whose change resembles this pair's (what the second reading adds or omits, and the
@@ -190,6 +191,7 @@ def build_server(store:AnnotationStore) -> MCPServer:
         with tool_errors():
             results = store.search_similar(
                 unit_id, active, passive, limit=limit, sources=("human", "pipeline") if include_pipeline else ("human",),
+                categories=categories,
             )
             app = store.get_app(unit_id)
             pair = store.get_pair(app, active, passive)
@@ -248,6 +250,29 @@ def build_server(store:AnnotationStore) -> MCPServer:
             """
             with tool_errors():
                 return store.update_guidance(guidance)
+
+        @server.tool(annotations=write)
+        def update_classifier_instructions(
+            instructions: Annotated[str, Field(description="The full new classifier instructions for this file (empty to remove them). Replaces the old text.")],
+        ) -> DefinitionsChange:
+            """
+            Replaces this file's instructions for the classification pipeline (kept in the TEI next to the definitions;
+            shown with get_definitions). Only make changes the annotator has asked for.
+            """
+            with tool_errors():
+                return store.update_classifier_instructions(instructions)
+
+        @server.tool(annotations=write)
+        def set_category_constraints(
+            category: Annotated[str, Field(description="The category.")],
+            constraints: Annotated[list[str], Field(description="Constraint names (adds-only, omits-only, keeps-word-count, not-only-adds-or-omits; or rules-only for a category only the subreading rules assign); empty to remove.")],
+        ) -> DefinitionsChange:
+            """
+            Sets the constraints a category declares on the computed change between two readings; the pipeline asks the
+            model to reconsider a decision whose change breaks them. Only make changes the annotator has asked for.
+            """
+            with tool_errors():
+                return store.set_category_constraints(category, constraints)
 
     if not store.read_only and not store.evaluation:
         # not in evaluation mode: a new sample would change the test units, and rules would change their labels

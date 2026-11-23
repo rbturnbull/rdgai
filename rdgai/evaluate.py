@@ -7,8 +7,11 @@ drafts the test units, its predictions are recorded, the review rounds run and t
 and both are compared with the gold labels in the original file, which is never modified.
 """
 import json
+import random
 import shutil
 from pathlib import Path
+
+import yaml
 
 from pydantic import BaseModel, Field
 
@@ -49,11 +52,23 @@ class Metrics(BaseModel):
     macro_f1: float
     per_category: list[CategoryScore]
     confusion: Confusion
+    unit_accuracy: float = Field(default=0.0, description="The average over units of each unit's accuracy (every unit counts equally).")
+    accuracy_by_gold_cert: dict[str, float] = Field(default_factory=dict, description="Accuracy on the gold pairs of each certainty (high / medium / low / none).")
+    gold_cert_counts: dict[str, int] = Field(default_factory=dict)
 
 
-def metrics(gold:dict, predicted:dict, categories:list[str]) -> Metrics:
-    """ Accuracy, macro and per-category precision/recall/F1 and the confusion matrix over the gold pairs. """
+def metrics(gold:dict, predicted:dict, categories:list[str], gold_certs:dict|None=None) -> Metrics:
+    """
+    Accuracy (pair-weighted and unit-weighted), accuracy by the gold label's certainty, macro and per-category
+    precision/recall/F1 and the confusion matrix over the gold pairs. Keys are (unit_id, first, second).
+    """
     keys = list(gold)
+    by_unit = {}
+    for key in keys:
+        by_unit.setdefault(key[0] if isinstance(key, tuple) else key, []).append(predicted.get(key) == gold[key])
+    by_cert = {}
+    for key in keys:
+        by_cert.setdefault((gold_certs or {}).get(key) or "none", []).append(predicted.get(key) == gold[key])
     correct = sum(predicted.get(key) == gold[key] for key in keys)
     used = [category for category in categories if any(gold[key] == category or predicted.get(key) == category for key in keys)]
     rows = []
@@ -77,6 +92,9 @@ def metrics(gold:dict, predicted:dict, categories:list[str]) -> Metrics:
         macro_recall=sum(row.recall for row in scored) / count,
         macro_f1=sum(row.f1 for row in scored) / count,
         per_category=rows, confusion=Confusion(labels=labels, matrix=matrix),
+        unit_accuracy=sum(sum(hits) / len(hits) for hits in by_unit.values()) / len(by_unit) if by_unit else 0.0,
+        accuracy_by_gold_cert={cert: sum(hits) / len(hits) for cert, hits in by_cert.items()} if gold_certs is not None else {},
+        gold_cert_counts={cert: len(hits) for cert, hits in by_cert.items()} if gold_certs is not None else {},
     )
 
 
@@ -107,6 +125,19 @@ def gold_labels(store:AnnotationStore, unit_ids:list[str]) -> dict:
     return labels_in_display_direction(store, unit_ids, ("human",))
 
 
+def certainties(store:AnnotationStore, keys, sources:tuple[str, ...]) -> dict:
+    """ {(unit_id, first, second): @cert} of the labels by these sources on the given pairs (either direction). """
+    result = {}
+    for unit_id, first, second in keys:
+        pair = store.get_pair(store.get_app(unit_id), first, second)
+        for directed in (pair, pair.get_inverse()):
+            relation = directed.relation_element()
+            if relation is not None and store.label_source(directed) in sources:
+                result[(unit_id, first, second)] = store.provenance_from_relation(relation).cert or None
+                break
+    return result
+
+
 def predictions(store:AnnotationStore, unit_ids:list[str]) -> dict:
     return labels_in_display_direction(store, unit_ids, ("pipeline",))
 
@@ -116,16 +147,34 @@ def strip_test_units(source:Path, working:Path) -> Path:
     Copies the file (and its sample) and removes every label and suggestion in the sample's test units, so the
     pipeline cannot see them. Returns the path of the copy.
     """
+    original = AnnotationStore(Path(source), read_only=True)
+    sample = original.load_sample()
+    if sample is None:
+        raise AnnotationError(f"Evaluation needs a sample of example and test units ({original.sample_path.name} not found).")
+    return strip_units(source, working, held_out=sample.ids("test"), hidden=[])
+
+
+def strip_units(source:Path, working:Path, held_out:list[str], hidden:list[str]) -> Path:
+    """
+    Copies the file and removes every label and suggestion in the held-out units (to be predicted and scored) and the
+    hidden units (never predicted, never visible). In the copy's sample both are test units, so every safeguard for
+    test units covers them; the other sampled units are examples. Returns the path of the copy.
+    """
     source, working = Path(source), Path(working)
     original = AnnotationStore(source, read_only=True)
     sample = original.load_sample()
     if sample is None:
         raise AnnotationError(f"Evaluation needs a sample of example and test units ({original.sample_path.name} not found).")
+    stripped = set(held_out) | set(hidden)
     working.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy(source, working)
-    shutil.copy(original.sample_path, working.with_name(f"{working.stem}.sample.yaml"))
+    from .sampling import save_sample, SampleUnit
+    copy = sample.model_copy(update={"units": [
+        SampleUnit(id=unit.id, role="test" if unit.id in stripped else "example") for unit in sample.units
+    ]})
+    save_sample(copy, working.with_name(f"{working.stem}.sample.yaml"))
     store = AnnotationStore(working, annotator="evaluation", ignore_types=sorted(original.ignore_types))
-    for unit_id in sample.ids("test"):
+    for unit_id in sorted(stripped):
         app = store.get_app(unit_id)
         for list_type in ("transcriptional", "suggestion"):
             for list_relation in unique(find_elements(app.element, f".//listRelation[@type='{list_type}']")):
@@ -134,6 +183,72 @@ def strip_test_units(source:Path, working:Path) -> Path:
                 prune_empty_list(list_relation)
     store.save()
     return working
+
+
+# ---------------------------------------------------------------------------
+# cross-validation folds over the example units
+# ---------------------------------------------------------------------------
+
+class FoldPlan(BaseModel):
+    seed: int
+    folds: int
+    source: str = Field(description="The sample file the folds were made from.")
+    pool: str = Field(default="example", description="'example': folds over the example units (the test units are hidden); 'all': over every sample unit.")
+    stratified: bool = Field(default=False, description="Units were dealt to folds largest first, so big units are spread out.")
+    units: list[list[str]] = Field(description="The held-out units of each fold (fold k is units[k-1]), in document order.")
+
+
+def make_folds(example_ids:list[str], folds:int, seed:int, document_order:list[str]|None=None,
+               sizes:dict[str, int]|None=None) -> list[list[str]]:
+    """
+    Splits the units into `folds` folds of (nearly) equal size. The result depends only on the set of ids, the number
+    of folds, the seed and the sizes. With `sizes` (e.g. pairs per unit) the units are dealt largest first, in a
+    back-and-forth order (ties in random order), so the largest units fall in different folds. Units within a fold are
+    in document order if it is given (else sorted).
+    """
+    if folds < 2:
+        raise AnnotationError("Cross-validation needs at least 2 folds.")
+    if folds > len(example_ids):
+        raise AnnotationError(f"Cannot make {folds} folds from {len(example_ids)} example units.")
+    shuffled = sorted(set(example_ids))
+    random.Random(seed).shuffle(shuffled)
+    if sizes:
+        shuffled.sort(key=lambda unit_id: -sizes.get(unit_id, 0))   # stable: ties keep their random order
+        result = [[] for _ in range(folds)]
+        for index, unit_id in enumerate(shuffled):
+            round_, position = divmod(index, folds)
+            result[position if round_ % 2 == 0 else folds - 1 - position].append(unit_id)
+    else:
+        result = [shuffled[index::folds] for index in range(folds)]
+    position = {unit_id: index for index, unit_id in enumerate(document_order)} if document_order else None
+    return [sorted(fold, key=(lambda unit_id: (position.get(unit_id, len(position)), unit_id)) if position else None) for fold in result]
+
+
+def load_or_create_folds(path:Path, sample, folds:int, seed:int, pool:str="example", sizes:dict[str, int]|None=None) -> FoldPlan:
+    """
+    The saved folds at `path` (checked against the sample, pool, folds and seed), or new ones saved there. `pool` is
+    'example' (the example units) or 'all' (every sample unit); `sizes` (pairs per unit) stratifies new folds.
+    """
+    path = Path(path)
+    if pool not in ("example", "all"):
+        raise AnnotationError(f"Unknown fold pool '{pool}': use 'example' or 'all'.")
+    examples = sample.ids("example") if pool == "example" else sample.ids()
+    if path.exists():
+        plan = FoldPlan.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
+        if plan.seed != seed:
+            raise AnnotationError(f"{path} was made with seed {plan.seed}, not {seed}.")
+        if plan.folds != folds:
+            raise AnnotationError(f"{path} has {plan.folds} folds, not {folds}.")
+        if plan.pool != pool:
+            raise AnnotationError(f"{path} was made over the pool '{plan.pool}', not '{pool}'.")
+        if sorted(unit for fold in plan.units for unit in fold) != sorted(examples):
+            raise AnnotationError(f"The folds in {path} do not match the sample's {'example ' if pool == 'example' else ''}units.")
+        return plan
+    plan = FoldPlan(seed=seed, folds=folds, source=sample.source, pool=pool, stratified=bool(sizes),
+                    units=make_folds(examples, folds, seed, document_order=sample.ids(), sizes=sizes))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(yaml.safe_dump(plan.model_dump(), sort_keys=False, allow_unicode=True), encoding="utf-8")
+    return plan
 
 
 # ---------------------------------------------------------------------------
@@ -152,13 +267,23 @@ class EvaluatedPair(BaseModel):
     second_text: str
     change: str
     gold: str
+    gold_cert: str | None = Field(default=None, description="The certainty of the gold label (high / medium / low), if recorded.")
     draft: str | None
     final: str | None
+    draft_cert: str | None = Field(default=None, description="The pipeline's stated certainty for its final label.")
+    alternative: str | None = Field(default=None, description="The second category the draft named when unsure (None if it was sure).")
+    expert: str | None = Field(default=None, description="The expert's choice, if the pair was escalated.")
     justification: str = Field(description="The pipeline's final justification.")
 
 
 class EvaluationReport(BaseModel):
     model: str
+    fold: int | None = Field(default=None, description="The cross-validation fold (1-based), if this is one.")
+    pool: str | None = Field(default=None, description="The fold pool ('example' or 'all'), if this is a fold.")
+    folds: int | None = None
+    seed: int | None = None
+    held_out_units: list[str] = Field(default_factory=list, description="The units predicted and scored.")
+    hidden_units: list[str] = Field(default_factory=list, description="Units whose labels were removed but which were not scored (the real test units in cross-validation).")
     definitions_hash: str
     references: list[str] = Field(default_factory=list)
     test_units: int
@@ -174,7 +299,8 @@ class EvaluationReport(BaseModel):
     draft_run: str = ""
     review_run: str = ""
     usage: dict = Field(default_factory=dict)
-    cost: float | None = None
+    cost: float | None = Field(default=None, description="Total cost: the draft (and review) model plus the expert.")
+    escalation: dict = Field(default_factory=dict, description="Escalation to the expert: mode, model, pairs, groups, changes, usage and cost.")
 
 
 def evaluate(
@@ -186,36 +312,85 @@ def evaluate(
     toolsets:list|None=None,
     effort:str|None=None,
     ignore_types:list[str]|None=None,
+    fold:int|None=None,
+    folds:int=5,
+    seed:int=0,
+    folds_path:Path|None=None,
+    pool:str="example",
+    expert=None,
+    expert_mode:str="after",
+    batch:bool=False,
+    batch_client=None,
+    poll_interval:float=60.0,
 ) -> EvaluationReport:
-    """ Runs the pipeline on a stripped copy and compares it with the test units' gold labels; writes the report. """
-    from .pipeline import draft, review, model_name, price
+    """
+    Runs the pipeline on a stripped copy and compares it with the gold labels; writes the report.
+
+    Without `fold` the sample's test units are evaluated. With `fold` (1-based, of `folds`, split by `seed` and saved
+    at `folds_path`, default <output_dir>/../folds.yaml) that fold's example units are evaluated, the sample's test
+    units are hidden (labels and suggestions removed, never predicted) and only the other example units keep labels.
+    """
+    from .pipeline import draft, review, model_name, price, escalate
 
     path, output_dir = Path(path), Path(output_dir)
     original = AnnotationStore(path, read_only=True, **({"ignore_types": ignore_types} if ignore_types else {}))
     sample = original.load_sample()
     if sample is None:
         raise AnnotationError(f"Evaluation needs a sample of example and test units ({original.sample_path.name} not found).")
-    test_units = sample.ids("test")
+    hidden = []
+    if fold is not None:
+        sizes = {unit_id: len(original.work_pairs(original.get_app(unit_id))) for unit_id in sample.ids()}
+        plan = load_or_create_folds(Path(folds_path) if folds_path else output_dir.parent / "folds.yaml", sample, folds, seed,
+                                    pool=pool, sizes=sizes if pool == "all" else None)
+        if not 1 <= fold <= plan.folds:
+            raise AnnotationError(f"There is no fold {fold}: choose 1 to {plan.folds}.")
+        test_units = plan.units[fold - 1]
+        hidden = sample.ids("test") if pool == "example" else []
+    else:
+        test_units = sample.ids("test")
     gold = gold_labels(original, test_units)
+    gold_certs = certainties(original, gold, ("human",))
 
-    working = strip_test_units(path, output_dir / f"{path.stem}.working.xml")
+    working = strip_units(path, output_dir / f"{path.stem}.working.xml", held_out=test_units, hidden=hidden)
     store = AnnotationStore(working, ignore_types=sorted(original.ignore_types))
     if store.rules:
         store.apply_rules()
     definitions_hash = store.definitions().definitions_hash
     categories = [category.name for category in store.definitions().categories]
 
-    drafted = draft(store, model, toolsets=toolsets, unit_ids=test_units, concurrency=concurrency, effort=effort)
+    if expert is not None and expert_mode not in ("after", "tool"):
+        raise AnnotationError(f"Unknown expert mode '{expert_mode}': use 'after' or 'tool'.")
+    if batch:
+        if expert is not None and expert_mode == "tool":
+            raise AnnotationError("The expert tool needs the interactive draft; use expert mode 'after' with --batch.")
+        from .batch import draft_batch
+        drafted = draft_batch(store, model, unit_ids=test_units, client=batch_client, poll_interval=poll_interval)
+    else:
+        drafted = draft(store, model, toolsets=toolsets, unit_ids=test_units, concurrency=concurrency, effort=effort,
+                        expert=expert if expert_mode == "tool" else None, expert_mode=expert_mode)
     draft_predictions = predictions(store, test_units)
-    draft_metrics = metrics(gold, draft_predictions, categories)
+    draft_metrics = metrics(gold, draft_predictions, categories, gold_certs)
+    alternatives = {(item.unit_id, item.active, item.passive): item.alternative for item in drafted.uncertain}
 
-    final_metrics, reviewed = None, None
+    final_metrics, reviewed, escalated = None, None, None
     final_predictions = draft_predictions
+    escalation = {}
+    if expert is not None and expert_mode == "tool":
+        escalation = dict(mode="tool", model=model_name(expert), calls=drafted.expert_calls, flagged=len(drafted.uncertain),
+                          usage=drafted.expert_usage, cost=drafted.expert_cost)
+    if expert is not None and expert_mode == "after":
+        escalated = escalate(store, expert, drafted.uncertain, concurrency=concurrency, effort=effort)
+        final_predictions = predictions(store, test_units)
+        final_metrics = metrics(gold, final_predictions, categories, gold_certs)
+        escalation = dict(mode="after", model=model_name(expert), flagged=len(drafted.uncertain), pairs=escalated.pairs,
+                          groups=escalated.groups, changed=escalated.changed, kept=escalated.kept, skipped=escalated.skipped,
+                          errors=escalated.errors, usage=escalated.usage, cost=escalated.cost)
+    experts = {(entry["unit_id"], entry["active"], entry["passive"]): entry["expert"] for entry in (escalated.decisions if escalated else [])}
     if rounds > 0:
         reviewed = review(store, model, toolsets=toolsets, rounds=rounds, unit_ids=test_units, effort=effort,
                           log_path=output_dir / "revisions.jsonl")
         final_predictions = predictions(store, test_units)
-        final_metrics = metrics(gold, final_predictions, categories)
+        final_metrics = metrics(gold, final_predictions, categories, gold_certs)
 
     work_pairs = sum(len(store.work_pairs(store.get_app(unit_id))) for unit_id in test_units)
     rule_pairs = sum(len(store.rule_pairs(store.get_app(unit_id))) for unit_id in test_units)
@@ -226,6 +401,7 @@ def evaluate(
     if rule_pairs:
         notes.append(f"{rule_pairs} pairs labelled by subreading rules are left out of the scores.")
 
+    predicted_certs = certainties(store, list(gold), ("pipeline",))
     pairs = []
     for (unit_id, first, second), category in gold.items():
         app = store.get_app(unit_id)
@@ -237,7 +413,9 @@ def evaluate(
             unit_id=unit_id, verse=verse_label(unit_id), before=app.text_before(), lemma=app.text(), after=app.text_after(),
             first=first, second=second, first_text=str(pair.active), second_text=str(pair.passive),
             change=describe_change(pair.active.text, pair.passive.text).text, gold=category,
-            draft=draft_predictions.get((unit_id, first, second)), final=final_predictions.get((unit_id, first, second)) if reviewed else None,
+            gold_cert=gold_certs.get((unit_id, first, second)), draft_cert=predicted_certs.get((unit_id, first, second)),
+            alternative=directed_lookup(alternatives, unit_id, first, second, store), expert=directed_lookup(experts, unit_id, first, second, store),
+            draft=draft_predictions.get((unit_id, first, second)), final=final_predictions.get((unit_id, first, second)) if (reviewed or escalated) else None,
             justification=justification,
         ))
 
@@ -246,17 +424,27 @@ def evaluate(
         for key, value in reviewed.usage.items():
             usage[key] = usage.get(key, 0) + value
     report = EvaluationReport(
-        model=model_name(model), definitions_hash=definitions_hash, test_units=len(test_units), gold_pairs=len(gold),
+        model=model_name(model), fold=fold, pool=pool if fold is not None else None, folds=folds if fold is not None else None, seed=seed if fold is not None else None,
+        held_out_units=list(test_units), hidden_units=list(hidden),
+        definitions_hash=definitions_hash, test_units=len(test_units), gold_pairs=len(gold),
         excluded_rule_pairs=rule_pairs, unlabelled_test_pairs=work_pairs - len(gold),
         draft=draft_metrics, final=final_metrics, rounds=rounds,
         revisions=list(reviewed.revisions) if reviewed else [], notes=notes, pairs=pairs,
         draft_run=drafted.run_id, review_run=reviewed.run_id if reviewed else "",
-        usage=usage, cost=price(model, usage),
+        usage=usage, cost=((drafted.cost if batch else price(model, usage)) or 0.0) + (escalation.get("cost") or 0.0), escalation=escalation,
     )
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "report.json").write_text(json.dumps(report.model_dump(mode="json"), ensure_ascii=False, indent=2))
     (output_dir / "report.html").write_text(render_report(report))
     return report
+
+
+def directed_lookup(values:dict, unit_id:str, first:str, second:str, store:AnnotationStore):
+    """ A value recorded for a pair in either direction; a category recorded for the inverse is turned around. """
+    if (unit_id, first, second) in values:
+        return values[(unit_id, first, second)]
+    value = values.get((unit_id, second, first))
+    return store.get_relation_type(value).get_inverse().name if value else None
 
 
 def render_report(report:EvaluationReport) -> str:
