@@ -480,18 +480,19 @@ function renderSampleProgress(progress) {
 function updateRailSuggestions() {
   const section = $("pair-nav").querySelector(".rail-suggestions");
   if (!section || !state.unit) return;
-  section.hidden = state.config.read_only;
+  // not on test units: their suggestions are never shown
+  section.hidden = state.config.read_only || state.unit.sample_role === "test";
+  if (section.hidden) return;
   const pairs = visible();
   const hasSuggestions = pairs.some((pair) => pair.suggestions.length);
   const counts = suggestionCounts(pairs);
-  section.querySelector(".rail-note").textContent = hasSuggestions ? ""
-    : state.unit.sample_role === "test" ? "Hidden on test units" : "No suggestions in this unit yet";
+  section.querySelector(".rail-note").textContent = hasSuggestions ? "" : "No suggestions in this unit yet";
   setButton(section.querySelector(".save-labels"), {
-    text: `Save all suggestions (${counts.labels})`, disabled: counts.labels === 0,
+    text: `Save all (${counts.labels})`, disabled: counts.labels === 0,
     title: "Label every unlabelled pair whose suggestions agree, with the suggested category, reason and certainty. Labelled pairs are left as they are.",
   });
   setButton(section.querySelector(".save-reasons"), {
-    text: `Save all reasons (${counts.reasons})`, disabled: counts.reasons === 0,
+    text: `Save reasons (${counts.reasons})`, disabled: counts.reasons === 0,
     title: "Give each pair you labelled without a reason the reason of a suggestion for the same category. Your own reasons are kept.",
   });
 }

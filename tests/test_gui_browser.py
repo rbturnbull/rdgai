@@ -553,16 +553,16 @@ def test_save_all_suggestions_and_reasons_buttons(gui):
             await page.send("Page.navigate", url=f"{base}/#/unit/{REASON_UNIT}?sample=all")
             labels, reasons = "document.querySelector('#pair-nav .save-labels')", "document.querySelector('#pair-nav .save-reasons')"
             await page.wait_until(f"!!{labels} && {labels}.getClientRects().length > 0")
-            assert await page.eval(f"{labels}.textContent") == "Save all suggestions (2)"
-            assert await page.eval(f"{reasons}.textContent") == "Save all reasons (1)"
+            assert await page.eval(f"{labels}.textContent") == "Save all (2)"
+            assert await page.eval(f"{reasons}.textContent") == "Save reasons (1)"
             assert await page.eval("!document.getElementById('suggestion-bar')")   # no longer above the pairs
             await page.eval("window.confirm = () => true")
 
             await page.eval(f"{labels}.click()")
-            await page.wait_until(f"{labels}.textContent === 'Save all suggestions (0)'")
+            await page.wait_until(f"{labels}.textContent === 'Save all (0)'")
             assert await page.eval(f"{labels}.disabled")
             await page.eval(f"{reasons}.click()")
-            await page.wait_until(f"{reasons}.textContent === 'Save all reasons (0)'")
+            await page.wait_until(f"{reasons}.textContent === 'Save reasons (0)'")
 
     asyncio.run(run())
     assert (saved_pair(base, "a", "b")["category"], saved_pair(base, "a", "b")["reason"]) == ("Minor_Omission", "omits a word")
@@ -655,5 +655,26 @@ def test_select_like_this_pair_not_shown_on_full_units(gui):
             await page.send("Page.navigate", url=f"{base}/#/unit/{REASON_UNIT}?sample=all")
             await page.wait_until("document.querySelectorAll('#pairs .pair.full').length > 0 && !!document.querySelector('#pair-nav .unit-nav')")
             assert await page.eval("!document.querySelector('#pair-nav .rail-select') || document.querySelector('#pair-nav .rail-select').hidden")
+
+    asyncio.run(run())
+
+
+@pytest.mark.parametrize("prepare", [draw_a_sample])
+def test_no_suggestions_section_on_test_units(gui):
+    """ Test units never show suggestions, so the rail has no Suggestions section there; example units keep it. """
+    base, ws_url = gui
+    test_unit = wait_for(f"{base}/api/queue?sample=test")["units"][0]["id"]
+    example_unit = wait_for(f"{base}/api/queue?sample=example")["units"][0]["id"]
+    section = "document.querySelector('#pair-nav .rail-suggestions')"
+
+    async def run():
+        async with websockets.connect(ws_url, max_size=None) as ws:
+            page = Page(ws)
+            await page.send("Page.navigate", url=f"{base}/#/unit/{test_unit}?sample=sampled")
+            await page.wait_until(f"{HEADER_UNIT} === '{test_unit}' && !!{section}")
+            assert await page.eval(f"{section}.getClientRects().length") == 0
+            await page.send("Page.navigate", url=f"{base}/#/unit/{example_unit}?sample=sampled")
+            await page.wait_until(f"{HEADER_UNIT} === '{example_unit}'")
+            await page.wait_until(f"{section}.getClientRects().length > 0")
 
     asyncio.run(run())
