@@ -47,10 +47,6 @@ jobs:
         with:
           path: 'gh-pages'
 
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v5
-
       - name: Create Coverage Badge
         uses: schneegans/dynamic-badges-action@v1.9.0
         with:
@@ -60,3 +56,17 @@ jobs:
           label: coverage
           message: ${{ env.COVERAGE }}
           color: green
+
+  # A separate job, as deploy-pages recommends: in the same job as the upload, its artifact lookup can run before the
+  # artifact is listed and fail with 'No artifacts named "github-pages"' (actions/deploy-pages#451). A failed deploy
+  # can then be re-run on its own, without uploading a second artifact.
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
