@@ -58,34 +58,17 @@ For example:
 Graphical User Interface (GUI)
 -----------------------------------
 
-Users can classify transitions via the Rdgai GUI by clicking buttons corresponding to each category or navigating through units using the keyboard.
-
-.. image:: ./img/rdgai-gui.jpg
-    :alt: Rdgai GUI
-
-Launch the GUI with the following command:
+Users can classify transitions in the Rdgai annotation GUI, by clicking the button for a category or with the
+keyboard. Launch it with your ``xml:id`` as the annotator:
 
 .. code-block:: bash
 
-    rdgai gui apparatus.xml output.xml
+    rdgai annotate apparatus.xml --annotator RT --open
 
-This will launch a Flask server that you can visit in your browser. 
-This will have a page for each variation unit and each page will show all the non-redundant pairs of readings in the variation unit.
-You can click on the buttons corresponding to each category. Rdgai will automatically assign the inverse category for reciprocal pair of readings.
-
-The output will be saved to the file ``output.xml``.
-
-If you want to save directly to the input file, you can use the ``--inplace`` flag:
-
-.. code-block:: bash
-
-    rdgai gui apparatus.xml --inplace
-
-This output can be saved into a static HTML file for viewing the current state of the classifications.
-
-.. code-block:: bash
-
-    rdgai html apparatus.xml apparatus.html
+Each label is saved to the file straight away, for the change from the better-attested reading to the other one,
+and Rdgai assigns the inverse category to the reciprocal pair automatically. The GUI can also run inside the MCP
+server's process (``rdgai serve-mcp apparatus.xml --annotator RT --gui-port 8765``), so that you can annotate together
+with Claude.
 
 .. note::
     

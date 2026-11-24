@@ -74,6 +74,11 @@ def read_tei(path:Path) -> ElementTree:
         return ET.parse(f, parser)
 
 
+def parse_tei(data:bytes) -> ElementTree:
+    """ Parses a TEI document already read from a file (as read_tei does from the path). """
+    return ET.ElementTree(ET.fromstring(data, ET.XMLParser(remove_blank_text=True)))
+
+
 def find_element(doc:ElementTree|Element, xpath:str) -> Element|None:
     assert doc is not None, f"Document is None in find_element({doc}, {xpath})"
     if isinstance(doc, ElementTree):

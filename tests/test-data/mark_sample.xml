@@ -1,0 +1,349 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+  <teiHeader>
+    <fileDesc>
+      <titleStmt>
+        <title>A collation of Mark</title>
+      </titleStmt>
+      <publicationStmt>
+        <p>Temporary publicationStmt for validation</p>
+      </publicationStmt>
+      <sourceDesc>
+        <bibl>
+          <title xml:lang="grc">ΚΑΤΑ ΜΑΡΚΟΝ</title>
+          <date notBefore="50" notAfter="75"/>
+        </bibl>
+        <listWit>
+          <witness n="A"/>
+          <witness n="MT"/>
+          <witness n="P45">
+            <msDesc>
+              <msIdentifier>
+                <country>Austria</country>
+                <settlement>Wien</settlement>
+                <repository>Österreichische Nationalbibliothek</repository>
+                <idno/>
+              </msIdentifier>
+            </msDesc>
+            <origDate notBefore="200" notAfter="299"/>
+          </witness>
+          <witness n="P84">
+            <msDesc>
+              <msIdentifier>
+                <country>Belgium</country>
+                <settlement>Leuven</settlement>
+                <repository>KU Leuven Libraries</repository>
+                <idno/>
+              </msIdentifier>
+            </msDesc>
+            <origDate notBefore="500" notAfter="599"/>
+          </witness>
+          <witness n="P88">
+            <msDesc>
+              <msIdentifier>
+                <country>Italy</country>
+                <settlement>Milan</settlement>
+                <repository>Università Cattolica del Sacro Cuore</repository>
+                <idno/>
+              </msIdentifier>
+            </msDesc>
+            <origDate notBefore="300" notAfter="399"/>
+          </witness>
+        </listWit>
+      </sourceDesc>
+    </fileDesc>
+  </teiHeader>
+  <text xml:lang="grc">
+    <!--
+  Transcriptional change categories for ECM Mark.
+
+  Decision order (apply the first that fits; classify using only the given verse):
+    1. Only the spelling differs                                  -> Orthography
+    2. Same words, different order                                -> Transposition
+    3. One reading has extra material and nothing else differs    -> Addition / Omission
+    4. A single word changes form but keeps the same lemma        -> Inflection
+    5. Anything else                                              -> Substitution
+  Then decide Major vs Minor: Major if the change alters what the verse asserts.
+  Explicit rules in the definitions take precedence. Otherwise, when in doubt, choose Minor.
+-->
+    <interpGrp type="transcriptional">
+      <interp xml:id="Orthography">The same words in the same grammatical forms, written differently. This includes spelling variants, itacism and other vowel interchanges, movable ν, elision, contractions and nomina sacra. If the different spelling produces a different valid word or grammatical form (e.g. ἔρχεσθε / ἔρχεσθαι, ὑμεῖς / ἡμεῖς), it is not Orthography: classify it by the change it produces.</interp>
+      <interp xml:id="Minor_Inflection">A single word changes its grammatical form while keeping the same lemma, without changing what is asserted. Suppletive forms count as the same lemma (e.g. λέγει / εἶπεν, ἔρχεται / ἦλθεν, ὁρᾷ / εἶδεν). This includes alternations among the historic present, aorist and imperfect in narrative; aorist / perfect; changes of aspect in imperatives, subjunctives, infinitives and participles; a futuristic present / future referring to the same future event; changes of mood required by the syntax (e.g. ἵνα with future indicative / aorist subjunctive); deponent middle / passive alternations; and changes of case, gender or number that keep the same referent (e.g. a different case governed by the same verb). Conative, ingressive and gnomic uses of tense are Minor. When in doubt, choose Minor.</interp>
+      <interp xml:id="Major_Inflection">A single word changes its grammatical form while keeping the same lemma, and the change alters what is asserted: who acts, to whom, how many, whether something happens, or what kind of statement it is (statement, command, question or wish). This includes a change of person or number that changes the subject or referent (e.g. ἔλεγεν said by Jesus / ἔλεγον said by the disciples; αὐτῷ / αὐτοῖς), a change of case that swaps the roles of participants, a change of voice that reverses who acts, a change of mood that turns a statement into a command, and a change of tense that moves an event to a different time relative to the speaker (e.g. ἐγήγερται / ἐγερθήσεται; ἔρχεται / ἦλθεν in direct speech).</interp>
+      <interp xml:id="Minor_Substitution">Words are replaced by different words, but the readings assert the same thing. This is limited to: a different function word (article, conjunction, particle, οὐ / μή, or a preposition with overlapping meaning such as εἰς / ἐν or ἀπό / ἐκ); a pronoun / a noun referring to the same participant (e.g. αὐτῷ / τῷ Ἰησοῦ); an alternative form of the same word (e.g. εὐθύς / εὐθέως); a verb prefix that does not change the sense (e.g. ἠρώτα / ἐπηρώτα, ἔρχομαι / ἐξέρχομαι); or a combination of these within the variation unit. When in doubt, choose Minor.</interp>
+      <interp xml:id="Major_Substitution">Words are replaced by different words, and what is asserted changes. Any noun, verb, adjective or adverb replaced by a word with a different lemma is Major, even if the meanings are close (e.g. ἔκραξεν / εἶπεν, ὄχλος / λαός, λέγει / φησίν). This also includes a pronoun with a different referent (e.g. ὑμεῖς / ἡμεῖς), a different person, group or place name (e.g. Γερασηνῶν / Γαδαρηνῶν), a different title or description, a preposition or verb prefix that changes the relationship or direction (e.g. εἰσέρχομαι / ἐξέρχομαι, ἐκ / εἰς), a change in word order that alters what is asserted, and any combination of changes within the variation unit that includes one of these.</interp>
+      <interp xml:id="Minor_Addition" corresp="#Minor_Omission">The second reading adds words that do not change what is asserted. This is limited to: articles; connective words (καί, δέ, γάρ, οὖν, ἀλλά, recitative ὅτι, ἰδού); pronouns; and names or noun phrases that fill a subject, object or addressee already implied by the verb (e.g. + ὁ Ἰησοῦς, + αὐτῷ), even if the verse alone does not identify that participant. When in doubt, choose Minor.</interp>
+      <interp xml:id="Minor_Omission" corresp="#Minor_Addition">The second reading omits words that do not change what is asserted. This is limited to: articles; connective words (καί, δέ, γάρ, οὖν, ἀλλά, recitative ὅτι, ἰδού); pronouns; and names or noun phrases that fill a subject, object or addressee implied by the verb (e.g. − ὁ Ἰησοῦς, − αὐτῷ). When in doubt, choose Minor.</interp>
+      <interp xml:id="Major_Addition" corresp="#Major_Omission">The second reading adds words that change what is asserted. This includes any added noun, verb, participle, adjective or adverb that does more than fill a subject, object or addressee already implied by the verb. Examples: a new or additional participant; a title or description of a participant (e.g. + υἱοῦ θεοῦ, + Χριστός, + κύριος); an adverb or phrase of time, manner, degree, place or repetition (e.g. + εὐθύς, + πάλιν, + ἐκεῖ, + ἐν ἐκείνῃ τῇ ἡμέρᾳ); a participle such as ἀποκριθείς; a negation; an action or object; or an entire clause or statement.</interp>
+      <interp xml:id="Major_Omission" corresp="#Major_Addition">The second reading omits words that change what is asserted. This includes any omitted noun, verb, participle, adjective or adverb that does more than fill a subject, object or addressee implied by the verb. Examples: a participant; a title or description of a participant (e.g. − υἱοῦ θεοῦ, − Χριστός); an adverb or phrase of time, manner, degree, place or repetition (e.g. − εὐθύς, − πάλιν); a participle such as ἀποκριθείς; a negation; an action or object; or an entire clause or statement. This includes omissions caused by the scribe's eye skipping between similar words (homoioteleuton, homoioarcton) and lacunae.</interp>
+      <interp xml:id="Transposition">The same words appear in a different order, and nothing else changes apart from spelling. If the reordering changes what is asserted (e.g. the roles of participants change), use Major_Substitution. If any word is added, omitted or changed as well, use the appropriate Substitution category.</interp>
+    </interpGrp>
+    <body>
+      <ab>
+        <w>αρχη</w>
+        <w>του</w>
+        <w>ευαγγελιου</w>
+        <w>ιησου</w>
+        <app xml:id="Mark.1.1.10">
+          <lem>χριστου</lem>
+          <rdg n="a" wit="A MT 01 02 03 05 011s 017 019 032 037 038 041 042 043 055 0211 1 3 4 13 16 18 23 26 33 35 61 69 79 105 117 118 124 131 152 153 154 176 178 179 184 191 205 209 222 238 261 273 304 346 348 349 351 372 377 382 389 427 472 495 513 517 543 544 555 565 569 579 590 595 695 697 700 706 713 716 719 719s 728 732 740 752 766 780 788 791 792 803 826 827 828 829 837 855 863 872 873 892 949 954s 979 983 1009 1029 1047 1071 1082 1084 1093 1128 1160 1216 1241 1243 1253 1273 1279 1302 1326 1337 1342 1396 1424 1446 1457 1495 1506 1515 1528 1542 1546 1555 1574 1579 1582 1593 1645 1654 1675 1689 2106 2148 2174 2193 2200 2206 2411 2486 2487 2542 2606 2607 2680 2726 2737 2738 2766 2786 2886 L60 L211 L387 L547 L563 L770 L773 L844 L2211">χριστου</rdg>
+          <rdg n="b" wit="28"/>
+          <witDetail n="zz" type="lac" wit="P45 P84 P88 P137 04 05s 011 022 041s 044 064 067 072 083 099 0103 0104 0130 0131 0167 0184 0187 0188 0233 0250 0274 0292 733 807 954 1084s 1542s 1574s 2517 2537 2538 2542s 2666 2744 L547s L950"/>
+        </app>
+        <w>υιου</w>
+        <w>του</w>
+        <w>θεου</w>
+      </ab>
+      <ab>
+        <w>αρχη</w>
+        <w>του</w>
+        <w>ευαγγελιου</w>
+        <w>ιησου</w>
+        <w>χριστου</w>
+        <app xml:id="Mark.1.1.12-16">
+          <lem>υιου του θεου</lem>
+          <rdg n="a" wit="A MT 02 011s 017 037 041 042 043 0211 1 3 4 13 16 18 23 26 33 35 61 69 79 105 117 118 124 131 152 153 154 176 178 179 184 191 205 209 222 238 261 273 304 346 348 349 351 372 377 389 427 472 495 513 517 543 544 555 565 569 579 590 595 695 697 700 706 713 716 719 719s 728 766 780 788 791 792 803 826 827 828 829 837 855 863 872 873 892 954s 979 983 1009 1029 1047 1071 1082 1084 1093 1128 1160 1216 1243 1253 1273 1279 1302 1326 1342 1396 1424 1446 1457 1495 1515 1528 1542 1546 1574 1579 1582 1593 1645 1654 1675 1689 2106 2174 2193 2200 2206 2411 2486 2487 2542 2606 2607 2680 2726 2737 2738 2766 2786 2886 L60 L211 L387 L547 L563 L770 L773 L844">υιου του θεου</rdg>
+          <rdg n="b" wit="03 05 019 032 732 2148">υιου θεου</rdg>
+          <rdg n="c" wit="1241">υιου του κυριου</rdg>
+          <rdg n="d" wit="382 740">του υιου του θεου</rdg>
+          <rdg n="e" wit="055 752 949 1337 1506">του θεου</rdg>
+          <rdg n="f" wit="01 038 28 1555 L2211"/>
+          <witDetail n="zz" type="lac" wit="P45 P84 P88 P137 04 05s 011 022 041s 044 064 067 072 083 099 0103 0104 0130 0131 0167 0184 0187 0188 0233 0250 0274 0292 733 807 954 1084s 1542s 1574s 2517 2537 2538 2542s 2666 2744 L547s L950"/>
+        </app>
+      </ab>
+      <ab>
+        <app xml:id="Mark.1.2.2">
+          <lem>καθως</lem>
+          <rdg n="a" wit="01 03 017 019 037 038 041 1 4 33 131 176 178 191 205 209 273 389 565 697 700 713 728 892 1071 1128 1241 1546 1582 2193 2411 2680 2886 L2211">καθως</rdg>
+          <rdg n="b" wit="MT 02 05 011s 032 042 043 055 0211 3 13 16 18 23 26 28 35 61 69 79 105 117 118 124 152 153 154 179 184 222 238 261 304 346 348 349 351 372 377 382 427 472 495 513 517 543 544 555 569 579 590 595 695 706 716 719 719s 732 740 752 766 780 788 791 792 803 826 827 828 829 837 855 863 872 873 949 954s 979 983 1009 1029 1047 1082 1084 1093 1160 1216 1243 1253 1273 1279 1302 1326 1337 1342 1396 1424 1446 1457 1495 1506 1515 1528 1542 1555 1574 1579 1593 1645 1654 1675 1689 2106 2148 2174 2200 2206 2486 2487 2542 2606 2607 2726 2737 2738 2766 2786 L60 L211 L387 L547 L563 L770 L773 L844">ως</rdg>
+          <witDetail n="zz" type="lac" wit="A P45 P84 P88 P137 04 05s 011 022 041s 044 064 067 072 083 099 0103 0104 0130 0131 0167 0184 0187 0188 0233 0250 0274 0292 733 807 954 1084s 1542s 1574s 2517 2537 2538 2542s 2666 2744 L547s L950"/>
+        </app>
+        <w>γεγραπται</w>
+        <w>εν</w>
+        <w>τω</w>
+        <w>ησαια</w>
+        <w>τω</w>
+        <w>προφητη</w>
+        <w>ιδου</w>
+        <w>εγω</w>
+        <w>αποστελλω</w>
+        <w>τον</w>
+        <w>αγγελον</w>
+        <w>μου</w>
+        <w>προ</w>
+        <w>προσωπου</w>
+        <w>σου</w>
+        <w>ος</w>
+        <w>κατασκευασει</w>
+        <w>την</w>
+        <w>οδον</w>
+        <w>σου</w>
+      </ab>
+      <ab>
+        <w>καθως</w>
+        <w>γεγραπται</w>
+        <w>εν</w>
+        <app xml:id="Mark.1.2.8-14">
+          <lem>τω ησαια τω προφητη</lem>
+          <rdg n="a" wit="A 01 03 019 037 33 222 565 728 892 1241">τω ησαια τω προφητη</rdg>
+          <rdg n="b" wit="05 038 1 61 131 152 176 184 205 209 348 372 555 700 829 872 873 1071 1243 1279 1579 1582 2174 2193 2486 2737 2886 L844 L2211">ησαια τω προφητη</rdg>
+          <rdg n="c" wit="544 1273 2680">βιβλω λογων ησαιου του προφητου</rdg>
+          <rdg n="e" wit="MT 02 011s 017 032 041 042 043 0211 3 4 13 16 18 23 26 28 35 69 79 105 117 118 124 153 154 178 179 191 238 261 273 304 346 349 351 377 382 389 427 472 495 513 517 543 569 579 590 595 695 697 706 713 716 719 719s 732 740 752 766 780 788 791 792 803 826 827 828 837 855 863 949 954s 979 983 1009 1029 1047 1082 1084 1093 1128 1160 1216 1253 1302 1326 1337 1342 1396 1424 1446 1457 1495 1506 1515 1528 1542 1546 1555 1574 1593 1645 1654 1675 1689 2106 2148 2200 2206 2411 2487 2542 2606 2607 2726 2738 2766 2786 L60 L211 L387 L547 L563 L770 L773">τοις προφηταις</rdg>
+          <witDetail n="zz" type="lac" wit="P45 P84 P88 P137 04 05s 011 022 041s 044 055 064 067 072 083 099 0103 0104 0130 0131 0167 0184 0187 0188 0233 0250 0274 0292 733 807 954 1084s 1542s 1574s 2517 2537 2538 2542s 2666 2744 L547s L950"/>
+        </app>
+        <w>ιδου</w>
+        <w>εγω</w>
+        <w>αποστελλω</w>
+        <w>τον</w>
+        <w>αγγελον</w>
+        <w>μου</w>
+        <w>προ</w>
+        <w>προσωπου</w>
+        <w>σου</w>
+        <w>ος</w>
+        <w>κατασκευασει</w>
+        <w>την</w>
+        <w>οδον</w>
+        <w>σου</w>
+      </ab>
+      <ab>
+        <w>καθως</w>
+        <w>γεγραπται</w>
+        <w>εν</w>
+        <w>τω</w>
+        <w>ησαια</w>
+        <w>τω</w>
+        <w>προφητη</w>
+        <w>ιδου</w>
+        <app xml:id="Mark.1.2.18">
+          <lem>εγω</lem>
+          <rdg n="a" wit="A MT 01 02 011s 017 019 032 037 041 042 043 0211 1 3 4 13 16 18 23 26 33 35 61 69 79 105 117 118 124 131 152 153 154 176 178 179 184 191 205 209 222 238 261 273 304 346 348 349 351 372 377 382 389 427 472 495 513 517 543 544 555 569 579 590 595 695 697 700 706 713 716 719 719s 728 732 740 752 766 780 788 791 792 803 826 827 828 829 837 855 863 872 873 892 949 954s 979 983 1009 1029 1047 1071 1082 1084 1093 1128 1160 1216 1241 1243 1253 1273 1279 1302 1326 1337 1342 1396 1424 1446 1457 1495 1506 1515 1528 1542 1546 1555 1574 1579 1582 1593 1645 1654 1675 1689 2106 2148 2174 2193 2200 2206 2411 2486 2487 2542 2606 2607 2680 2726 2737 2738 2766 2786 2886 L60 L211 L387 L547 L563 L770 L773 L844">εγω</rdg>
+          <rdg n="b" wit="03 05 038 28 565 L2211"/>
+          <witDetail n="zz" type="lac" wit="P45 P84 P88 P137 04 05s 011 022 041s 044 055 064 067 072 083 099 0103 0104 0130 0131 0167 0184 0187 0188 0233 0250 0274 0292 733 807 954 1084s 1542s 1574s 2517 2537 2538 2542s 2666 2744 L547s L950"/>
+        </app>
+        <w>αποστελλω</w>
+        <w>τον</w>
+        <w>αγγελον</w>
+        <w>μου</w>
+        <w>προ</w>
+        <w>προσωπου</w>
+        <w>σου</w>
+        <w>ος</w>
+        <w>κατασκευασει</w>
+        <w>την</w>
+        <w>οδον</w>
+        <w>σου</w>
+      </ab>
+      <ab>
+        <w>καθως</w>
+        <w>γεγραπται</w>
+        <w>εν</w>
+        <w>τω</w>
+        <w>ησαια</w>
+        <w>τω</w>
+        <w>προφητη</w>
+        <w>ιδου</w>
+        <w>εγω</w>
+        <app xml:id="Mark.1.2.20">
+          <lem>αποστελλω</lem>
+          <rdg n="a" wit="A MT 02 03 05 011s 017 019 032 037 041 042 043 1 3 4 13 16 18 23 26 28 33 35 61 69 79 105 117 118 124 131 152 153 176 178 179 184 191 205 209 222 238 261 273 304 346 348 349 351 372 377 382 389 427 472 513 517 543 544 555 565 569 579 590 595 695 697 700 706 716 719 719s 728 732 752 780 788 791 792 803 826 827 828 829 837 855 863 872 873 892 949 954s 979 1009 1029 1047 1071 1082 1084 1093 1128 1160 1216 1241 1243 1253 1273 1279 1302 1326 1337 1342 1396 1424 1446 1457 1495 1506 1515 1528 1542 1546 1555 1574 1579 1582 1645 1654 1675 2106 2148 2174 2193 2200 2206 2411 2486 2487 2542 2607 2726 2737 2738 2766 2786 2886 L60 L211 L547 L563 L770 L773 L844 L2211">αποστελλω</rdg>
+          <rdg n="b" wit="01 038 0211 154 495 713 740 766 983 1593 1689 2606 2680 L387">αποστελω</rdg>
+          <witDetail n="zz" type="lac" wit="P45 P84 P88 P137 04 05s 011 022 041s 044 055 064 067 072 083 099 0103 0104 0130 0131 0167 0184 0187 0188 0233 0250 0274 0292 733 807 954 1084s 1542s 1574s 2517 2537 2538 2542s 2666 2744 L547s L950"/>
+        </app>
+        <w>τον</w>
+        <w>αγγελον</w>
+        <w>μου</w>
+        <w>προ</w>
+        <w>προσωπου</w>
+        <w>σου</w>
+        <w>ος</w>
+        <w>κατασκευασει</w>
+        <w>την</w>
+        <w>οδον</w>
+        <w>σου</w>
+      </ab>
+      <ab>
+        <w>καθως</w>
+        <w>γεγραπται</w>
+        <w>εν</w>
+        <w>τω</w>
+        <w>ησαια</w>
+        <w>τω</w>
+        <w>προφητη</w>
+        <w>ιδου</w>
+        <w>εγω</w>
+        <w>αποστελλω</w>
+        <w>τον</w>
+        <w>αγγελον</w>
+        <w>μου</w>
+        <w>προ</w>
+        <w>προσωπου</w>
+        <app xml:id="Mark.1.2.32">
+          <lem>σου</lem>
+          <rdg n="a" wit="A MT 01 02 03 05 011s 017 019 032 037 038 041 042 043 0211 1 3 4 13 16 18 23 26 28 33 35 61 69 79 105 117 118 124 131 152 153 154 176 178 179 184 191 205 209 222 238 261 273 304 346 348 349 351 372 377 382 389 427 472 495 513 517 543 544 555 565 569 579 590 595 695 697 700 706 713 716 719 719s 728 732 740 752 766 780 788 791 792 803 826 827 828 829 837 855 863 872 873 892 949 954s 979 983 1009 1029 1047 1071 1082 1084 1093 1128 1160 1216 1241 1243 1273 1279 1302 1326 1337 1342 1396 1424 1446 1457 1495 1506 1515 1528 1542 1546 1555 1574 1579 1582 1593 1645 1654 1675 1689 2106 2148 2174 2193 2200 2206 2411 2486 2487 2542 2606 2607 2680 2726 2737 2738 2766 2786 2886 L60 L211 L387 L547 L563 L770 L773 L844 L2211">σου</rdg>
+          <rdg n="b" wit="1253"/>
+          <witDetail n="zz" type="lac" wit="P45 P84 P88 P137 04 05s 011 022 041s 044 055 064 067 072 083 099 0103 0104 0130 0131 0167 0184 0187 0188 0233 0250 0274 0292 733 807 954 1084s 1542s 1574s 2517 2537 2538 2542s 2666 2744 L547s L950"/>
+        </app>
+        <w>ος</w>
+        <w>κατασκευασει</w>
+        <w>την</w>
+        <w>οδον</w>
+        <w>σου</w>
+      </ab>
+      <ab>
+        <w>καθως</w>
+        <w>γεγραπται</w>
+        <w>εν</w>
+        <w>τω</w>
+        <w>ησαια</w>
+        <w>τω</w>
+        <w>προφητη</w>
+        <w>ιδου</w>
+        <w>εγω</w>
+        <w>αποστελλω</w>
+        <w>τον</w>
+        <w>αγγελον</w>
+        <w>μου</w>
+        <w>προ</w>
+        <w>προσωπου</w>
+        <w>σου</w>
+        <app xml:id="Mark.1.2.34">
+          <lem>ος</lem>
+          <rdg n="a" wit="A MT 01 02 03 05 011s 017 032 037 038 041 042 043 1 3 4 16 18 23 26 28 33 35 61 69 79 105 117 118 124 131 152 153 154 176 178 179 184 191 205 209 222 238 261 273 304 346 348 349 351 372 377 382 389 427 472 495 513 517 543 544 555 565 569 579 590 595 695 697 700 706 713 716 719 719s 728 732 740 752 766 780 788 791 792 803 826 827 828 829 837 855 863 872 873 892 949 954s 979 983 1009 1029 1047 1071 1082 1084 1093 1128 1160 1216 1241 1243 1253 1273 1279 1302 1326 1337 1342 1396 1424 1446 1457 1495 1506 1515 1528 1542 1546 1555 1574 1579 1582 1593 1645 1654 1675 1689 2106 2148 2174 2193 2200 2206 2411 2486 2487 2542 2606 2607 2680 2726 2737 2738 2766 2786 2886 L60 L211 L387 L547 L563 L770 L773 L844 L2211">ος</rdg>
+          <rdg n="b" wit="019 0211">ως</rdg>
+          <witDetail n="zz" type="lac" wit="P45 P84 P88 P137 04 05s 011 022 041s 044 055 064 067 072 083 099 0103 0104 0130 0131 0167 0184 0187 0188 0233 0250 0274 0292 13 733 807 954 1084s 1542s 1574s 2517 2537 2538 2542s 2666 2744 L547s L950"/>
+        </app>
+        <w>κατασκευασει</w>
+        <w>την</w>
+        <w>οδον</w>
+        <w>σου</w>
+      </ab>
+      <ab>
+        <w>καθως</w>
+        <w>γεγραπται</w>
+        <w>εν</w>
+        <w>τω</w>
+        <w>ησαια</w>
+        <w>τω</w>
+        <w>προφητη</w>
+        <w>ιδου</w>
+        <w>εγω</w>
+        <w>αποστελλω</w>
+        <w>τον</w>
+        <w>αγγελον</w>
+        <w>μου</w>
+        <w>προ</w>
+        <w>προσωπου</w>
+        <w>σου</w>
+        <w>ος</w>
+        <w>κατασκευασει</w>
+        <w>την</w>
+        <w>οδον</w>
+        <w>σου</w>
+        <app xml:id="Mark.1.2.43">
+          <lem/>
+          <rdg n="a" wit="01 03 05 017 019 032 038 041 043 0211 178 389 700 728 1128 1546 2411 2766 L2211"/>
+          <rdg n="b" wit="MT 02 011s 037 042 1 3 4 13 16 18 23 26 28 33 35 61 69 79 105 117 118 124 131 152 153 154 176 179 184 191 205 209 222 238 261 304 346 348 349 351 372 377 382 427 472 495 513 517 543 544 555 565 569 579 590 595 695 697 706 713 716 719 719s 732 740 752 766 780 788 791 792 803 826 827 828 829 837 855 863 872 873 892 949 954s 979 983 1009 1029 1047 1071 1082 1084 1093 1160 1216 1243 1253 1273 1302 1326 1337 1342 1396 1424 1446 1457 1495 1506 1515 1528 1542 1555 1574 1579 1582 1593 1645 1654 1675 1689 2106 2148 2174 2193 2200 2206 2486 2487 2542 2606 2607 2680 2726 2737 2738 2786 2886 L60 L211 L387 L547 L563 L770 L773 L844">εμπροσθεν σου</rdg>
+          <rdg n="bo" type="orthographic" wit="1241 1279">ενπροσθεν σου</rdg>
+          <witDetail n="b/bo" type="ambiguous" target="b bo" wit="273">ενμπροσθεν σου</witDetail>
+          <witDetail n="zz" type="lac" wit="A P45 P84 P88 P137 04 05s 011 022 041s 044 055 064 067 072 083 099 0103 0104 0130 0131 0167 0184 0187 0188 0233 0250 0274 0292 733 807 954 1084s 1542s 1574s 2517 2537 2538 2542s 2666 2744 L547s L950"/>
+        </app>
+      </ab>
+      <ab>
+        <w>και</w>
+        <w>εξεπορευετο</w>
+        <w>προς</w>
+        <w>αυτον</w>
+        <w>πασα</w>
+        <w>η</w>
+        <w>ιουδαια</w>
+        <w>χωρα</w>
+        <w>και</w>
+        <app xml:id="Mark.1.5.20-22">
+          <lem>οι ιεροσολυμιται</lem>
+          <rdg n="a" wit="A MT 011s 017 019 041 042 043 1 3 4 16 18 23 26 28 33 35 61 105 117 118 131 152 154 178 191 209 261 273 304 351 372 382 389 555 590 595 695 697 700 706 713 716 719 719s 728 733 752 780 791 803 827 829 855 872 873 892 954s 979 1047 1084 1093 1128 1216 1279 1302 1326 1337 1342 1396 1446 1457 1495 1506 1528 1542 1546 1555 1579 1582 1593 1645 1654 2174 2193 2200 2411 2486 2487 2542 2606 2607 2737 2786 L563 L770 L773 L2211">οι ιεροσολυμιται</rdg>
+          <rdg n="ao" type="orthographic" wit="01 02 03 032 037 0211 13 69 124 346 543 565 788 826 828 837 1071 1273 1515">οι ιεροσολυμειται</rdg>
+          <rdg n="b" wit="79 153 176 179 184 205 222 238 348 349 377 495 517 544 569 766 949 983 1029 1082 1160 1574 1675 1689 2148 2206 2726 2886">ιεροσολυμιται</rdg>
+          <rdg n="bo" type="orthographic" wit="05 472 792 1009 L547">ιεροσολυμειται</rdg>
+          <rdg n="c" wit="L60">ιερουσαλημ</rdg>
+          <witDetail n="a/ao" type="ambiguous" target="a ao" wit="038 579 740 863 1241 1243 1253 1424 2680 2738 2766 L844">οι ιεροσολυμηται</witDetail>
+          <witDetail n="b/bo" type="ambiguous" target="b bo" wit="427 513 732 2106 L211 L387">ιεροσολυμηται</witDetail>
+          <witDetail n="zz" type="lac" wit="P45 P84 P88 P137 04 05s 011 022 041s 044 055 064 067 072 083 099 0103 0104 0130 0131 0167 0184 0187 0188 0233 0250 0274 0292 807 954 1084s 1542s 1574s 2517 2537 2538 2542s 2666 2744 L547s L950"/>
+        </app>
+        <w>παντες</w>
+        <w>και</w>
+        <w>εβαπτιζοντο</w>
+        <w>υπ</w>
+        <w>αυτου</w>
+        <w>εν</w>
+        <w>τω</w>
+        <w>ιορδανη</w>
+        <w>ποταμω</w>
+        <w>εξομολογουμενοι</w>
+        <w>τας</w>
+        <w>αμαρτιας</w>
+        <w>αυτων</w>
+      </ab>
+    </body>
+  </text>
+</TEI>

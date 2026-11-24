@@ -19,19 +19,6 @@ def test_doc_get_classified_pairs_arb(arb):
         assert len(pair.types) > 0
 
 
-def test_relation_type_representative_examples(arb):
-    k = 5
-    relation_type = arb.relation_types['Orthography']
-    examples = relation_type.representative_examples(k)
-    assert len(examples) == k
-    assert str(examples[0]) == "اللاه ➞ الاله"
-
-    k = 200
-    relation_type = arb.relation_types['Single_Major_Word_Change']
-    examples = relation_type.representative_examples(k)
-    assert len(examples) == 125
-
-
 def test_doc_get_classified_pairs_minimal(minimal):
     result = minimal.get_classified_pairs()
     assert len(result) == 0
@@ -169,7 +156,9 @@ def test_pair_add_type(minimal):
     assert relation_element.tag.endswith("relation")
     assert relation_element.attrib == {'active': '1', 'passive': '2', 'ana': '#category1'}
     assert relation_element.getparent().tag.endswith("listRelation")
-    assert minimal.apps[0].element == relation_element.getparent().getparent()
+    # <listRelation> is not allowed directly in <app>, so it is wrapped in a <note>
+    assert relation_element.getparent().getparent().tag.endswith("note")
+    assert minimal.apps[0].element == relation_element.getparent().getparent().getparent()
 
     assert relation_type in pair.types
 
@@ -366,102 +355,6 @@ def test_doc_inverse(inverses):
     assert inverses.relation_types['Major_Addition'].inverse == inverses.relation_types['Major_Omission']
     assert inverses.relation_types['Major_Omission'].inverse == inverses.relation_types['Major_Addition']
     assert inverses.relation_types['Substitution'].inverse == None
-
-
-def test_doc_render_html(minimal, tmp_path):
-    file = tmp_path / "minimal.html"
-    result = minimal.render_html(output=file)
-    assert file.exists()
-    assert result == file.read_text()
-    assert '<h5 class="card-title large">Reading 1</h5>' in result
-    assert '<p class="relation"><span>Reading 1</span> &lrm;➜ <span>Reading 2</span></p>' in result
-
-
-@pytest.fixture
-def minimal_flask_test_client(minimal, tmp_path):
-    output = tmp_path / "minimal.xml"
-    flask_app = minimal.flask_app(output)
-    client = flask_app.test_client()
-    client.output = output
-    return client
-
-
-def test_doc_flask_app(minimal_flask_test_client):
-    response = minimal_flask_test_client.get("/")
-    assert response.status_code == 200
-    assert '<h5 class="card-title large">Reading 1</h5>' in response.data.decode()
-    assert '<p class="relation"><span>Reading 1</span> &lrm;➜ <span>Reading 2</span></p>' in response.data.decode()
-    
-
-def test_doc_flask_app_add_remove(minimal_flask_test_client):
-    data = {
-        "relation_type": "category1",
-        "pair": "Reading 1 ➞ Reading 2",
-        "operation": "add"
-    }
-    response = minimal_flask_test_client.get("/")
-
-    response = minimal_flask_test_client.post("/api/relation-type", json=data)
-    assert response.status_code == 200
-    assert response.data == b"Success"
-    output_xml = minimal_flask_test_client.output.read_text()
-    assert '<relation active="1" passive="2" ana="#category1"/>' in output_xml
-
-    data['operation'] = 'remove'
-    response = minimal_flask_test_client.post("/api/relation-type", json=data)
-    assert response.status_code == 200
-    assert response.data == b"Success"
-    output_xml = minimal_flask_test_client.output.read_text()
-    assert '<relation active="1" passive="2" ana="#category1"/>' not in output_xml
-
-
-def test_doc_flask_app_add_remove_description(minimal_flask_test_client):
-    data = {
-        "description": "Justification",
-        "pair": "Reading 1 ➞ Reading 2",
-        "operation": "add"
-    }
-    response = minimal_flask_test_client.get("/")
-
-    response = minimal_flask_test_client.post("/api/desc", json=data)
-    assert response.status_code == 200
-    assert response.data == b"Success"
-    output_xml = minimal_flask_test_client.output.read_text()
-    assert '<relation active="1" passive="2">' in output_xml
-    assert '<desc>Justification</desc>' in output_xml
-
-    data['operation'] = 'remove'
-    response = minimal_flask_test_client.post("/api/desc", json=data)
-    assert response.status_code == 200
-    assert response.data == b"Success"
-    output_xml = minimal_flask_test_client.output.read_text()
-    assert '<desc>Justification</desc>' not in output_xml
-
-
-def test_doc_flask_app_add_description_error(minimal_flask_test_client):
-    data = {
-        "description": 1,
-        "pair": "Reading 1 ➞ Reading 2",
-        "operation": "unknown"
-    }
-    response = minimal_flask_test_client.get("/")
-
-    response = minimal_flask_test_client.post("/api/desc", json=data)
-    assert response.status_code == 400
-    assert "Unknown operation unknown" in response.text
-
-
-def test_doc_flask_app_add_type_error(minimal_flask_test_client):
-    data = {
-        "relation_type": "category1",
-        "pair": "Reading 1 ➞ Reading 2",
-        "operation": "unknown"
-    }
-    response = minimal_flask_test_client.get("/")
-
-    response = minimal_flask_test_client.post("/api/relation-type", json=data)
-    assert response.status_code == 400
-    assert "Unknown operation unknown" in response.text
 
 
 def test_doc_clean(messy, tmp_path):

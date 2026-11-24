@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>rdgai annotate</title>
+  <meta name="theme-color" content="#940000">
+  <link rel="icon" type="image/svg+xml" href="static/favicon.svg">
+  <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+  <div class="layout">
+  <aside id="sidebar" class="sidebar" aria-label="Controls">
+    <div class="sidebar-brand">
+      <a class="brand" href="https://rbturnbull.github.io/rdgai/" target="_blank" title="rdgAI documentation"><img src="static/logo.svg" alt="rdgAI"></a>
+    </div>
+
+    <section class="side-group">
+      <h2>View</h2>
+      <nav class="views" aria-label="Views">
+        <button type="button" data-view="annotate"><span class="view-name">Annotate</span><span class="view-help">Label the pairs, unit by unit</span></button>
+        <button type="button" data-view="category"><span class="view-name">By category</span><span class="view-help">Every pair with a label, to check consistency</span></button>
+        <button type="button" data-view="agreement"><span class="view-name">Agreement</span><span class="view-help">Your labels compared with suggestions</span></button>
+      </nav>
+    </section>
+
+    <div id="queue-filters" class="queue-filters">
+      <section class="side-group">
+        <h2>Units to annotate</h2>
+        <p class="side-help">Prev, Next and “Next to do” (in the rail on the right) move through these units.</p>
+        <label class="field" for="queue-sample">Units
+          <select id="queue-sample">
+            <option value="sampled">Sample (example and test units)</option>
+            <option value="example">Example units only</option>
+            <option value="test">Test units only</option>
+            <option value="all">All units in the file</option>
+          </select>
+        </label>
+        <div id="sample-progress" class="sample-progress" hidden></div>
+        <label class="field" for="queue-status">Progress
+          <select id="queue-status">
+            <option value="all">Any</option>
+            <option value="unclassified">Not started</option>
+            <option value="partial">Partly labelled</option>
+            <option value="classified">Finished</option>
+          </select>
+        </label>
+        <label class="field" for="queue-verse">Verse or chapter
+          <input id="queue-verse" type="search" placeholder="e.g. Mark.1.2">
+        </label>
+      </section>
+
+      <section class="side-group">
+        <h2>Narrow down</h2>
+        <p class="side-help">Only units that have…</p>
+        <label class="field" for="queue-category">a pair labelled
+          <select id="queue-category"><option value="">Any category</option></select>
+        </label>
+        <label class="field" for="queue-cert">a label with certainty
+          <select id="queue-cert">
+            <option value="">Any certainty</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+        </label>
+        <label class="field" for="queue-source">labels or suggestions from
+          <select id="queue-source">
+            <option value="">Anyone</option>
+            <option value="human">A human (you)</option>
+            <option value="pipeline">The rdgai pipeline</option>
+            <option value="rule">A subreading rule</option>
+            <option value="suggestion">A suggestion (e.g. Claude)</option>
+          </select>
+        </label>
+        <label class="check" for="queue-disagreement"><input id="queue-disagreement" type="checkbox"> a label that disagrees with a suggestion</label>
+      </section>
+
+      <div class="queue-summary">
+        <span id="queue-count" class="muted"></span>
+        <button id="queue-reset" type="button" title="Back to the sample, any progress, no other filters">Reset</button>
+      </div>
+    </div>
+
+    <section class="side-group">
+      <h2>Display</h2>
+      <label class="check" for="translation-toggle"><input id="translation-toggle" type="checkbox" checked> Show translations <kbd>t</kbd></label>
+      <label class="field" for="look">Reading overview <span class="side-help">(units with many pairs)</span>
+        <select id="look">
+          <option value="cards">Cards</option>
+          <option value="table">Table</option>
+        </select>
+      </label>
+    </section>
+
+    <section class="side-group">
+      <h2>Reference</h2>
+      <div class="side-buttons">
+        <button id="definitions-toggle" type="button" title="The category definitions and guidance (editable)">Definitions</button>
+        <button id="help-toggle" type="button" title="Keyboard shortcuts (?)">Keyboard <kbd>?</kbd></button>
+      </div>
+    </section>
+  </aside>
+
+  <div class="content">
+    <header id="topbar" class="topbar">
+      <div id="header-unit" class="header-unit"></div>
+      <div class="header-right">
+        <div id="header-file" class="header-file"></div>
+        <div id="header-user" class="header-user"></div>
+      </div>
+    </header>
+
+  <main id="main">
+    <div id="view-unit">
+      <div class="unit-body">
+      <section id="context" class="context"></section>
+      <section id="readings" class="readings"></section>
+      <section id="bulk-bar" class="bulk-bar" hidden></section>
+      <section id="pairs" class="pairs"></section>
+      </div>
+      <nav id="pair-nav" class="pair-nav" aria-label="Pairs in this unit"></nav>
+    </div>
+    <section id="view-category" class="view" hidden></section>
+    <section id="view-agreement" class="view" hidden></section>
+  </main>
+  </div>
+  </div>
+
+  <aside id="definitions" class="panel" hidden></aside>
+  <aside id="profile" class="panel profile" hidden></aside>
+
+  <aside id="help" class="panel" hidden>
+    <h2>Keyboard</h2>
+    <dl class="keys">
+      <dt>j / k</dt><dd>next / previous pair</dd>
+      <dt>1 … 9, 0</dt><dd>choose a category (shift + number for the 11th to 20th); choosing the current category clears it</dd>
+      <dt>h / m / l</dt><dd>certainty high / medium / low</dd>
+      <dt>x</dt><dd>select or unselect the pair (click its letters, e.g. “a → b”, in a compact row); categories and certainty then apply to all selected pairs</dd>
+      <dt>Enter / e</dt><dd>expand or collapse the current row (compact units; or click the ▸ at its left)</dd>
+      <dt>n</dt><dd>Next to do: the next unit with pairs to label</dd>
+      <dt>t</dt><dd>show or hide the translations</dd>
+      <dt>Esc</dt><dd>leave the reason box</dd>
+      <dt>?</dt><dd>show or hide this help</dd>
+    </dl>
+    <p class="muted">Each label is saved for the first reading → the second reading; the inverse is set automatically.</p>
+    <p class="muted">Keys work in the Annotate view. In the By category view, click a category to re-label a pair in place.</p>
+    <p class="muted"><img src="static/favicon.svg" alt="" class="rdgai-mark"> marks a label made by the rdgai pipeline (tentative).</p>
+  </aside>
+
+  <div id="status" class="status" role="status" aria-live="polite"></div>
+
+  <script type="module" src="static/app.js"></script>
+</body>
+</html>

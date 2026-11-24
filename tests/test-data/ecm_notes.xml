@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+  <teiHeader>
+    <fileDesc>
+      <titleStmt>
+        <title>ECM-style notes in reading text</title>
+      </titleStmt>
+      <publicationStmt>
+        <p>Test file</p>
+      </publicationStmt>
+      <sourceDesc>
+        <p>Constructed to test notes embedded in readings, as found in ECM Mark.</p>
+      </sourceDesc>
+    </fileDesc>
+  </teiHeader>
+  <text xml:lang="grc">
+    <interpGrp type="transcriptional">
+      <interp xml:id="Addition" corresp="#Omission">The second reading adds words.</interp>
+      <interp xml:id="Omission" corresp="#Addition">The second reading omits words.</interp>
+      <interp xml:id="Substitution">Words are replaced.</interp>
+    </interpGrp>
+    <body>
+      <ab>
+        <w>και</w>
+        <app xml:id="Mark.1.2.4">
+          <lem>θεου (cf. 8b)</lem>
+          <rdg n="a" wit="A B C">θεου (cf. 8b)</rdg>
+          <rdg n="b" wit="D">om (cf. 8c)</rdg>
+          <rdg n="c" wit="E">τα περι (cf. 3/4) αυτης παντα</rdg>
+          <rdg n="d" wit="F">αυτον (κενον)</rdg>
+          <rdg n="e" wit="G">λογος (Is 40:4-8)</rdg>
+          <rdg n="f" wit="H">ρημα (cf. 3/5, 10)</rdg>
+          <rdg n="g" wit="I">ημων (cf. 8a, c)</rdg>
+          <rdg n="h" wit="J">υμων (cf. 99)</rdg>
+        </app>
+        <w>λεγει</w>
+      </ab>
+      <ab>
+        <w>ο</w>
+        <app xml:id="Mark.1.2.8">
+          <lem>κυριος</lem>
+          <rdg n="a" wit="A">κυριος</rdg>
+          <rdg n="b" wit="B">θεος</rdg>
+          <rdg n="c" wit="C"/>
+        </app>
+      </ab>
+      <ab>
+        <app xml:id="Mark.1.3.4-6">
+          <lem>εν τη ερημω</lem>
+          <rdg n="a" wit="A B">εν τη ερημω</rdg>
+          <rdg n="b" wit="C">εν ερημω (2-12e)</rdg>
+        </app>
+      </ab>
+      <ab>
+        <app xml:id="Mark.1.3.10">
+          <lem>ευθεως</lem>
+          <rdg n="a" wit="A">ευθεως</rdg>
+          <rdg n="b" wit="B">ευθυς</rdg>
+        </app>
+      </ab>
+    </body>
+  </text>
+</TEI>

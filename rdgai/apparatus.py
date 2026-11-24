@@ -6,13 +6,72 @@ from lxml.etree import _Element as Element
 from lxml.etree import _ElementTree as ElementTree
 from lxml import etree as ET
 from rich.console import Console
-import functools
-import Levenshtein
-import numpy as np
+import textwrap
+from collections import defaultdict
 
 # from .relations import Relation, get_reading_identifier
 from .tei import read_tei, find_elements, extract_text, find_parent, find_element, write_tei, make_nc_name, get_language, get_reading_identifier, extract_text_siblings
-from .mapper import Mapper
+from .notes import parse_reading_notes
+
+
+def unique(elements:list[Element]) -> list[Element]:
+    """ Removes duplicates (find_elements can return the same element for namespaced and plain queries). """
+    seen = set()
+    result = []
+    for element in elements:
+        if id(element) not in seen:
+            seen.add(id(element))
+            result.append(element)
+    return result
+
+
+def relation_provenance(relation:Element) -> dict:
+    """ Reads resp, cert, change, the justification and the time saved from a <relation> element. """
+    justification_parts = []
+    when = ""
+    justification_source = ""
+    for desc in unique(find_elements(relation, "./desc")):
+        if desc.attrib.get("type", "justification") != "justification":
+            continue
+        justification_source = justification_source or desc.attrib.get("resp", "").lstrip("#")
+        text = desc.text or ""
+        for child in desc:
+            if isinstance(child.tag, str) and ET.QName(child).localname == "date":
+                when = when or child.attrib.get("when", "")
+            else:
+                text += " " + extract_text(child, include_tail=False)
+            text += child.tail or ""
+        justification_parts.append(" ".join(text.split()))
+    return dict(
+        resp=relation.attrib.get("resp", ""),
+        cert=relation.attrib.get("cert", ""),
+        change=relation.attrib.get("change", ""),
+        justification="\n".join(part for part in justification_parts if part).strip(),
+        when=when,
+        justification_source=justification_source,
+    )
+
+
+def prune_empty_list(list_relation:Element|None):
+    """
+    Removes a <listRelation> with no <relation> left (TEI requires at least one), and its <note> if that is now empty.
+    """
+    if list_relation is None or len(list_relation) > 0:
+        return
+    parent = list_relation.getparent()
+    if parent is None:
+        return
+    parent.remove(list_relation)
+    if ET.QName(parent).localname == "note" and len(parent) == 0 and not (parent.text or "").strip():
+        grandparent = parent.getparent()
+        if grandparent is not None:
+            grandparent.remove(parent)
+
+
+def tei_tag(reference:Element, tag:str) -> str:
+    """ Returns the tag name in the same namespace as the reference element. """
+    namespace = ET.QName(reference).namespace
+    return f"{{{namespace}}}{tag}" if namespace else tag
 
 @dataclass
 class Reading():
@@ -21,11 +80,18 @@ class Reading():
     n: str  = field(default=None)
     text: str  = field(default=None)
     witnesses: list[str] = field(default_factory=list)
+    type: str = field(default="")
+    raw_text: str = field(default="")
+    notes: list[str] = field(default_factory=list)
 
     def __post_init__(self):
         self.n = get_reading_identifier(self.element)
-        self.text = extract_text(self.element).strip()
+        self.raw_text = extract_text(self.element).strip()
+        self.text = self.raw_text
+        if self.app.doc.reading_notes:
+            self.text, self.notes = parse_reading_notes(self.raw_text)
         self.witnesses = self.element.attrib.get("wit", "").split()
+        self.type = self.element.attrib.get("type", "")
 
     def __str__(self):
         return self.text or 'OMIT'
@@ -77,40 +143,6 @@ class RelationType():
 
     def get_inverse(self) -> 'RelationType':
         return self.inverse if self.inverse else self
-    
-    @functools.lru_cache(maxsize=None)
-    def representative_examples(self, k:int, random_state:int=42) -> list['Pair']:
-        
-        def find_representative_examples(pairs_list:list[Pair], k:int, random_state:int=42):
-            import kmedoids
-            if len(pairs_list) <= k:
-                return pairs_list
-            distance_matrix = np.zeros((len(pairs_list), len(pairs_list)))
-            for index1, pair in enumerate(pairs_list):
-                for index2 in range(index1+1, len(pairs_list)):
-                    other_pair = pairs_list[index2]
-                    active_text_distance = Levenshtein.distance(pair.active.text, other_pair.active.text)
-                    passive_text_distance = Levenshtein.distance(pair.passive.text, other_pair.passive.text)
-                    distance = active_text_distance + passive_text_distance
-                    distance_matrix[index1, index2] = distance
-                    distance_matrix[index2, index1] = distance
-
-            result = kmedoids.fasterpam(distance_matrix, k, random_state=random_state, init="build")
-
-            return [pairs_list[index] for index in result.medoids]
-    
-        pairs_list = self.pairs_sorted(exclude_rdgai=True)
-        pairs_with_descriptions = [pair for pair in pairs_list if pair.has_description()]
-        representative_pairs = []
-        if pairs_with_descriptions:
-            representative_pairs = find_representative_examples(pairs_with_descriptions, k, random_state=random_state)
-        
-        if len(representative_pairs) < k:
-            pairs_without_descriptions = [pair for pair in pairs_list if not pair.has_description()]
-            additional_pairs = find_representative_examples(pairs_without_descriptions, k-len(representative_pairs), random_state=random_state)
-            representative_pairs.extend(additional_pairs)
-        
-        return representative_pairs
 
 
 @dataclass
@@ -151,7 +183,10 @@ class Pair():
         if list_relation is None:
             return []
 
-        return find_elements(list_relation, f".//relation[@active='{self.active.n}'][@passive='{self.passive.n}']")
+        return [
+            relation for relation in unique(find_elements(list_relation, ".//relation"))
+            if relation.attrib.get("active") == self.active.n and relation.attrib.get("passive") == self.passive.n
+        ]
     
     def element_for_type(self, type:RelationType) -> Element|None:        
         for relation in self.relation_elements():
@@ -183,9 +218,7 @@ class Pair():
         if relation is not None:
             return relation
 
-        list_relation = find_element(self.app_element(), ".//listRelation[@type='transcriptional']")
-        if list_relation is None:
-            list_relation = ET.SubElement(self.app_element(), "listRelation", attrib={"type":"transcriptional"})
+        list_relation = self.list_relation_element()
         
         relation = find_element(list_relation, f".//relation[@active='{self.active.n}'][@passive='{self.passive.n}']")
         if relation is not None:
@@ -201,6 +234,108 @@ class Pair():
 
         return relation
     
+    def list_relation_element(self, create:bool=True) -> Element|None:
+        """ Returns the <listRelation type="transcriptional"> of this pair's app, creating it if necessary. """
+        app_element = self.app_element()
+        list_relation = find_element(app_element, ".//listRelation[@type='transcriptional']")
+        if list_relation is None and create:
+            # TEI does not allow <listRelation> directly in <app>, so it goes in a <note> (as teiphy expects).
+            note = ET.SubElement(app_element, tei_tag(app_element, "note"))
+            list_relation = ET.SubElement(note, tei_tag(app_element, "listRelation"), attrib={"type":"transcriptional"})
+        return list_relation
+
+    def set_type(
+        self,
+        type:RelationType,
+        responsible:str|None=None,
+        cert:str|None=None,
+        description:str="",
+        change:str|None=None,
+        when:str|None=None,
+        description_resp:str|None=None,
+    ) -> Element:
+        """
+        Sets the classification of this pair to a single relation type, replacing any existing classification.
+
+        The justification and the time it was saved (``when``) go in a single <desc type="justification">,
+        as TEI allows only one <desc> in a <relation>.
+
+        Any existing <relation> elements for this pair are removed so that the pair has exactly one category
+        (teiphy adds the rates of multiple categories on one pair).
+        """
+        self.clear_types()
+        self.types = {type}
+        type.pairs.add(self)
+
+        list_relation = self.list_relation_element()
+        attrib = {"active":self.active.n, "passive":self.passive.n, "ana":f"#{type.name}"}
+        if responsible:
+            attrib["resp"] = responsible
+        if cert:
+            attrib["cert"] = cert
+        if change:
+            attrib["change"] = change
+        relation = ET.SubElement(list_relation, tei_tag(list_relation, "relation"), attrib=attrib)
+
+        description = (description or "").strip()
+        if description or when:
+            desc_attrib = {"type":"justification"}
+            if description and description_resp:
+                desc_attrib["resp"] = description_resp  # whose wording the justification is, if not the label's resp
+            desc = ET.SubElement(relation, tei_tag(relation, "desc"), attrib=desc_attrib)
+            desc.text = description or None
+            if when:
+                ET.SubElement(desc, tei_tag(relation, "date"), attrib={"when": when})
+
+        return relation
+
+    def set_type_with_inverse(
+        self,
+        type:RelationType,
+        responsible:str|None=None,
+        cert:str|None=None,
+        description:str="",
+        inverse_description:str|None=None,
+        change:str|None=None,
+        when:str|None=None,
+        description_resp:str|None=None,
+    ) -> Element:
+        """ Sets the classification of this pair and sets the inverse category on the inverse pair. """
+        relation = self.set_type(
+            type, responsible=responsible, cert=cert, description=description, change=change, when=when, description_resp=description_resp,
+        )
+        inverse_description = description if inverse_description is None else inverse_description
+        self.get_inverse().set_type(
+            type.get_inverse(), responsible=responsible, cert=cert, description=inverse_description, change=change, when=when,
+            description_resp=description_resp,
+        )
+        return relation
+
+    def clear_types(self):
+        """ Removes all classifications (and their <relation> elements) for this pair. """
+        for relation_type in list(self.types):
+            relation_type.pairs.discard(self)
+        self.types = set()
+        for relation in self.relation_elements():
+            list_relation = relation.getparent()
+            list_relation.remove(relation)
+            prune_empty_list(list_relation)
+
+    def clear_types_with_inverse(self):
+        self.clear_types()
+        self.get_inverse().clear_types()
+
+    def relation_element(self) -> Element|None:
+        elements = self.relation_elements()
+        return elements[0] if elements else None
+
+    def provenance(self) -> dict:
+        """ Returns the responsibility, certainty, change and justification recorded on this pair's relation. """
+        relation = self.relation_element()
+        if relation is None:
+            return {}
+        return relation_provenance(relation)
+
     def remove_description(self):
         for relation in self.relation_elements():
             for desc in find_elements(relation, ".//desc"):
@@ -211,9 +346,7 @@ class Pair():
             relation_elements = self.relation_elements()
 
             if len(relation_elements) == 0:
-                list_relation = find_element(self.app_element(), ".//listRelation[@type='transcriptional']")
-                if list_relation is None:
-                    list_relation = ET.SubElement(self.app_element(), "listRelation", attrib={"type":"transcriptional"})
+                list_relation = self.list_relation_element()
                 relation = ET.SubElement(list_relation, "relation", attrib={"active":self.active.n, "passive":self.passive.n})
             else:        
                 relation = relation_elements[0]
@@ -285,11 +418,12 @@ class App():
         for reading in find_elements(self.element, ".//rdg"):
             self.readings.append(Reading(reading, app=self))
 
-        # Build list of relation elements
-        relation_elements = []
-        for list_relation in find_elements(self.element, ".//listRelation[@type='transcriptional']"):
-            for relation_element in find_elements(list_relation, ".//relation"):
-                relation_elements.append(relation_element)
+        # Index relation elements by (active, passive)
+        relation_elements = defaultdict(list)
+        for list_relation in unique(find_elements(self.element, ".//listRelation[@type='transcriptional']")):
+            for relation_element in unique(find_elements(list_relation, ".//relation")):
+                key = (relation_element.attrib.get("active"), relation_element.attrib.get("passive"))
+                relation_elements[key].append(relation_element)
         
         # Build list of relation pairs
         active_visited = set()
@@ -300,13 +434,12 @@ class App():
                     continue
 
                 types = set()
-                for relation_element in relation_elements:
-                    if relation_element.attrib.get("active") == active.n and relation_element.attrib.get("passive") == passive.n:
-                        for ana in relation_element.attrib.get("ana", "").split():
-                            if ana.startswith("#"):
-                                ana = ana[1:]
-                            if ana:
-                                types.add(ana)
+                for relation_element in relation_elements.get((active.n, passive.n), []):
+                    for ana in relation_element.attrib.get("ana", "").split():
+                        if ana.startswith("#"):
+                            ana = ana[1:]
+                        if ana:
+                            types.add(ana)
 
                 pair_relation_types = set()
                 for type_name in types:
@@ -367,6 +500,13 @@ class App():
     def ab(self) -> Element|None:
         return find_parent(self.element, "ab")
 
+    def lacunae(self) -> list[str]:
+        """ Returns the witnesses recorded as lacunose for this unit in <witDetail type="lac">. """
+        witnesses = []
+        for wit_detail in unique(find_elements(self.element, ".//witDetail[@type='lac']")):
+            witnesses.extend(wit_detail.attrib.get("wit", "").split())
+        return witnesses
+
     def ab_name(self) -> str:
         ab = self.ab()
         if ab is None:
@@ -393,7 +533,10 @@ class App():
         return f"{self.text_before()} {self.text_with_signs(text)} {self.text_after()}".strip()
 
     def text(self) -> str:
-        return extract_text(self.element)
+        text = extract_text(self.element)
+        if self.doc.reading_notes:
+            text, _ = parse_reading_notes(text)
+        return text
 
     def text_with_signs(self, text:str|None=None) -> str:
         text = self.text() if text is None else text
@@ -435,9 +578,11 @@ class Doc():
     apps: list[App] = field(default_factory=list)
     relation_types: dict[str,RelationType] = field(default_factory=dict)
     id_to_app: dict[str,App] = field(default_factory=dict)
+    reading_notes: bool = True
     
     def __post_init__(self):
-        self.tree = read_tei(self.path)
+        if self.tree is None:   # a tree may be given already parsed (e.g. from bytes read with the file's identity)
+            self.tree = read_tei(self.path)
         self.relation_types = self.get_relation_types()
 
         for app_element in find_elements(self.tree, ".//app"):
@@ -460,6 +605,22 @@ class Doc():
             text.insert(0, interp_group) 
 
         return interp_group
+
+    def get_definitions_comment(self) -> str:
+        """
+        Returns the text of the XML comment(s) immediately preceding the <interpGrp type="transcriptional">.
+
+        This is where guidance such as a decision order for the categories is kept.
+        """
+        interp_group = find_element(find_element(self.tree, ".//text"), ".//interpGrp[@type='transcriptional']")
+        if interp_group is None:
+            return ""
+        comments = []
+        for sibling in interp_group.itersiblings(preceding=True):
+            if not isinstance(sibling, ET._Comment):
+                break
+            comments.append(textwrap.dedent(sibling.text or "").strip())
+        return "\n\n".join(reversed(comments))
 
     def add_relation_type(self, name:str, description:str="") -> RelationType:
         if name in self.relation_types:
@@ -543,94 +704,11 @@ class Doc():
 
             console.print("")
 
-    def render_html(self, output:Path|None=None, all_apps:bool=False) -> str:
-        from flask import Flask, request, render_template
-        
-        mapper = Mapper()
-        app = Flask(__name__)
-
-        with app.app_context():
-            html = render_template('server.html', doc=self, mapper=mapper, all_apps=all_apps)
-        
-        if output:
-            output.parent.mkdir(parents=True, exist_ok=True)
-            output.write_text(html)
-        
-        return html
-
-    def flask_app(self, output:Path, all_apps:bool=False):
-        from flask import Flask, request, render_template
-
-        self.write(output)
-        mapper = Mapper()
-        
-        app = Flask(__name__)
-
-        @app.route("/")
-        def root():
-            return render_template('server.html', doc=self, mapper=mapper, all_apps=all_apps)
-
-        @app.route("/api/relation-type", methods=['POST'])
-        def api_relation_type():
-            data = request.get_json()
-            
-            relation_type = mapper.obj(data['relation_type'])
-            assert isinstance(relation_type, RelationType), f"Expected RelationType, got {type(relation_type)}"
-            
-            pair = mapper.obj(data['pair'])
-            assert isinstance(pair, Pair), f"Expected Pair, got {type(pair)}"
-
-            try:
-                if data['operation'] == 'remove':
-                    print('remove', relation_type)
-                    pair.remove_type_with_inverse(relation_type)
-                elif data['operation'] == 'add':
-                    print('add', relation_type)
-                    pair.add_type_with_inverse(relation_type)
-                else:
-                    raise ValueError(f"Unknown operation {data['operation']}")
-                
-                print('write', output)
-                self.write(output)
-                return "Success", 200           
-            except Exception as e:  
-                print(str(e))
-                return str(e), 400
-
-            return "Failed", 400
-        
-        @app.route("/api/desc", methods=['POST'])
-        def desc():
-            data = request.get_json()
-                        
-            pair = mapper.obj(data['pair'])
-            assert isinstance(pair, Pair), f"Expected Pair, got {type(pair)}"
-
-            try:
-                if data['operation'] == 'remove':
-                    pair.remove_description()
-                elif data['operation'] == 'add':
-                    pair.add_description(data['description'])   
-                else:
-                    raise ValueError(f"Unknown operation {data['operation']}")
-
-                print('write', output)
-                self.write(output)
-                return "Success", 200           
-            except Exception as e:  
-                print(str(e))
-                return str(e), 400
-
-            return "Failed", 400
-
-        return app
-        # app.run(debug=True, use_reloader=True)
-
     def clean(self, output:Path|None=None):
         """ Cleans a TEI XML file for common errors. """
 
-        # find all listRelation elements
-        list_relations = find_elements(self.tree, ".//listRelation")
+        # find all transcriptional listRelation elements (not suggestions or intrinsic relations)
+        list_relations = unique(find_elements(self.tree, ".//listRelation[@type='transcriptional']"))
         for list_relation in list_relations:
             relations_so_far = set()
             for relation in find_elements(list_relation, ".//relation"):

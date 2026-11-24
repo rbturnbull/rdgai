@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="rdgai">
+  <title>rdgAI evaluation</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,{{ favicon }}" />
+  <meta name="theme-color" content="#940000">
+  <style>
+    {% include 'assets/css/bootstrap.rdgai.min.css' %}
+    {% include 'assets/css/rdgai.min.css' %}
+    .metrics td, .metrics th { text-align: center; }
+    .confusion td { text-align: center; min-width: 3rem; }
+    .confusion th.rotate { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
+    .indicative { color: #6c757d; font-style: italic; }
+    .verse { font-size: 2rem; }
+    .relation { font-size: 2rem; }
+    .change { text-align: center; color: #6c757d; font-style: italic; }
+    .card-title { overflow-wrap: anywhere; }
+    .nav-group { text-align: center; font-weight: bold; margin-top: .5rem; }
+    .run-details td:first-child { font-weight: 600; width: 14rem; }
+  </style>
+</head>
+
+<body>
+  <div class="container-fluid">
+    <div class="row">
+
+      <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+        <div id="brand">
+          <a href="https://rbturnbull.github.io/rdgai/" target="_blank" title="rdgAI">{% include 'assets/img/rdgai-logo-tall.svg' %}</a>
+        </div>
+        <div style="height: calc(100vh - 260px); overflow-y: auto;">
+          <ul class="nav flex-column pt-2" role="tablist">
+            <li class="nav-item"><a class="nav-link active" href="#" data-bs-toggle="tab" data-bs-target="#overview" role="tab">{% include 'assets/img/feather-bar-chart-2.svg' %} Overview</a></li>
+            <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="tab" data-bs-target="#categories" role="tab">{% include 'assets/img/feather-list.svg' %} Categories</a></li>
+            <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="tab" data-bs-target="#revisions" role="tab">{% include 'assets/img/feather-align-left.svg' %} Revisions ({{ report.revisions|length }})</a></li>
+            {% set final = report.final or report.draft %}
+            {% set wrong = [] %}{% set right = [] %}
+            {% for pair in report.pairs %}
+              {% set predicted = pair.final if report.final else pair.draft %}
+              {% if predicted == pair.gold %}{% set _ = right.append(pair) %}{% else %}{% set _ = wrong.append(pair) %}{% endif %}
+            {% endfor %}
+            <li class="nav-group">Incorrect ({{ wrong|length }})</li>
+            {% for pair in wrong %}
+              <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="tab" data-bs-target="#wrong-{{ loop.index }}" role="tab">{% include 'assets/img/feather-x-circle.svg' %} {{ pair.unit_id }} {{ pair.first }}➜{{ pair.second }}</a></li>
+            {% endfor %}
+            <li class="nav-group">Correct ({{ right|length }})</li>
+            {% for pair in right %}
+              <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="tab" data-bs-target="#right-{{ loop.index }}" role="tab">{% include 'assets/img/feather-check-circle.svg' %} {{ pair.unit_id }} {{ pair.first }}➜{{ pair.second }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+      </nav>
+
+      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+        <div class="tab-content">
+
+          <div class="tab-pane fade show active" id="overview" role="tabpanel">
+            <h1>Overview</h1>
+            <div class="row justify-content-center">
+              <div class="col-md-6">
+                <table class="table table-bordered table-striped metrics">
+                  <thead><tr><th></th><th>Draft</th>{% if report.final %}<th>Draft + review ({{ report.rounds }} rounds)</th>{% endif %}</tr></thead>
+                  <tbody>
+                    {% for label, field in [("Accuracy", "accuracy"), ("Precision (macro)", "macro_precision"), ("Recall (macro)", "macro_recall"), ("F1 (macro)", "macro_f1")] %}
+                    <tr><th>{{ label }}</th><td>{{ (report.draft[field] * 100) | round(1) }}%</td>{% if report.final %}<td>{{ (report.final[field] * 100) | round(1) }}%</td>{% endif %}</tr>
+                    {% endfor %}
+                    <tr><th>Correct</th><td>{{ report.draft.correct }} / {{ report.draft.n }}</td>{% if report.final %}<td>{{ report.final.correct }} / {{ report.final.n }}</td>{% endif %}</tr>
+                    <tr><th>Not labelled</th><td>{{ report.draft.missing }}</td>{% if report.final %}<td>{{ report.final.missing }}</td>{% endif %}</tr>
+                  </tbody>
+                </table>
+                {% for note in report.notes %}<p class="indicative">{{ note }}</p>{% endfor %}
+                <table class="table table-sm run-details">
+                  <tbody>
+                    <tr><td>Model</td><td>{{ report.model }}</td></tr>
+                    <tr><td>Definitions (SHA-256)</td><td><code>{{ report.definitions_hash }}</code></td></tr>
+                    <tr><td>References</td><td>{{ report.references | join(", ") or "none" }}</td></tr>
+                    <tr><td>Test units</td><td>{{ report.test_units }}</td></tr>
+                    <tr><td>Gold test pairs</td><td>{{ report.gold_pairs }} ({{ report.unlabelled_test_pairs }} unlabelled test pairs left out; {{ report.excluded_rule_pairs }} pairs labelled by rule left out)</td></tr>
+                    <tr><td>Runs</td><td>draft {{ report.draft_run }}{% if report.review_run %}, review {{ report.review_run }}{% endif %}</td></tr>
+                    <tr><td>Usage</td><td>{{ report.usage.get("requests", 0) }} requests, {{ "{:,}".format(report.usage.get("input_tokens", 0)) }} input tokens ({{ "{:,}".format(report.usage.get("cache_read_tokens", 0)) }} cached), {{ "{:,}".format(report.usage.get("output_tokens", 0)) }} output tokens{% if report.cost is not none %}, ${{ "%.2f"|format(report.cost) }}{% endif %}</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <h2>Confusion matrix</h2>
+            {% set confusion = final.confusion %}
+            <div class="row justify-content-center"><div class="col-auto">
+              <p class="text-center text-muted">Rows: gold label; columns: {{ "after review" if report.final else "draft" }} prediction.</p>
+              <table class="table table-bordered confusion">
+                <thead><tr><th></th>{% for label in confusion.labels %}<th class="rotate">{{ label }}</th>{% endfor %}</tr></thead>
+                <tbody>
+                  {% for row in confusion.matrix %}
+                  {% set total = row | sum %}
+                  <tr><th>{{ confusion.labels[loop.index0] }}</th>
+                    {% set row_index = loop.index0 %}
+                    {% for value in row %}
+                      {% set share = (value / total) if total else 0 %}
+                      <td style="background-color: rgba(148, 0, 0, {{ '%.2f'|format(share * 0.85) }}); color: {{ 'white' if share > 0.5 else 'inherit' }};{% if loop.index0 == row_index %} font-weight: bold;{% endif %}">{{ value }}</td>
+                    {% endfor %}
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div></div>
+          </div>
+
+          <div class="tab-pane fade" id="categories" role="tabpanel">
+            <h1>Categories</h1>
+            {% for stage, scores in [("Draft", report.draft), ("Draft + review", report.final)] if scores %}
+            <h2>{{ stage }}</h2>
+            <table class="table table-bordered table-striped metrics">
+              <thead><tr><th>Category</th><th>Gold pairs</th><th>Predicted</th><th>Precision</th><th>Recall</th><th>F1</th><th></th></tr></thead>
+              <tbody>
+                {% for row in scores.per_category %}
+                <tr class="{{ 'indicative' if row.indicative else '' }}">
+                  <th>{{ row.category }}</th><td>{{ row.support }}</td><td>{{ row.predicted }}</td>
+                  <td>{{ (row.precision * 100) | round(1) }}%</td><td>{{ (row.recall * 100) | round(1) }}%</td><td>{{ (row.f1 * 100) | round(1) }}%</td>
+                  <td>{% if row.indicative %}indicative only{% endif %}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            {% endfor %}
+          </div>
+
+          <div class="tab-pane fade" id="revisions" role="tabpanel">
+            <h1>Revisions</h1>
+            {% if report.revisions %}
+            <table class="table table-bordered table-striped">
+              <thead><tr><th>Round</th><th>Pair</th><th>Old</th><th>New</th><th>Reason</th><th>Evidence</th><th>Status</th></tr></thead>
+              <tbody>
+                {% for entry in report.revisions %}
+                <tr><td>{{ entry.round }}</td><td>{{ entry.unit_id }} {{ entry.active }}➜{{ entry.passive }}</td><td>{{ entry.old }}</td><td>{{ entry.new }}</td>
+                    <td>{{ entry.reason }}</td><td>{{ entry.evidence | join(", ") }}</td><td>{{ entry.status }}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            {% else %}<p class="text-center">No revisions{{ " (draft only)" if not report.final else "" }}.</p>{% endif %}
+          </div>
+
+          {% for group, pairs in [("wrong", wrong), ("right", right)] %}
+          {% for pair in pairs %}
+          <div class="tab-pane fade" id="{{ group }}-{{ loop.index }}" role="tabpanel">
+            <h1>{{ pair.unit_id }}</h1>
+            <p class="verse"><span>{{ pair.before }}</span> <span class="highlight">⸂{{ pair.lemma or "⸆" }}⸃</span> <span>{{ pair.after }}</span></p>
+            <p class="relation"><span>{{ pair.first_text }}</span> &lrm;➜ <span>{{ pair.second_text }}</span></p>
+            <p class="change">{{ pair.change }}</p>
+            <div class="row justify-content-center text-center">
+              <div class="col-md-4">
+                <div class="card bg-secondary text-white"><div class="card-body">
+                  <p class="card-text small">Ground truth</p>
+                  <h5 class="card-title large">{{ pair.gold }}</h5>
+                </div></div>
+              </div>
+              <div class="col-md-4">
+                <div class="card {{ 'bg-success' if pair.draft == pair.gold else 'bg-danger' }} text-white"><div class="card-body">
+                  <p class="card-text small">Draft prediction</p>
+                  <h5 class="card-title large">{{ pair.draft or "not labelled" }}</h5>
+                </div></div>
+              </div>
+              {% if report.final %}
+              <div class="col-md-4">
+                <div class="card {{ 'bg-success' if pair.final == pair.gold else 'bg-danger' }} text-white"><div class="card-body">
+                  <p class="card-text small">After review</p>
+                  <h5 class="card-title large">{{ pair.final or "not labelled" }}</h5>
+                  <p class="card-text">{{ pair.justification }}</p>
+                </div></div>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+          {% endfor %}
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    {% include 'assets/js/bootstrap.min.js' %}
+  </script>
+</body>
+</html>
