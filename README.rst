@@ -416,7 +416,7 @@ Credits
 
 .. start-credits
 
-Robert Turnbull
+`Robert Turnbull <https://robturnbull.com>`_
 
 For more information contact: <robert.turnbull@unimelb.edu.au>
 
@@ -441,6 +441,18 @@ You might like to cite some of the following articles:
 - Robert Turnbull, "Transmission History" Pages 156–204 in *Codex Sinaiticus Arabicus and Its Family: A Bayesian Approach*. Vol. 66. New Testament Tools, Studies and Documents. Brill, 2025. `https://doi.org/10.1163/9789004704619_007 <https://doi.org/10.1163/9789004704619_007>`_
 - Joey McCollum and Robert Turnbull. "teiphy: A Python Package for Converting TEI XML Collations to NEXUS and Other Formats." *Journal of Open Source Software* 7, no. 80 (2022): 4879. `https://doi.org/10.21105/joss.04879 <https://doi.org/10.21105/joss.04879>`_
 - Joey McCollum and Robert Turnbull. "Using Bayesian Phylogenetics to Infer Manuscript Transmission History." *Digital Scholarship in the Humanities* 39, no. 1 (2024): 258–79. `https://doi.org/10.1093/llc/fqad089 <https://doi.org/10.1093/llc/fqad089>`_
+
+Funding
+-------
+
+This research was funded by the Australian Government through the Australian Research Council (Discovery Early Career Researcher Award, project number DE260100688).
+
+The research leading to this contribution was conducted as part of the BICROSS project (‘The Significance of Bilingual
+Manuscripts for Detecting Cross-Language Interaction in the New Testament Tradition’), which has received funding from
+the European Research Council (ERC) under the European Union’s Horizon Europe Research and Innovation Programme (Grant
+Agreement No. 101043730 – BICROSS – ERC-2021-COG). Funded by the European Union. Views and opinions expressed are
+however those of the author only and do not necessarily reflect those of the European Union or the European Education
+and Culture Executive Agency (EACEA). Neither the European Union nor EACEA can be held responsible for them.
 
 .. end-credits
 
