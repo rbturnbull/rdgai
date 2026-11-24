@@ -52,6 +52,26 @@ def wait_for(url:str, seconds:float=15):
     raise AssertionError(f"{url} did not respond")
 
 
+# the first Chrome launch on a fresh CI runner (font cache, new profile) can take well over 15 seconds
+CHROME_STARTUP_SECONDS = 60
+
+
+def wait_for_chrome(chrome:subprocess.Popen, port_file:Path, log:Path, seconds:float=CHROME_STARTUP_SECONDS) -> int:
+    """ Waits for Chrome to write its DevTools port, failing at once (with Chrome's stderr) if it exits first. """
+    deadline = time.time() + seconds
+    while time.time() < deadline:
+        if chrome.poll() is not None:
+            raise AssertionError(f"Chrome exited with code {chrome.returncode}:\n{log.read_text(errors='replace')}")
+        try:
+            lines = port_file.read_text().splitlines()
+            if lines and lines[0].strip().isdigit():
+                return int(lines[0])
+        except OSError:
+            pass
+        time.sleep(0.2)
+    raise AssertionError(f"Chrome did not open a DevTools port within {seconds}s:\n{log.read_text(errors='replace')}")
+
+
 class Page:
     """ A minimal DevTools-protocol client: navigate and evaluate JavaScript. """
     def __init__(self, ws):
@@ -102,12 +122,15 @@ def gui(tmp_path, prepare):
     port = free_port()
     server = subprocess.Popen([RDGAI, "annotate", str(path), "--port", str(port), "--annotator", "RT"],
                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    debug_port = free_port()
-    chrome = subprocess.Popen([CHROME, "--headless=new", "--disable-gpu", "--no-sandbox", f"--remote-debugging-port={debug_port}",
-                               f"--user-data-dir={tmp_path / 'chrome'}", "--window-size=1400,1000", "about:blank"],
-                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    chrome_log = tmp_path / "chrome.log"
+    with open(chrome_log, "wb") as log:
+        # port 0: Chrome picks a free port itself and writes it to DevToolsActivePort (no race with free_port)
+        chrome = subprocess.Popen([CHROME, "--headless=new", "--disable-gpu", "--no-sandbox", "--remote-debugging-port=0",
+                                   f"--user-data-dir={tmp_path / 'chrome'}", "--window-size=1400,1000", "about:blank"],
+                                  stdout=subprocess.DEVNULL, stderr=log)
     try:
         wait_for(f"http://127.0.0.1:{port}/api/config")
+        debug_port = wait_for_chrome(chrome, tmp_path / "chrome" / "DevToolsActivePort", chrome_log)
         targets = wait_for(f"http://127.0.0.1:{debug_port}/json")
         yield f"http://127.0.0.1:{port}", next(target for target in targets if target["type"] == "page")["webSocketDebuggerUrl"]
     finally:
@@ -678,3 +701,24 @@ def test_no_suggestions_section_on_test_units(gui):
             await page.wait_until(f"{section}.getClientRects().length > 0")
 
     asyncio.run(run())
+
+
+def test_wait_for_chrome_reads_the_devtools_port(tmp_path):
+    port_file, log = tmp_path / "DevToolsActivePort", tmp_path / "chrome.log"
+    port_file.write_text("54321\n/devtools/browser/abc\n")
+    log.write_text("")
+    process = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)"])
+    try:
+        assert wait_for_chrome(process, port_file, log, seconds=5) == 54321
+    finally:
+        process.kill()
+        process.wait()
+
+
+def test_wait_for_chrome_reports_an_early_exit_with_its_stderr(tmp_path):
+    log = tmp_path / "chrome.log"
+    with open(log, "wb") as stderr:
+        process = subprocess.Popen([sys.executable, "-c", "import sys; sys.stderr.write('no display'); sys.exit(3)"], stderr=stderr)
+    process.wait()
+    with pytest.raises(AssertionError, match="(?s)exited with code 3.*no display"):
+        wait_for_chrome(process, tmp_path / "DevToolsActivePort", log, seconds=5)
