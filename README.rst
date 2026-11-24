@@ -445,9 +445,9 @@ You might like to cite some of the following articles:
 Funding
 -------
 
-This research was funded by the Australian Government through the Australian Research Council (Discovery Early Career Researcher Award, project number DE260100688).
+This research was funded by the Australian Government through the Australian Research Council (`Discovery Early Career Researcher Award (DECRA), project number DE260100688 <https://dataportal.arc.gov.au/NCGP/Web/Grant/Grant/DE260100688>`_).
 
-The research leading to this contribution was conducted as part of the BICROSS project (‘The Significance of Bilingual
+The research leading to this contribution was conducted as part of the `BICROSS project <https://theo.kuleuven.be/en/research/research_units/ru_bible/lemma/bicross-project>`_ (‘The Significance of Bilingual
 Manuscripts for Detecting Cross-Language Interaction in the New Testament Tradition’), which has received funding from
 the European Research Council (ERC) under the European Union’s Horizon Europe Research and Innovation Programme (Grant
 Agreement No. 101043730 – BICROSS – ERC-2021-COG). Funded by the European Union. Views and opinions expressed are
